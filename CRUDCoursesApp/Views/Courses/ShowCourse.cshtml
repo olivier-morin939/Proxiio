@@ -1,0 +1,12 @@
+﻿@model CourseResponse
+
+@if(Model == null)
+{
+    <h1>List is null.</h1>
+    <p>Exception : @ViewBag.Exception</p>
+} else
+{
+    <h1>@Model.CourseId</h1>
+    <h1>@Model.CourseName</h1>
+    <h1>@Model.CourseDescription</h1>
+}

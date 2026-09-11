@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="CRUDCoursesApp/CRUDCoursesApp.csproj" />
+  <Project Path="CRUDCoursesAppTest/CRUDCoursesAppTest.csproj" />
+  <Project Path="Entities/Entities.csproj" />
+  <Project Path="ServiceContracts/ServiceContracts.csproj" />
+  <Project Path="Services/Services.csproj" />
+</Solution>
