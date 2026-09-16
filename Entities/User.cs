@@ -14,6 +14,8 @@ namespace Entities
 
         public Role Role { get; set; }
 
+        public UserState UserState { get; set; }
+
         public string? Password { get; set; }
 
         public DateTime? DateOfBirth { get; set; }

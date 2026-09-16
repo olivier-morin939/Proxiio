@@ -1,0 +1,164 @@
+﻿@model IEnumerable<ComunityResponse>
+@{
+    ViewData["Title"] = "Admin Dashboard - Proxiio";
+}
+
+<div class="max-w-7xl mx-auto p-6 space-y-6">
+    <!-- Header Page -->
+    <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Comunities</h1>
+            <p class="text-sm text-slate-500 mt-1">Manage and filter your system comunities.</p>
+        </div>
+        <!-- Bouton Ajouter un Utilisateur -->
+        <a href="/admin/comunities/add" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg shadow-sm transition-colors duration-150 inline-flex items-center gap-2">
+            <i class="fa-solid fa-plus text-xs"></i>
+            Add Comunity
+        </a>
+    </div>
+</div>
+
+    <!-- Flash Messages -->
+    @{
+        await Html.RenderPartialAsync("_FlashMessagesComponent");
+    }
+
+
+<!-- Filter & Search Bar -->
+<div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+    <form action="/admin/comunities/view" method="get" class="flex flex-col sm:flex-row items-center gap-3">
+
+        <!-- Select Field -->
+        <div class="w-full sm:w-48">
+            <select name="searchBy" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none">
+                @foreach (var field in ViewBag.SearchFields)
+                {
+                    @if (ViewBag.CurrentSearchBy == field.Key)
+                    {
+                        <option value="@field.Key" selected="selected">@field.Value</option>
+                    }
+                    else
+                    {
+                        <option value="@field.Key">@field.Value</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative w-full sm:flex-1">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+            </div>
+            <input type="search" name="searchString" placeholder="Search comunities..." value="@ViewBag.CurrentSearchString" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none" />
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg shadow-sm transition-colors duration-150 inline-flex items-center justify-center gap-2">
+                <i class="fa-solid fa-filter text-xs"></i>
+                Search
+            </button>
+
+            <a href="/admin/comunities/view" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium text-sm rounded-lg transition-colors duration-150 inline-flex items-center justify-center" title="Reset Filters">
+                <i class="fa-solid fa-rotate-right"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Data Table Container / Empty State -->
+@if (Model != null && Model.Any())
+{
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+
+                @{
+                    await Html.RenderPartialAsync("_ComunityHeaderTab", viewData: ViewData);
+                }
+
+                <tbody class="divide-y divide-slate-200 text-sm text-slate-700">
+                    @foreach (ComunityResponse comResponse in Model)
+                    {
+                        <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-100 last:border-0">
+                            <!-- Comunity Name -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-slate-900 text-sm">@comResponse.Name</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Comunity Description -->
+                            <td class="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">
+                                @comResponse.Description
+                            </td>
+
+                            <!-- Owner Id -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-600/10">
+                                    @comResponse.TeacherId.ToString()
+                                </span>
+                            </td>
+
+                            <!-- Users Count -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                                    @comResponse.UsersCount
+                                </span>
+                            </td>
+
+                            <!-- Posts Count -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                                    @comResponse.PostsCount
+                                </span>
+                            </td>
+
+
+                            <!-- Actions -->
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="/admin/comunities/view/@comResponse.Id"
+                                       class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm">
+                                        Details
+                                    </a>
+                                    <a href="/admin/comunities/update/@comResponse.Id"
+                                       class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors">
+                                        Update
+                                    </a>
+                                    <a href="/admin/comunities/delete/@comResponse.Id"
+                                       class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors">
+                                        Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Empty State Component -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+        <div class="mx-auto w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
+            <i class="fa-solid fa-users-slash text-xl"></i>
+        </div>
+        <h3 class="text-base font-semibold text-slate-800 mb-1">No comunities found</h3>
+        <p class="text-sm text-slate-500 max-w-sm mx-auto mb-6">
+            We couldn't find any comunities matching your criteria. Try adjusting your search term or filter.
+        </p>
+        @if (!string.IsNullOrEmpty(ViewBag.CurrentSearchString))
+        {
+            <a href="/admin/comunities/view" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors">
+                <i class="fa-solid fa-xmark text-xs"></i>
+                Clear Search
+            </a>
+        }
+    </div>
+}

@@ -1,0 +1,265 @@
+﻿@{
+    ViewData["Title"] = "Home - Proxiio";
+}
+
+<!-- CDN requis dans votre _Layout.cshtml ou en haut de la page -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<div class="bg-gray-50 min-h-screen">
+
+    <!-- 1. Section Hero (En-tête principal) -->
+    <section class="relative bg-gray-900 text-white py-16 md:py-24 overflow-hidden">
+        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <span class="inline-block px-3 py-1 bg-blue-600/30 text-blue-400 text-xs font-semibold rounded-full border border-blue-500/30 mb-4">
+                        🚀 Plus de 500+ cours en ligne
+                    </span>
+                    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight mb-6">
+                        Développez vos compétences avec les meilleurs experts.
+                    </h1>
+                    <p class="text-lg text-gray-300 mb-8">
+                        Accédez à des centaines de cours dans la programmation, le design, le business et bien plus encore. Apprenez à votre rythme, où que vous soyez.
+                    </p>
+
+                    <!-- Barre de recherche style Udemy -->
+                    <form asp-controller="Courses" asp-action="Search" method="get" class="flex flex-col sm:flex-row gap-2 max-w-xl">
+                        <div class="relative flex-grow">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" name="q" placeholder="Que voulez-vous apprendre aujourd'hui ?"
+                                   class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg text-sm" />
+                        </div>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-600/30 text-sm whitespace-nowrap">
+                            Rechercher
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Visuel d'illustration -->
+                <div class="hidden lg:block relative">
+                    <div class="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl p-2 shadow-2xl transform rotate-1">
+                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop"
+                             alt="Étudiants en ligne" class="rounded-xl object-cover h-96 w-full" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Bannière de Réassurance (Statistiques / Avantages) -->
+    <section class="bg-white border-b border-gray-200 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div class="p-2">
+                    <p class="text-2xl font-bold text-gray-900">10,000+</p>
+                    <p class="text-xs text-gray-500">Apprenants actifs</p>
+                </div>
+                <div class="p-2">
+                    <p class="text-2xl font-bold text-gray-900">500+</p>
+                    <p class="text-xs text-gray-500">Cours vidéo</p>
+                </div>
+                <div class="p-2">
+                    <p class="text-2xl font-bold text-gray-900">À vie</p>
+                    <p class="text-xs text-gray-500">Accès illimité</p>
+                </div>
+                <div class="p-2">
+                    <p class="text-2xl font-bold text-gray-900">Certificats</p>
+                    <p class="text-xs text-gray-500">De réussite inclus</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Top Catégories -->
+    <section class="py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Explorez les catégories populaires</h2>
+                <p class="text-sm text-gray-500 mt-1">Trouvez le domaine qui correspond à vos objectifs</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <!-- Catégorie Web Dev -->
+            <a asp-controller="Courses" asp-action="Category" asp-route-slug="development"
+               class="group p-5 bg-white rounded-xl border border-gray-200/80 hover:border-blue-500 hover:shadow-md transition-all">
+                <div class="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-code text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">Développement Web</h3>
+                <p class="text-xs text-gray-500 mt-1">120+ Cours</p>
+            </a>
+
+            <!-- Catégorie Design -->
+            <a asp-controller="Courses" asp-action="Category" asp-route-slug="design"
+               class="group p-5 bg-white rounded-xl border border-gray-200/80 hover:border-purple-500 hover:shadow-md transition-all">
+                <div class="w-12 h-12 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-pen-nib text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">Design & UI/UX</h3>
+                <p class="text-xs text-gray-500 mt-1">85+ Cours</p>
+            </a>
+
+            <!-- Catégorie Business -->
+            <a asp-controller="Courses" asp-action="Category" asp-route-slug="business"
+               class="group p-5 bg-white rounded-xl border border-gray-200/80 hover:border-emerald-500 hover:shadow-md transition-all">
+                <div class="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-chart-line text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">Business & Marketing</h3>
+                <p class="text-xs text-gray-500 mt-1">95+ Cours</p>
+            </a>
+
+            <!-- Catégorie Data -->
+            <a asp-controller="Courses" asp-action="Category" asp-route-slug="data-science"
+               class="group p-5 bg-white rounded-xl border border-gray-200/80 hover:border-amber-500 hover:shadow-md transition-all">
+                <div class="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-database text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">Data Science & IA</h3>
+                <p class="text-xs text-gray-500 mt-1">60+ Cours</p>
+            </a>
+        </div>
+    </section>
+
+    <!-- 4. Liste des Cours Populaires (Grille des cartes cours) -->
+    <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Cours les mieux notés</h2>
+                <p class="text-sm text-gray-500 mt-1">Sélectionnés par nos étudiants ce mois-ci</p>
+            </div>
+            <a asp-controller="Courses" asp-action="Index" class="text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                Voir tout <i class="fa-solid fa-arrow-right text-xs"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Carte Cours 1 -->
+            <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden hover:shadow-lg transition-all flex flex-col">
+                <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=600&auto=format&fit=crop"
+                     alt="Vignette du cours" class="w-full h-44 object-cover" />
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+                        <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-medium">Développement</span>
+                        <span><i class="fa-regular fa-clock mr-1"></i>12h 30m</span>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-base mb-2 line-clamp-2 hover:text-blue-600 transition-colors">
+                        <a asp-controller="Courses" asp-action="Details" asp-route-id="1">Maîtriser ASP.NET Core MVC et Entity Framework de A à Z</a>
+                    </h3>
+                    <p class="text-xs text-gray-500 mb-4">Par Marc Dupont</p>
+
+                    <!-- Évaluation -->
+                    <div class="flex items-center gap-1 text-xs text-amber-500 font-bold mb-4">
+                        <span>4.8</span>
+                        <div class="flex text-amber-400">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star-half-stroke"></i>
+                        </div>
+                        <span class="text-gray-400 font-normal">(1,420)</span>
+                    </div>
+
+                    <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                        <span class="text-xl font-bold text-gray-900">49,99 $</span>
+                        <a asp-controller="Courses" asp-action="Details" asp-route-id="1" class="text-xs font-semibold bg-gray-900 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            Voir le cours
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte Cours 2 -->
+            <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden hover:shadow-lg transition-all flex flex-col">
+                <img src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=600&auto=format&fit=crop"
+                     alt="Vignette du cours" class="w-full h-44 object-cover" />
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+                        <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-medium">Design</span>
+                        <span><i class="fa-regular fa-clock mr-1"></i>8h 15m</span>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-base mb-2 line-clamp-2 hover:text-blue-600 transition-colors">
+                        <a asp-controller="Courses" asp-action="Details" asp-route-id="2">UI/UX Design Masterclass : Créez des interfaces modernes avec Figma</a>
+                    </h3>
+                    <p class="text-xs text-gray-500 mb-4">Par Sarah Martin</p>
+
+                    <!-- Évaluation -->
+                    <div class="flex items-center gap-1 text-xs text-amber-500 font-bold mb-4">
+                        <span>4.9</span>
+                        <div class="flex text-amber-400">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <span class="text-gray-400 font-normal">(850)</span>
+                    </div>
+
+                    <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                        <span class="text-xl font-bold text-gray-900">39,99 $</span>
+                        <a asp-controller="Courses" asp-action="Details" asp-route-id="2" class="text-xs font-semibold bg-gray-900 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            Voir le cours
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte Cours 3 -->
+            <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden hover:shadow-lg transition-all flex flex-col">
+                <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600&auto=format&fit=crop"
+                     alt="Vignette du cours" class="w-full h-44 object-cover" />
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+                        <span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-medium">Data & IA</span>
+                        <span><i class="fa-regular fa-clock mr-1"></i>18h 45m</span>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-base mb-2 line-clamp-2 hover:text-blue-600 transition-colors">
+                        <a asp-controller="Courses" asp-action="Details" asp-route-id="3">Python et Machine Learning : De Zéro à Héros</a>
+                    </h3>
+                    <p class="text-xs text-gray-500 mb-4">Par Alex Tremblay</p>
+
+                    <!-- Évaluation -->
+                    <div class="flex items-center gap-1 text-xs text-amber-500 font-bold mb-4">
+                        <span>4.7</span>
+                        <div class="flex text-amber-400">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star-half-stroke"></i>
+                        </div>
+                        <span class="text-gray-400 font-normal">(2,100)</span>
+                    </div>
+
+                    <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                        <span class="text-xl font-bold text-gray-900">59,99 $</span>
+                        <a asp-controller="Courses" asp-action="Details" asp-route-id="3" class="text-xs font-semibold bg-gray-900 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            Voir le cours
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 5. Call To Action (Devenir Instructeur) -->
+    <section class="py-16 bg-blue-600 text-white my-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold mb-4">Devenez instructeur sur notre plateforme</h2>
+            <p class="text-blue-100 max-w-2xl mx-auto mb-8 text-sm sm:text-base">
+                Partagez votre savoir avec des milliers d'étudiants à travers le monde et gérez vos propres cours en toute simplicité.
+            </p>
+            <a asp-controller="Account" asp-action="RegisterInstructor" class="inline-block bg-white text-blue-600 font-bold px-8 py-3.5 rounded-xl shadow-md hover:bg-blue-50 transition-colors text-sm">
+                Commencer à enseigner dès aujourd'hui
+            </a>
+        </div>
+    </section>
+
+</div>

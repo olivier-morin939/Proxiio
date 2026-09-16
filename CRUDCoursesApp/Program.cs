@@ -8,7 +8,8 @@ namespace CRUDCoursesApp
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddControllersWithViews();
-            builder.Services.AddScoped<ICoursesService, CoursesService>();
+            builder.Services.AddSingleton<IUsersService, UsersService>();
+            builder.Services.AddSingleton<IComunitiesService, ComunitiesService>();
             var app = builder.Build();
             app.UseRouting();
             app.UseStaticFiles();

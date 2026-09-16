@@ -1,0 +1,99 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard - Proxiio";
+}
+
+
+<div class="min-h-screen bg-gray-50/50 p-6">
+
+    <!-- Dashboard Header -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Tableau de Bord Administration</h1>
+            <p class="text-sm text-gray-500">Welcome on the admin pannel.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span class="w-2 h-2 mr-1.5 bg-green-500 rounded-full animate-pulse"></span> Operational System
+            </span>
+        </div>
+    </div>
+
+    <!-- Navigation Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+        <!-- Users Cards -->
+        <a href="/admin/users/view"
+           class="group bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-200/80 p-6 transition-all duration-200 flex items-center justify-between hover:-translate-y-0.5">
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        Users Management
+                    </h3>
+                    <p class="text-sm text-gray-500">Manages accounts, roles and permissions.</p>
+                </div>
+            </div>
+            <div class="text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all">
+               <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </a>
+
+        <!-- Communities Cards -->
+        <a href="/admin/comunities/view"
+           class="group bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-200/80 p-6 transition-all duration-200 flex items-center justify-between hover:-translate-y-0.5">
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-200">
+                    <i class="fa-solid fa-book"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
+                        Communities Management
+                    </h3>
+                    <p class="text-sm text-gray-500">Administer communities</p>
+                </div>
+            </div>
+            <div class="text-gray-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all">
+                <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- Quick Stats -->
+    @{
+        await Html.RenderPartialAsync("_QuickStatsAdminComponent");
+    }
+
+    <!-- 3. Section Activités Récents -->
+    <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="text-lg font-bold text-gray-900">Dernières Activités</h3>
+            <span class="text-xs font-medium text-gray-400">Temps réel</span>
+        </div>
+        <div class="divide-y divide-gray-100">
+            <div class="p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">JD</div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">John Doe s'est inscrit</p>
+                        <p class="text-xs text-gray-500">Il y a 10 minutes</p>
+                    </div>
+                </div>
+                <span class="text-xs font-medium bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">Utilisateur</span>
+            </div>
+            <div class="p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">C#</div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">Nouveau cours publié : ASP.NET Core & Tailwind</p>
+                        <p class="text-xs text-gray-500">Il y a 1 heure</p>
+                    </div>
+                </div>
+                <span class="text-xs font-medium bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">Cours</span>
+            </div>
+        </div>
+    </div>
+
+</div>

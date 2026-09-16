@@ -132,8 +132,6 @@ namespace CRUDCoursesAppTest
             }
         }
 
-    public partial class UsersServiceTest
-    {
         [Fact]
         public void Concurrent_AddUser_SameEmail_OnlyOneCreated()
         {
@@ -207,7 +205,7 @@ namespace CRUDCoursesAppTest
             Assert.Equal(1, found.Count);
             Assert.True(successes >= 1);
         }
-    }
+    
         #endregion
 
         #region AddUser
