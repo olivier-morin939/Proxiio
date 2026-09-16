@@ -1,0 +1,122 @@
+﻿<thead class="bg-slate-100 border-b border-slate-200">
+    <tr>
+        <!-- Name -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            @if (ViewBag.CurrentSortBy == nameof(UserResponse.Name) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Name))&sortOption=DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    User Name <i class="fa-solid fa-chevron-up text-xs"></i>
+                </a>
+            }
+            else if (ViewBag.CurrentSortBy == nameof(UserResponse.Name) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Name))&sortOption=ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    User Name <i class="fa-solid fa-chevron-down text-xs"></i>
+                </a>
+            }
+            else
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Name))&sortOption=ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                    User Name
+                </a>
+            }
+        </th>
+
+        <!-- Email -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            @if (ViewBag.CurrentSortBy == nameof(UserResponse.Email) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Email))&sortOption=DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    User Email <i class="fa-solid fa-chevron-up text-xs"></i>
+                </a>
+            }
+            else if (ViewBag.CurrentSortBy == nameof(UserResponse.Email) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Email))&sortOption=ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    User Email <i class="fa-solid fa-chevron-down text-xs"></i>
+                </a>
+            }
+            else
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Email))&sortOption=ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                    User Email
+                </a>
+            }
+        </th>
+
+        <!-- Role -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            @if (ViewBag.CurrentSortBy == nameof(UserResponse.Role) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Role))&sortOption=DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Role <i class="fa-solid fa-chevron-up text-xs"></i>
+                </a>
+            }
+            else if (ViewBag.CurrentSortBy == nameof(UserResponse.Role) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Role))&sortOption=ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Role <i class="fa-solid fa-chevron-down text-xs"></i>
+                </a>
+            }
+            else
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Role))&sortOption=ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                    Role
+                </a>
+            }
+        </th>
+
+        <!-- User State -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            @if (ViewBag.CurrentSortBy == nameof(UserResponse.UserState) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.UserState))&sortOption=DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    User State <i class="fa-solid fa-chevron-up text-xs"></i>
+                </a>
+            }
+            else if (ViewBag.CurrentSortBy == nameof(UserResponse.UserState) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.UserState))&sortOption=ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    UserState <i class="fa-solid fa-chevron-down text-xs"></i>
+                </a>
+            }
+            else
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.UserState))&sortOption=ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                    UserState
+                </a>
+            }
+        </th>
+
+        <!-- Date of Birth -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            @if (ViewBag.CurrentSortBy == nameof(UserResponse.DateOfBirth) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.DateOfBirth))&sortOption=DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Date of Birth <i class="fa-solid fa-chevron-up text-xs"></i>
+                </a>
+            }
+            else if (ViewBag.CurrentSortBy == nameof(UserResponse.DateOfBirth) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.DateOfBirth))&sortOption=ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Date of Birth <i class="fa-solid fa-chevron-down text-xs"></i>
+                </a>
+            }
+            else
+            {
+                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.DateOfBirth))&sortOption=ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                    Date of Birth
+                </a>
+            }
+        </th>
+
+        <!-- Receive News Letters -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            Receive Newsletters
+        </th>
+        <!-- Actions -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            Actions
+        </th>
+    </tr>
+</thead>

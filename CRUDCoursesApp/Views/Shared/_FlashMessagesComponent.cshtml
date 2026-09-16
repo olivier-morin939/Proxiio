@@ -1,0 +1,32 @@
+﻿<!-- Error Flash Messages via TempData -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-center gap-3 shadow-sm">
+        <i class="fa-solid fa-circle-exclamation text-red-600 text-lg"></i>
+        <div class="flex-1 font-medium whitespace-pre-line">@TempData["ErrorMessage"]</div>
+    </div>
+}
+
+@if (TempData["DuplicateErrorMessage"] != null)
+{
+    <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-center gap-3 shadow-sm">
+        <i class="fa-solid fa-triangle-exclamation text-amber-600 text-lg"></i>
+        <div class="flex-1 font-medium whitespace-pre-line">@TempData["DuplicateErrorMessage"]</div>
+    </div>
+}
+
+@if (TempData["InvalidErrorMessage"] != null)
+{
+    <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center gap-3 shadow-sm">
+        <i class="fa-solid fa-ban text-rose-600 text-lg"></i>
+        <div class="flex-1 font-medium whitespace-pre-line">@TempData["InvalidErrorMessage"]</div>
+    </div>
+}
+<!-- Success Flash Messages via TempData -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-3 shadow-sm">
+        <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+        <div class="flex-1 font-medium">@TempData["SuccessMessage"]</div>
+    </div>
+}
