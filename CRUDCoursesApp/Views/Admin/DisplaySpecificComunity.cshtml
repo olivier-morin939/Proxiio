@@ -1,0 +1,116 @@
+﻿@model CRUDCoursesApp.ViewModels.ComunityDetailsViewModel
+@{
+    ViewData["Title"] = "Admin - Community details";
+}
+
+@section HeadContent {
+    <link rel="stylesheet" href="~/css/admin-comunities.css" />
+}
+
+<div class="max-w-3xl mx-auto p-6 space-y-6">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">@Model.Comunity.Name</h1>
+            <p class="text-sm text-slate-500 mt-1">Community details and management actions.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a asp-controller="Admin" asp-action="DisplayComunities" class="px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200">Back to list</a> 
+        </div>
+    </div>
+
+    @{ await Html.RenderPartialAsync("_FlashMessagesComponent"); }
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-500 uppercase">Name</h3>
+                <p class="mt-1 text-lg font-medium text-slate-900">@Model.Comunity.Name</p>
+
+                <h3 class="text-sm font-semibold text-slate-500 uppercase mt-4">Description</h3>
+                <p class="mt-1 text-sm text-slate-700">@Model.Comunity.Description</p>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-slate-500 uppercase">Owner</h3>
+                <p class="mt-1 text-sm text-slate-700">@Model.Comunity.TeacherId</p>
+
+                <h3 class="text-sm font-semibold text-slate-500 uppercase mt-4">Statistics</h3>
+                <div class="mt-2 flex gap-3">
+                    <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-700">Users: @Model.Comunity.UsersCount</span>
+                    <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-700">Posts: @Model.Comunity.PostsCount</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions: members / posts management (links as placeholders) -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex gap-3">
+        <a asp-controller="Admin" asp-action="DisplayUsers" class="px-3 py-2 bg-indigo-600 text-white rounded-md">View Users</a>
+        <a asp-controller="Admin" asp-action="DisplayComunities" class="px-3 py-2 bg-emerald-600 text-white rounded-md">View Posts</a>
+    </div>
+
+    @if (Model.PagedPosts != null && Model.PagedPosts.Any())
+    {
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h3 class="text-lg font-medium text-slate-900">Recent Posts</h3>
+            <ul class="mt-4 space-y-3">
+                @foreach (var p in Model.PagedPosts)
+                {
+                    <li class="p-3 border rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-semibold">@p.Title</div>
+                                <div class="text-sm text-slate-500">@p.CreatedAt.ToString("dd MMM yyyy")</div>
+                            </div>
+                            <div>
+                                <a class="text-sm text-indigo-600" href="#">View</a>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+
+            <!-- simple pagination controls for posts -->
+            <div class="mt-4 flex justify-between items-center">
+                <div class="text-sm text-slate-500">Showing @((Model.PostsPage - 1) * Model.PostsPageSize + 1)-@((Model.PostsPage - 1) * Model.PostsPageSize + Model.PagedPosts.Count) of @Model.PostsTotal</div>
+                <div class="flex gap-2">
+                    @if (Model.PostsPage > 1)
+                    {
+                        <a asp-controller="Admin" asp-action="DisplaySpecificComunity" asp-route-ComId="@Model.Comunity.Id" asp-route-postsPage="@(Model.PostsPage - 1)" asp-route-postsPageSize="@Model.PostsPageSize" class="px-3 py-1 bg-slate-100 rounded">Prev</a>
+                    }
+                    @if ((Model.PostsPage * Model.PostsPageSize) < Model.PostsTotal)
+                    {
+                        <a asp-controller="Admin" asp-action="DisplaySpecificComunity" asp-route-ComId="@Model.Comunity.Id" asp-route-postsPage="@(Model.PostsPage + 1)" asp-route-postsPageSize="@Model.PostsPageSize" class="px-3 py-1 bg-slate-100 rounded">Next</a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Model.PagedMembers != null && Model.PagedMembers.Any())
+    {
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mt-4">
+            <h3 class="text-lg font-medium text-slate-900">Members</h3>
+            <ul class="mt-4 space-y-2">
+                @foreach (var m in Model.PagedMembers)
+                {
+                    <li class="p-2 border rounded">@m.UserId - @m.Role</li>
+                }
+            </ul>
+
+            <div class="mt-4 flex justify-between items-center">
+                <div class="text-sm text-slate-500">Showing @((Model.MembersPage - 1) * Model.MembersPageSize + 1)-@((Model.MembersPage - 1) * Model.MembersPageSize + Model.PagedMembers.Count) of @Model.MembersTotal</div>
+                <div class="flex gap-2">
+                    @if (Model.MembersPage > 1)
+                    {
+                        <a asp-controller="Admin" asp-action="DisplaySpecificComunity" asp-route-ComId="@Model.Comunity.Id" asp-route-membersPage="@(Model.MembersPage - 1)" asp-route-membersPageSize="@Model.MembersPageSize" class="px-3 py-1 bg-slate-100 rounded">Prev</a>
+                    }
+                    @if ((Model.MembersPage * Model.MembersPageSize) < Model.MembersTotal)
+                    {
+                        <a asp-controller="Admin" asp-action="DisplaySpecificComunity" asp-route-ComId="@Model.Comunity.Id" asp-route-membersPage="@(Model.MembersPage + 1)" asp-route-membersPageSize="@Model.MembersPageSize" class="px-3 py-1 bg-slate-100 rounded">Next</a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>

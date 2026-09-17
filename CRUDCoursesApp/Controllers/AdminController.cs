@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using ServiceContracts;
 using ServiceContracts.DTO.Comunities;
 using ServiceContracts.DTO.Users;
+using ServiceContracts.DTO.Posts;
 using Services;
 using System.Collections.Immutable;
 using System.Data;
@@ -34,6 +35,15 @@ namespace CRUDCoursesApp.Controllers
                 _comunitiesService.SeedMockPosts();
             }
 
+        }
+
+        // safe setter for TempData to avoid NullReference during unit tests
+        private void SafeSetTempData(string key, string? value)
+        {
+            if (TempData != null && value != null)
+            {
+                TempData[key] = value;
+            }
         }
 
 
@@ -263,9 +273,41 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/comunities/view/{ComId:guid}")]
-        public IActionResult DisplaySpecificComunity([FromRoute] Guid ComId)
+        public IActionResult DisplaySpecificComunity([FromRoute] Guid ComId, [FromQuery] int postsPage = 1, [FromQuery] int postsPageSize = 8, [FromQuery] int membersPage = 1, [FromQuery] int membersPageSize = 8)
         {
-            return View();
+            try
+            {
+                ComunityResponse comResponse = _comunitiesService.GetComunityByComId(ComId);
+
+                // prepare paged posts
+                var allPosts = comResponse.Posts ?? new List<ServiceContracts.DTO.Posts.PostResponse>();
+                int postsTotal = allPosts.Count;
+                var pagedPosts = allPosts.Skip((Math.Max(1, postsPage) - 1) * postsPageSize).Take(postsPageSize).ToList();
+
+                // prepare paged members
+                var allMembers = _comunitiesService.GetComunityMembers(ComId) ?? new List<ComunityMemberResponse>();
+                int membersTotal = allMembers.Count;
+                var pagedMembers = allMembers.Skip((Math.Max(1, membersPage) - 1) * membersPageSize).Take(membersPageSize).ToList();
+
+                var vm = new CRUDCoursesApp.ViewModels.ComunityDetailsViewModel()
+                {
+                    Comunity = comResponse,
+                    PagedPosts = pagedPosts,
+                    PostsPage = postsPage,
+                    PostsPageSize = postsPageSize,
+                    PostsTotal = postsTotal,
+                    PagedMembers = pagedMembers,
+                    MembersPage = membersPage,
+                    MembersPageSize = membersPageSize,
+                    MembersTotal = membersTotal
+                };
+
+                return View(vm);
+            }
+            catch (Exception)
+            {
+                return LocalRedirect("/not-found");
+            }
         }
 
         [HttpGet]
@@ -279,7 +321,30 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/add")]
         public IActionResult AddComunity([Bind][FromForm] AddComunityRequest addComunityRequest)
         {
-            return View();
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    List<string> errorsList = ModelState.SelectMany(e => e.Value.Errors).Select(e => e.ErrorMessage).ToList();
+                    string errors = string.Join("\n", errorsList);
+                    TempData["ErrorMessage"] = errors;
+                    return RedirectToAction("AddComunity", "Admin");
+                }
+
+                var created = _comunitiesService.AddComunity(addComunityRequest);
+                TempData["SuccessMessage"] = "Community added successfully!";
+                return RedirectToAction("DisplayComunities", "Admin");
+            }
+            catch (DuplicateNameException dne)
+            {
+                TempData["DuplicateErrorMessage"] = dne.Message;
+            }
+            catch (Exception ex)
+            {
+                TempData["InvalidErrorMessage"] = ex.Message;
+            }
+
+            return RedirectToAction("AddComunity", "Admin");
         }
 
 
@@ -287,7 +352,15 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/update/{ComId:guid}")]
         public IActionResult UpdateComunity(Guid ComId)
         {
-            return View();
+            try
+            {
+                ComunityResponse comResponse = _comunitiesService.GetComunityByComId(ComId);
+                return View(comResponse);
+            }
+            catch (Exception)
+            {
+                return LocalRedirect("/not-found");
+            }
         }
 
 
@@ -295,14 +368,52 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/update/{ComId:guid}")]
         public IActionResult UpdateSpecificComunity([Bind][FromForm] UpdateComunityRequest updateComunityRequest, [FromRoute] Guid ComId)
         {
-            return View();
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errorsList = ModelState.SelectMany(e => e.Value.Errors).Select(e => e.ErrorMessage).ToList();
+                    SafeSetTempData("ErrorMessage", string.Join("\n", errorsList));
+                    return RedirectToAction("UpdateComunity", new { ComId });
+                }
+
+                // ensure Id and TeacherId are set
+                updateComunityRequest.Id = ComId;
+                if (updateComunityRequest.TeacherId == Guid.Empty)
+                {
+                    var existing = _comunitiesService.GetComunityByComId(ComId);
+                    updateComunityRequest.TeacherId = existing.TeacherId;
+                }
+
+                var updated = _comunitiesService.UpdateComunity(updateComunityRequest);
+                SafeSetTempData("SuccessMessage", "Community updated successfully!");
+                return RedirectToAction("DisplaySpecificComunity", new { ComId });
+            }
+            catch (DuplicateNameException dne)
+            {
+                SafeSetTempData("DuplicateErrorMessage", dne.Message);
+            }
+            catch (Exception ex)
+            {
+                SafeSetTempData("InvalidErrorMessage", ex.Message);
+            }
+
+            return RedirectToAction("UpdateComunity", new { ComId });
         }
 
         [HttpGet]
         [Route("admin/comunities/delete/{ComId:guid}")]
         public IActionResult DeleteSpecificComunity([FromRoute] Guid ComId)
         {
-            return View();
+            try
+            {
+                ComunityResponse comResponse = _comunitiesService.GetComunityByComId(ComId);
+                return View(comResponse);
+            }
+            catch (Exception)
+            {
+                return LocalRedirect("/not-found");
+            }
         }
 
 
@@ -310,7 +421,25 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/delete/{ComId:guid}")]
         public IActionResult DeleteSpecificComunityConfirm([FromRoute] Guid ComId)
         {
-            return View();
+            try
+            {
+                bool deleted = _comunitiesService.DeleteComunityByComId(ComId);
+                if (deleted)
+                {
+                    SafeSetTempData("SuccessMessage", "Community deleted successfully.");
+                    return RedirectToAction("DisplayComunities");
+                }
+                else
+                {
+                    SafeSetTempData("InvalidErrorMessage", "Community could not be deleted.");
+                    return RedirectToAction("DisplaySpecificComunity", new { ComId });
+                }
+            }
+            catch (Exception ex)
+            {
+                SafeSetTempData("InvalidErrorMessage", ex.Message);
+                return RedirectToAction("DisplaySpecificComunity", new { ComId });
+            }
         }
 
     }
