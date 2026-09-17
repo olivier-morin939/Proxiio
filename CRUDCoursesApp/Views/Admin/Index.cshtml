@@ -22,7 +22,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
         <!-- Users Cards -->
-        <a href="/admin/users/view"
+        <a asp-controller="Admin" asp-action="DisplayUsers"
            class="group bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-200/80 p-6 transition-all duration-200 flex items-center justify-between hover:-translate-y-0.5">
             <div class="flex items-center space-x-4">
                 <div class="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200">
@@ -41,7 +41,7 @@
         </a>
 
         <!-- Communities Cards -->
-        <a href="/admin/comunities/view"
+        <a asp-controller="Admin" asp-action="DisplayComunities"
            class="group bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-200/80 p-6 transition-all duration-200 flex items-center justify-between hover:-translate-y-0.5">
             <div class="flex items-center space-x-4">
                 <div class="w-14 h-14 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-200">

@@ -4,19 +4,19 @@
         <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
             @if (ViewBag.CurrentSortBy == nameof(UserResponse.Name) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Name))&sortOption=DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.Name))" asp-route-sortOption="DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
                     User Name <i class="fa-solid fa-chevron-up text-xs"></i>
                 </a>
             }
             else if (ViewBag.CurrentSortBy == nameof(UserResponse.Name) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Name))&sortOption=ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.Name))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
                     User Name <i class="fa-solid fa-chevron-down text-xs"></i>
                 </a>
             }
             else
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Name))&sortOption=ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.Name))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
                     User Name
                 </a>
             }
@@ -26,19 +26,19 @@
         <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
             @if (ViewBag.CurrentSortBy == nameof(UserResponse.Email) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Email))&sortOption=DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.Email))" asp-route-sortOption="DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
                     User Email <i class="fa-solid fa-chevron-up text-xs"></i>
                 </a>
             }
             else if (ViewBag.CurrentSortBy == nameof(UserResponse.Email) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Email))&sortOption=ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.Email))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
                     User Email <i class="fa-solid fa-chevron-down text-xs"></i>
                 </a>
             }
             else
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Email))&sortOption=ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.Email))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
                     User Email
                 </a>
             }
@@ -48,19 +48,19 @@
         <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
             @if (ViewBag.CurrentSortBy == nameof(UserResponse.Role) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Role))&sortOption=DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.Role))" asp-route-sortOption="DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
                     Role <i class="fa-solid fa-chevron-up text-xs"></i>
                 </a>
             }
             else if (ViewBag.CurrentSortBy == nameof(UserResponse.Role) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Role))&sortOption=ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.Role))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
                     Role <i class="fa-solid fa-chevron-down text-xs"></i>
                 </a>
             }
             else
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.Role))&sortOption=ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.Role))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
                     Role
                 </a>
             }
@@ -70,19 +70,19 @@
         <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
             @if (ViewBag.CurrentSortBy == nameof(UserResponse.UserState) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.UserState))&sortOption=DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.UserState))" asp-route-sortOption="DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
                     User State <i class="fa-solid fa-chevron-up text-xs"></i>
                 </a>
             }
             else if (ViewBag.CurrentSortBy == nameof(UserResponse.UserState) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.UserState))&sortOption=ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.UserState))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
                     UserState <i class="fa-solid fa-chevron-down text-xs"></i>
                 </a>
             }
             else
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.UserState))&sortOption=ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.UserState))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
                     UserState
                 </a>
             }
@@ -92,19 +92,19 @@
         <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
             @if (ViewBag.CurrentSortBy == nameof(UserResponse.DateOfBirth) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.DateOfBirth))&sortOption=DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.DateOfBirth))" asp-route-sortOption="DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
                     Date of Birth <i class="fa-solid fa-chevron-up text-xs"></i>
                 </a>
             }
             else if (ViewBag.CurrentSortBy == nameof(UserResponse.DateOfBirth) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.DateOfBirth))&sortOption=ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.DateOfBirth))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
                     Date of Birth <i class="fa-solid fa-chevron-down text-xs"></i>
                 </a>
             }
             else
             {
-                <a href="/admin/users/view?searchBy=@(ViewBag.CurrentSearchBy)&searchString=@(ViewBag.CurrentSearchString)&sortBy=@(nameof(UserResponse.DateOfBirth))&sortOption=ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                <a asp-controller="Admin" asp-action="DisplayUsers" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(UserResponse.DateOfBirth))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
                     Date of Birth
                 </a>
             }

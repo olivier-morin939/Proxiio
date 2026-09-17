@@ -1,6 +1,7 @@
 ﻿using Entities;
 using Entities.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using ServiceContracts;
 using ServiceContracts.DTO.Comunities;
 using ServiceContracts.DTO.Users;
@@ -104,9 +105,9 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/users/add")]
         public IActionResult AddUser()
         {
+
             return View();
         }
-
 
 
         [HttpPost]
@@ -257,7 +258,7 @@ namespace CRUDCoursesApp.Controllers
             ViewBag.CurrentSortBy = sortBy;
             ViewBag.CurrentSortOrder = sortOption.ToString();
 
-            return View(allFilteredResponses);
+            return View(sortedComunityResponses);
         }
 
         [HttpGet]

@@ -3,15 +3,20 @@
     ViewData["Title"] = "Admin Dashboard - Proxiio";
 }
 
-<div class="max-w-7xl mx-auto p-6 space-y-6">
+@section HeadContent
+{
+    <link rel="stylesheet" href="~/Styles/Tabs.css" />
+}
+
+<div class="app-tabs-container">
     <!-- Header Page -->
-    <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+    <div class="app-tabs-header">
         <div>
-            <h1 class="text-2xl font-bold text-slate-800">Users</h1>
-            <p class="text-sm text-slate-500 mt-1">Manage and filter your system users.</p>
+            <h1 class="app-tabs-title">Users</h1>
+            <p class="app-tabs-subtitle">Manage and filter your system users.</p>
         </div>
         <!-- Bouton Ajouter un Utilisateur -->
-        <a href="/admin/users/add" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg shadow-sm transition-colors duration-150 inline-flex items-center gap-2">
+        <a asp-controller="Admin" asp-action="AddUser" class="app-tab-btn app-tab-btn-primary">
             <i class="fa-solid fa-plus text-xs"></i>
             Add User
         </a>
@@ -23,15 +28,15 @@
     }
 
     <!-- Filter & Search Bar -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-        <form action="/admin/users/view" method="get" class="flex flex-col sm:flex-row items-center gap-3">
+    <div class="app-tabs-filter-card">
+        <form asp-controller="Admin" asp-action="DisplayUsers" method="get" class="app-tabs-filter-form">
 
             <!-- Select Field -->
-            <div class="w-full sm:w-48">
-                <select name="searchBy" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none">
+            <div class="app-tabs-select-wrapper">
+                <select name="searchBy" class="app-tabs-select">
                     @foreach (var field in ViewBag.SearchFields)
                     {
-                        @if (ViewBag.CurrentSearchBy == field.Key)
+                        if (ViewBag.CurrentSearchBy == field.Key)
                         {
                             <option value="@field.Key" selected="selected">@field.Value</option>
                         }
@@ -44,21 +49,21 @@
             </div>
 
             <!-- Search Input -->
-            <div class="relative w-full sm:flex-1">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div class="app-tabs-search-wrapper">
+                <div class="app-tabs-search-icon">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </div>
-                <input type="search" name="searchString" placeholder="Search users..." value="@ViewBag.CurrentSearchString" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none" />
+                <input type="search" name="searchString" placeholder="Search users..." value="@ViewBag.CurrentSearchString" class="app-tabs-search-input" />
             </div>
 
             <!-- Action Buttons -->
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-                <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg shadow-sm transition-colors duration-150 inline-flex items-center justify-center gap-2">
+            <div class="app-tabs-actions-wrapper">
+                <button type="submit" class="app-tab-btn app-tab-btn-primary" style="width: 100%;">
                     <i class="fa-solid fa-filter text-xs"></i>
                     Search
                 </button>
 
-                <a href="/admin/users/view" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium text-sm rounded-lg transition-colors duration-150 inline-flex items-center justify-center" title="Reset Filters">
+                <a asp-controller="Admin" asp-action="DisplayUsers" class="app-tab-btn app-tab-btn-icon" title="Reset Filters">
                     <i class="fa-solid fa-rotate-right"></i>
                 </a>
             </div>
@@ -68,100 +73,96 @@
     <!-- Data Table Container / Empty State -->
     @if (Model != null && Model.Any())
     {
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+        <div class="app-tabs-table-card">
+            <div class="app-tabs-table-responsive">
+                <table class="app-tabs-table">
 
                     @{
                         await Html.RenderPartialAsync("_UserHeaderTab", viewData: ViewData);
                     }
 
-                    <tbody class="divide-y divide-slate-200 text-sm text-slate-700">
+                    <tbody class="app-tabs-tbody">
                         @foreach (UserResponse userResponse in Model)
                         {
-                            <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-100 last:border-0">
-                                <!-- Utilisateur (Nom + sous-texte optionnel) -->
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex flex-col">
-                                            <span class="font-semibold text-slate-900 text-sm">@userResponse.Name</span>
-                                        </div>
-                                    </div>
+                            <tr class="app-tabs-tr">
+                                <!-- Utilisateur (Nom) -->
+                                <td class="app-tabs-td">
+                                    <span class="app-tabs-user-name">@userResponse.Name</span>
                                 </td>
 
                                 <!-- Email -->
-                                <td class="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">
+                                <td class="app-tabs-td app-tabs-text-muted">
                                     @userResponse.Email
                                 </td>
 
                                 <!-- Rôle -->
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-600/10">
+                                <td class="app-tabs-td">
+                                    <span class="app-tab-badge app-tab-badge-role">
                                         @userResponse.Role.ToString()
                                     </span>
                                 </td>
 
                                 <!-- État -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="app-tabs-td">
                                     @if (userResponse.UserState.ToString().ToLower() == "active")
                                     {
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        <span class="app-tab-badge app-tab-badge-active">
+                                            <span class="app-tab-badge-dot app-tab-dot-emerald"></span>
                                             @userResponse.UserState.ToString()
                                         </span>
                                     }
                                     else
                                     {
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                        <span class="app-tab-badge app-tab-badge-inactive">
+                                            <span class="app-tab-badge-dot app-tab-dot-amber"></span>
                                             @userResponse.UserState.ToString()
                                         </span>
                                     }
                                 </td>
 
                                 <!-- Date de naissance -->
-                                <td class="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">
+                                <td class="app-tabs-td app-tabs-text-muted">
                                     @if (userResponse.DateOfBirth.HasValue)
                                     {
                                         <span>@userResponse.DateOfBirth.Value.ToString("dd MMM yyyy")</span>
                                     }
                                     else
                                     {
-                                        <span class="text-slate-400 italic">N/A</span>
+                                        <span class="app-tabs-text-empty">N/A</span>
                                     }
                                 </td>
 
                                 <!-- Newsletter -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="app-tabs-td">
                                     @if (userResponse.ReceiveNewsLetter.HasValue && userResponse.ReceiveNewsLetter.Value)
                                     {
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        <span class="app-tab-badge app-tab-badge-newsletter">
+                                            <span class="app-tab-badge-dot app-tab-dot-emerald"></span>
                                             Subscribed
                                         </span>
                                     }
                                     else
                                     {
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                        <span class="app-tab-badge app-tab-badge-no-newsletter">
+                                            <span class="app-tab-badge-dot app-tab-dot-slate"></span>
                                             Not Subscribed
                                         </span>
                                     }
                                 </td>
 
                                 <!-- Actions -->
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="flex items-center justify-end gap-2">
-                                        <a href="/admin/users/view/@userResponse.UserId"
-                                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm">
+                                <td class="app-tabs-td" style="text-align: right;">
+                                    <div class="app-tab-actions-cell">
+                                        <a asp-controller="Admin" asp-action="DisplaySpecificUser" asp-route-userId="@userResponse.UserId"
+                                           class="app-tab-action-btn app-tab-action-details">
                                             Details
                                         </a>
-                                        <a href="/admin/users/update/@userResponse.UserId"
-                                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors">
+                                        <a asp-controller="Admin" asp-action="UpdateSpecificUser" asp-route-userId="@userResponse.UserId"
+                                           class="app-tab-action-btn app-tab-action-update">
                                             Update
                                         </a>
-                                        <a href="/admin/users/delete/@userResponse.UserId"
-                                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors">
+                                        <a asp-controller="Admin" asp-action="DeleteSpecificUser" asp-route-userId="@userResponse.UserId"
+                                           class="app-tab-action-btn app-tab-action-delete">
                                             Delete
                                         </a>
                                     </div>
@@ -176,17 +177,17 @@
     else
     {
         <!-- Empty State Component -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-            <div class="mx-auto w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
+        <div class="app-tabs-empty-card">
+            <div class="app-tabs-empty-icon-wrapper">
                 <i class="fa-solid fa-users-slash text-xl"></i>
             </div>
-            <h3 class="text-base font-semibold text-slate-800 mb-1">No users found</h3>
-            <p class="text-sm text-slate-500 max-w-sm mx-auto mb-6">
+            <h3 class="app-tabs-empty-title">No users found</h3>
+            <p class="app-tabs-empty-desc">
                 We couldn't find any users matching your criteria. Try adjusting your search term or filter.
             </p>
             @if (!string.IsNullOrEmpty(ViewBag.CurrentSearchString))
             {
-                <a href="/admin/users/view" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors">
+                <a href="/admin/users/view" class="app-tab-btn app-tab-btn-icon" style="display: inline-flex;">
                     <i class="fa-solid fa-xmark text-xs"></i>
                     Clear Search
                 </a>

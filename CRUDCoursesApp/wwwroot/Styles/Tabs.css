@@ -1,0 +1,452 @@
+﻿/* ==========================================================================
+   Variables CSS (Système de Design)
+   ========================================================================== */
+:root {
+    --app-slate-50: #f8fafc;
+    --app-slate-100: #f1f5f9;
+    --app-slate-200: #e2e8f0;
+    --app-slate-300: #cbd5e1;
+    --app-slate-400: #94a3b8;
+    --app-slate-500: #64748b;
+    --app-slate-600: #475569;
+    --app-slate-700: #334155;
+    --app-slate-800: #1e293b;
+    --app-slate-900: #0f172a;
+    --app-indigo-50: #eef2ff;
+    --app-indigo-100: #e0e7ff;
+    --app-indigo-600: #4f46e5;
+    --app-indigo-700: #4338ca;
+    --app-emerald-50: #ecfdf5;
+    --app-emerald-200: #a7f3d0;
+    --app-emerald-500: #10b981;
+    --app-emerald-600: #059669;
+    --app-emerald-700: #047857;
+    --app-amber-50: #fffbeb;
+    --app-amber-500: #f59e0b;
+    --app-amber-600: #d97706;
+    --app-amber-700: #b45309;
+    --app-blue-50: #eff6ff;
+    --app-blue-100: #dbeafe;
+    --app-blue-200: #bfdbfe;
+    --app-blue-700: #1d4ed8;
+    --app-rose-50: #fff1f2;
+    --app-rose-100: #ffe4e6;
+    --app-rose-200: #fecdd3;
+    --app-rose-700: #be123c;
+    --app-radius-md: 0.375rem;
+    --app-radius-lg: 0.5rem;
+    --app-radius-xl: 0.75rem;
+    --app-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --app-transition: all 0.15s ease-in-out;
+}
+
+/* ==========================================================================
+   Conteneur Principal
+   ========================================================================== */
+.app-tabs-container {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ==========================================================================
+   En-tête de la page
+   ========================================================================== */
+.app-tabs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--app-slate-200);
+}
+
+.app-tabs-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--app-slate-800);
+    margin: 0;
+}
+
+.app-tabs-subtitle {
+    font-size: 0.875rem;
+    color: var(--app-slate-500);
+    margin-top: 0.25rem;
+    margin-bottom: 0;
+}
+
+/* ==========================================================================
+   Barre de Recherche et Filtres
+   ========================================================================== */
+.app-tabs-filter-card {
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: var(--app-radius-xl);
+    border: 1px solid var(--app-slate-200);
+    box-shadow: var(--app-shadow-sm);
+}
+
+.app-tabs-filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .app-tabs-filter-form {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.app-tabs-select-wrapper {
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .app-tabs-select-wrapper {
+        width: 12rem;
+    }
+}
+
+.app-tabs-select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--app-slate-50);
+    border: 1px solid var(--app-slate-300);
+    border-radius: var(--app-radius-lg);
+    font-size: 0.875rem;
+    color: var(--app-slate-700);
+    outline: none;
+    transition: var(--app-transition);
+}
+
+    .app-tabs-select:focus {
+        background-color: #ffffff;
+        border-color: var(--app-indigo-600);
+        box-shadow: 0 0 0 2px var(--app-indigo-100);
+    }
+
+.app-tabs-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .app-tabs-search-wrapper {
+        flex: 1 1 0%;
+    }
+}
+
+.app-tabs-search-icon {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    padding-left: 0.75rem;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    color: var(--app-slate-400);
+}
+
+.app-tabs-search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    background-color: var(--app-slate-50);
+    border: 1px solid var(--app-slate-300);
+    border-radius: var(--app-radius-lg);
+    font-size: 0.875rem;
+    color: var(--app-slate-800);
+    outline: none;
+    transition: var(--app-transition);
+}
+
+    .app-tabs-search-input::placeholder {
+        color: var(--app-slate-400);
+    }
+
+    .app-tabs-search-input:focus {
+        background-color: #ffffff;
+        border-color: var(--app-indigo-600);
+        box-shadow: 0 0 0 2px var(--app-indigo-100);
+    }
+
+.app-tabs-actions-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .app-tabs-actions-wrapper {
+        width: auto;
+    }
+}
+
+/* ==========================================================================
+   Boutons
+   ========================================================================== */
+.app-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--app-radius-lg);
+    transition: var(--app-transition);
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--app-shadow-sm);
+}
+
+.app-tab-btn-primary {
+    background-color: var(--app-indigo-600);
+    color: #ffffff;
+}
+
+    .app-tab-btn-primary:hover {
+        background-color: var(--app-indigo-700);
+        color: #ffffff;
+    }
+
+.app-tab-btn-icon {
+    padding: 0.5rem 0.75rem;
+    background-color: var(--app-slate-100);
+    color: var(--app-slate-600);
+    box-shadow: none;
+}
+
+    .app-tab-btn-icon:hover {
+        background-color: var(--app-slate-200);
+        color: var(--app-slate-800);
+    }
+
+/* ==========================================================================
+   Tableau de données
+   ========================================================================== */
+.app-tabs-table-card {
+    background-color: #ffffff;
+    border-radius: var(--app-radius-xl);
+    border: 1px solid var(--app-slate-200);
+    box-shadow: var(--app-shadow-sm);
+    overflow: hidden;
+}
+
+.app-tabs-table-responsive {
+    overflow-x: auto;
+}
+
+.app-tabs-table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+.app-tabs-tbody {
+    font-size: 0.875rem;
+    color: var(--app-slate-700);
+}
+
+.app-tabs-tr {
+    border-bottom: 1px solid var(--app-slate-100);
+    transition: background-color 0.15s ease;
+}
+
+    .app-tabs-tr:last-child {
+        border-bottom: none;
+    }
+
+    .app-tabs-tr:hover {
+        background-color: rgba(248, 250, 252, 0.8);
+    }
+
+.app-tabs-td {
+    padding: 1rem 1.5rem;
+    white-space: nowrap;
+}
+
+.app-tabs-user-name {
+    font-weight: 600;
+    color: var(--app-slate-900);
+    font-size: 0.875rem;
+}
+
+.app-tabs-text-muted {
+    color: var(--app-slate-600);
+}
+
+.app-tabs-text-empty {
+    color: var(--app-slate-400);
+    font-style: italic;
+}
+
+/* ==========================================================================
+   Badges
+   ========================================================================== */
+.app-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.app-tab-badge-role {
+    border-radius: var(--app-radius-md);
+    background-color: var(--app-indigo-50);
+    color: var(--app-indigo-700);
+    box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.1);
+}
+
+.app-tab-badge-active {
+    background-color: var(--app-emerald-50);
+    color: var(--app-emerald-700);
+    box-shadow: inset 0 0 0 1px rgba(5, 150, 105, 0.2);
+}
+
+.app-tab-badge-inactive {
+    background-color: var(--app-amber-50);
+    color: var(--app-amber-700);
+    box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.2);
+}
+
+.app-tab-badge-newsletter {
+    background-color: var(--app-emerald-50);
+    color: var(--app-emerald-700);
+    border: 1px solid var(--app-emerald-200);
+}
+
+.app-tab-badge-no-newsletter {
+    background-color: var(--app-slate-100);
+    color: var(--app-slate-500);
+}
+
+.app-tab-badge-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 9999px;
+}
+
+.app-tab-dot-emerald {
+    background-color: var(--app-emerald-500);
+}
+
+.app-tab-dot-amber {
+    background-color: var(--app-amber-500);
+}
+
+.app-tab-dot-slate {
+    background-color: var(--app-slate-400);
+}
+
+/* ==========================================================================
+   Boutons d'action dans le tableau
+   ========================================================================== */
+.app-tab-actions-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.app-tab-action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: var(--app-radius-lg);
+    transition: var(--app-transition);
+    text-decoration: none;
+}
+
+.app-tab-action-details {
+    color: var(--app-slate-700);
+    background-color: #ffffff;
+    border: 1px solid var(--app-slate-300);
+    box-shadow: var(--app-shadow-sm);
+}
+
+    .app-tab-action-details:hover {
+        background-color: var(--app-slate-50);
+        color: var(--app-slate-900);
+    }
+
+.app-tab-action-update {
+    color: var(--app-blue-700);
+    background-color: var(--app-blue-50);
+    border: 1px solid var(--app-blue-200);
+}
+
+    .app-tab-action-update:hover {
+        background-color: var(--app-blue-100);
+    }
+
+.app-tab-action-delete {
+    color: var(--app-rose-700);
+    background-color: var(--app-rose-50);
+    border: 1px solid var(--app-rose-200);
+}
+
+    .app-tab-action-delete:hover {
+        background-color: var(--app-rose-100);
+    }
+
+/* ==========================================================================
+   État vide (Empty State)
+   ========================================================================== */
+.app-tabs-empty-card {
+    background-color: #ffffff;
+    border-radius: var(--app-radius-xl);
+    border: 1px solid var(--app-slate-200);
+    padding: 3rem 1.5rem;
+    text-align: center;
+    box-shadow: var(--app-shadow-sm);
+}
+
+.app-tabs-empty-icon-wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    background-color: var(--app-slate-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--app-slate-400);
+    margin-bottom: 1rem;
+}
+
+.app-tabs-empty-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--app-slate-800);
+    margin-bottom: 0.25rem;
+}
+
+.app-tabs-empty-desc {
+    font-size: 0.875rem;
+    color: var(--app-slate-500);
+    max-width: 24rem;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1.5rem;
+}
+
+/* Badge générique pour les compteurs (Users & Posts) */
+.app-tab-badge-count {
+    background-color: var(--app-emerald-50);
+    color: var(--app-emerald-700);
+    box-shadow: inset 0 0 0 1px rgba(5, 150, 105, 0.2);
+}

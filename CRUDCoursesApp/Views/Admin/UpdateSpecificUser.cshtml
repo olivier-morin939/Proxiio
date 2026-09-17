@@ -2,138 +2,151 @@
 @{
     ViewData["Title"] = "Admin Dashboard - Proxiio";
 }
-<div class="max-w-2xl mx-auto p-6 space-y-6">
+
+@section HeadContent
+{
+    <link rel="stylesheet" href="~/Styles/Forms.css" />
+}
+
+<div class="app-form-container">
     <!-- Header -->
-    <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+    <div class="app-form-header">
         <div>
-            <h1 class="text-2xl font-bold text-slate-800">Edit User</h1>
-            <p class="text-sm text-slate-500 mt-1">Update the account details for this user.</p>
+            <h1 class="app-form-title">Edit User</h1>
+            <p class="app-form-subtitle">Update the account details for this user.</p>
         </div>
-        <a href="/admin/users/view" class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+        <a asp-controller="Admin" asp-action="DisplayUsers" class="app-btn app-btn-secondary">
             <i class="fa-solid fa-arrow-left text-xs"></i>
             Back to List
         </a>
     </div>
 
     <!-- Flash Messages -->
-    @{
-        await Html.RenderPartialAsync("_FlashMessagesComponent");
-    }
-
+    <div class="app-form-flash-messages">
+        @{
+            await Html.RenderPartialAsync("_FlashMessagesComponent");
+        }
+    </div>
 
     <!-- Edit Form Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <form action="/admin/users/update/@Model.UserId?update=confirm" method="post" class="p-6 space-y-6">
+    <div class="app-form-card">
+        <form asp-controller="Admin" asp-action="UpdateUser" asp-route-userId="@Model.UserId" asp-route-update="confirm" method="post" class="app-form-body">
 
             <!-- Grid Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="app-form-grid">
 
                 <!-- Full Name -->
-                <div class="space-y-1.5">
-                    <label for="Name" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Full Name</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div class="app-form-group">
+                    <label asp-for="Name" class="app-form-label">Full Name</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon">
                             <i class="fa-solid fa-user text-sm"></i>
                         </div>
-                        <input type="text" id="Name" name="Name" value="@Model.Name" placeholder="John Doe" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none" />
+                        <input asp-for="Name" placeholder="John Doe" class="app-form-input" />
+                        <span asp-validation-for="Name"></span>
                     </div>
                 </div>
 
                 <!-- Email Address -->
-                <div class="space-y-1.5">
-                    <label for="Email" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Email Address</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div class="app-form-group">
+                    <label asp-for="Email" class="app-form-label">Email Address</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon">
                             <i class="fa-solid fa-envelope text-sm"></i>
                         </div>
-                        <input type="email" id="Email" name="Email" value="@Model.Email" placeholder="user@example.com" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none" />
+                        <input asp-for="Email" placeholder="user@example.com" class="app-form-input" />
+                        <span asp-validation-for="Email"></span>
                     </div>
                 </div>
 
                 <!-- Password -->
-                <div class="space-y-1.5">
-                    <label for="Password" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Password</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div class="app-form-group">
+                    <label asp-for="Password" class="app-form-label">Password</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon">
                             <i class="fa-solid fa-lock text-sm"></i>
                         </div>
-                        <input type="password" id="Password" name="Password" value="@Model.Password" placeholder="••••••••" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none" />
+                        <input asp-for="Password" placeholder="••••••••" class="app-form-input" />
+                        <span asp-validation-for="Password"></span>
                     </div>
                 </div>
 
                 <!-- Confirm Password -->
-                <div class="space-y-1.5">
-                    <label for="ConfirmPassword" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Confirm Password</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div class="app-form-group">
+                    <label asp-for="ConfirmPassword" class="app-form-label">Confirm Password</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon">
                             <i class="fa-solid fa-shield-halved text-sm"></i>
                         </div>
-                        <input type="password" id="ConfirmPassword" name="ConfirmPassword" value="@Model.ConfirmPassword" placeholder="••••••••" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none" />
+                        <input asp-for="ConfirmPassword" placeholder="••••••••" class="app-form-input" />
+                        <span asp-validation-for="ConfirmPassword"></span>
                     </div>
                 </div>
 
                 <!-- Role Selection -->
-                <div class="space-y-1.5">
-                    <label for="Role" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">User Role</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div class="app-form-group">
+                    <label asp-for="Role" class="app-form-label">User Role</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon">
                             <i class="fa-solid fa-user-shield text-sm"></i>
                         </div>
-                        <select id="Role" name="Role" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none">
-                            <option value="@Role.User" selected="@(Model.Role == Role.User ? "selected" : null)">@Role.User.ToString()</option>
-                            <option value="@Role.Moderator" selected="@(Model.Role == Role.Moderator ? "selected" : null)">@Role.Moderator.ToString()</option>
-                            <option value="@Role.Administrator" selected="@(Model.Role == Role.Administrator ? "selected" : null)">@Role.Administrator.ToString()</option>
+                        <select asp-for="Role" class="app-form-select">
+                            <option value="@Role.User">@Role.User.ToString()</option>
+                            <option value="@Role.Moderator">@Role.Moderator.ToString()</option>
+                            <option value="@Role.Administrator">@Role.Administrator.ToString()</option>
                         </select>
+                        <span asp-validation-for="Role"></span>
                     </div>
                 </div>
 
-
                 <!-- UserState Selection -->
-                <div class="space-y-1.5">
-                    <label for="UserState" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">User State</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div class="app-form-group">
+                    <label asp-for="UserState" class="app-form-label">User State</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon">
                             <i class="fa-solid fa-user-shield text-sm"></i>
                         </div>
-                        <select id="UserState" name="UserState" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none">
-                            <option value="@UserState.Active" selected="@(Model.UserState == UserState.Active ? "selected" : null)">@UserState.Active.ToString()</option>
-                            <option value="@UserState.Inactive" selected="@(Model.UserState == UserState.Inactive ? "selected" : null)">@UserState.Inactive.ToString()</option>
-                            <option value="@UserState.Banned" selected="@(Model.UserState == UserState.Banned ? "selected" : null)">@UserState.Banned.ToString()</option>
+                        <select asp-for="UserState" class="app-form-select">
+                            <option value="@UserState.Active">@UserState.Active.ToString()</option>
+                            <option value="@UserState.Inactive">@UserState.Inactive.ToString()</option>
+                            <option value="@UserState.Banned">@UserState.Banned.ToString()</option>
                         </select>
+                        <span asp-validation-for="UserState"></span>
                     </div>
                 </div>
 
                 <!-- Date of Birth -->
-                <div class="space-y-1.5">
-                    <label for="DateOfBirth" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Date of Birth</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div class="app-form-group">
+                    <label for="DateOfBirth" class="app-form-label">Date of Birth</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon">
                             <i class="fa-solid fa-calendar text-sm"></i>
                         </div>
-                        <input type="date" id="DateOfBirth" name="DateOfBirth" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none" />
+                        <input type="date" id="DateOfBirth" name="DateOfBirth" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" class="app-form-input" />
+                        <span asp-validation-for="DateOfBirth"></span>
                     </div>
                 </div>
 
             </div>
 
             <!-- Newsletter Checkbox Card -->
-            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                <label class="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" name="ReceivesNewsLetter" value="true" checked="@(Model.ReceiveNewsLetter == true ? "checked" : null)" class="w-4 h-4 text-indigo-600 bg-white border-slate-300 rounded focus:ring-indigo-500 focus:ring-2" />
-                    <span class="flex flex-col">
-                        <span class="text-sm font-medium text-slate-800">Subscribe to Newsletter</span>
-                        <span class="text-xs text-slate-500">Receive marketing updates and periodic user bulletins.</span>
+            <div class="app-form-option-card">
+                <label class="app-form-checkbox-label">
+                    <input type="checkbox" name="ReceivesNewsLetter" value="true" checked="@(Model.ReceiveNewsLetter == true ? "checked" : null)" class="app-form-checkbox" />
+                    <span class="app-form-option-text">
+                        <span class="app-form-option-title">Subscribe to Newsletter</span>
+                        <span class="app-form-option-desc">Receive marketing updates and periodic user bulletins.</span>
                     </span>
                 </label>
             </div>
 
             <!-- Action Buttons -->
-            <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-                <button type="reset" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-lg transition-colors duration-150 inline-flex items-center gap-2">
+            <div class="app-form-actions">
+                <button type="reset" class="app-btn app-btn-secondary">
                     <i class="fa-solid fa-rotate-left text-xs"></i>
                     Reset
                 </button>
-                <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg shadow-sm transition-colors duration-150 inline-flex items-center gap-2">
+                <button type="submit" class="app-btn app-btn-primary">
                     <i class="fa-solid fa-check text-xs"></i>
                     Update User
                 </button>
