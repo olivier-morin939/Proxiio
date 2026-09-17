@@ -205,7 +205,6 @@ namespace CRUDCoursesAppTest
             Assert.Equal(1, found.Count);
             Assert.True(successes >= 1);
         }
-    
         #endregion
 
         #region AddUser

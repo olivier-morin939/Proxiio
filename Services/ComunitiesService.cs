@@ -14,7 +14,6 @@ namespace Services
 {
     public class ComunitiesService : IComunitiesService
     {
-        private readonly object _lock = new object();
         private readonly List<Comunity> _comunities = new List<Comunity>();
         private readonly List<ComunityMember> _members = new();
 
@@ -29,17 +28,14 @@ namespace Services
 
             Comunity newCom = addComunityRequest.ToComunity();
 
-            // ensure unique name (case-insensitive) and add atomically
-            lock (_lock)
+            // ensure unique name (case-insensitive)
+            if (!string.IsNullOrEmpty(newCom.Name))
             {
-                if (!string.IsNullOrEmpty(newCom.Name))
-                {
-                    bool exists = _comunities.Any(c => !string.IsNullOrEmpty(c.Name) && c.Name.Equals(newCom.Name, StringComparison.OrdinalIgnoreCase));
-                    if (exists) throw new DuplicateNameException("A comunity with the same name already exists");
-                }
-
-                _comunities.Add(newCom);
+                bool exists = _comunities.Any(c => !string.IsNullOrEmpty(c.Name) && c.Name.Equals(newCom.Name, StringComparison.OrdinalIgnoreCase));
+                if (exists) throw new DuplicateNameException("A comunity with the same name already exists");
             }
+
+            _comunities.Add(newCom);
 
             return newCom.ToComunityResponse();
         }
@@ -148,26 +144,22 @@ namespace Services
 
             HelpersValidation.ModelValidation(updateComunityRequest);
 
-            // perform find, uniqueness check and update atomically
-            lock (_lock)
+            Comunity? com = _comunities.FirstOrDefault(c => c.Id == updateComunityRequest.Id);
+            if (com == null) 
+                throw new ArgumentNullException($"No comunity found with ID: {updateComunityRequest.Id}", nameof(updateComunityRequest.Id));
+
+            // ensure unique name on update (case-insensitive) excluding current comunity
+            if (!string.IsNullOrEmpty(updateComunityRequest.Name))
             {
-                Comunity? com = _comunities.FirstOrDefault(c => c.Id == updateComunityRequest.Id);
-                if (com == null)
-                    throw new ArgumentNullException($"No comunity found with ID: {updateComunityRequest.Id}", nameof(updateComunityRequest.Id));
-
-                // ensure unique name on update (case-insensitive) excluding current comunity
-                if (!string.IsNullOrEmpty(updateComunityRequest.Name))
-                {
-                    bool exists = _comunities.Any(c => c.Id != updateComunityRequest.Id && !string.IsNullOrEmpty(c.Name) && c.Name.Equals(updateComunityRequest.Name, StringComparison.OrdinalIgnoreCase));
-                    if (exists) throw new DuplicateNameException("A comunity with the same name already exists");
-                }
-
-                com.TeacherId = updateComunityRequest.TeacherId;
-                com.Name = updateComunityRequest.Name;
-                com.Description = updateComunityRequest.Description;
-
-                return com.ToComunityResponse();
+                bool exists = _comunities.Any(c => c.Id != updateComunityRequest.Id && !string.IsNullOrEmpty(c.Name) && c.Name.Equals(updateComunityRequest.Name, StringComparison.OrdinalIgnoreCase));
+                if (exists) throw new DuplicateNameException("A comunity with the same name already exists");
             }
+
+            com.TeacherId = updateComunityRequest.TeacherId;
+            com.Name = updateComunityRequest.Name;
+            com.Description = updateComunityRequest.Description;
+
+            return com.ToComunityResponse();
         }
 
         public bool DeleteComunityByComId(Guid ComId)

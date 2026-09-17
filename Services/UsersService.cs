@@ -16,7 +16,6 @@ namespace Services
     {
 
         private readonly List<User> _users = new List<User>();
-        private readonly object _lock = new object();
 
         public void SeedMockUsers()
         {
@@ -85,34 +84,31 @@ namespace Services
                 }
             }
 
-
-            // Checking if the user already exist and add atomically
-            lock (_lock)
+            // Checking if the user already exist
+            User? matchingUser = _users.Where(u => u.Email == addUserRequest.Email).FirstOrDefault();
+            if (matchingUser != null) 
             {
-                User? matchingUser = _users.Where(u => u.Email == addUserRequest.Email).FirstOrDefault();
-                if (matchingUser != null)
-                {
-                    throw new DuplicateNameException(nameof(addUserRequest.Email));
-                }
-
-                // Model validation for the properties
-                Helpers.HelpersValidation.ModelValidation(addUserRequest);
-
-                // Checking if Password and ConfirmPassword match
-                if (addUserRequest.Password != addUserRequest.ConfirmPassword)
-                {
-                    throw new ArgumentException("Passwords do not match.", nameof(addUserRequest.ConfirmPassword));
-                }
-
-                // Creating the new user as an User object
-                User newUser = addUserRequest.ToUser();
-
-                // Add the user to the list
-                _users.Add(newUser);
-
-                // Return the newly created user
-                return newUser.ToUserAddResponse();
+                throw new DuplicateNameException(nameof(addUserRequest.Email));
             }
+
+            // Model validation for the properties
+            Helpers.HelpersValidation.ModelValidation(addUserRequest);
+
+
+            // Checking if Password and ConfirmPassword match
+            if (addUserRequest.Password != addUserRequest.ConfirmPassword)
+            {
+                throw new ArgumentException("Passwords do not match.", nameof(addUserRequest.ConfirmPassword));
+            }
+
+            // Creating the new user as an User object
+            User newUser = addUserRequest.ToUser();
+
+            // Add the user to the list
+            _users.Add(newUser);
+
+            // Return the newly created user
+            return newUser.ToUserAddResponse();
 
 
         }
@@ -156,49 +152,47 @@ namespace Services
             }
 
 
-
-            // perform find, duplicate check and update atomically
-            lock (_lock)
+            // Check if the given object exist
+            int matchingUserIndex = _users.FindIndex(u => u.UserId == updateUserRequest.UserId);
+            User? matchingUser = _users[matchingUserIndex];
+            if (matchingUser == null)
             {
-                // Check if the given object exist
-                int matchingUserIndex = _users.FindIndex(u => u.UserId == updateUserRequest.UserId);
-                User? matchingUser = matchingUserIndex >= 0 ? _users[matchingUserIndex] : null;
-                if (matchingUser == null)
-                {
-                    throw new ArgumentNullException(nameof(updateUserRequest.UserId));
-                }
-
-                // Check if the given object email is already registered
-                User? duplicateUser = _users.Where(u => u.UserId != updateUserRequest.UserId && u.Email == updateUserRequest.Email).FirstOrDefault();
-                if (duplicateUser != null)
-                {
-                    throw new DuplicateNameException(nameof(duplicateUser.Email));
-                }
-
-                // Check if the password and confirm password match
-                if (updateUserRequest.Password != updateUserRequest.ConfirmPassword)
-                {
-                    throw new ArgumentException(nameof(updateUserRequest.ConfirmPassword));
-                }
-
-                // Validate the informations of the model
-                Helpers.HelpersValidation.ModelValidation(updateUserRequest);
-
-                // Updating the informations of the object
-
-                matchingUser.Name = updateUserRequest.Name;
-                matchingUser.Email = updateUserRequest.Email;
-                matchingUser.DateOfBirth = updateUserRequest.DateOfBirth;
-                matchingUser.ReceiveNewsLetter = updateUserRequest.ReceiveNewsLetter;
-                matchingUser.Password = updateUserRequest.Password;
-                matchingUser.Role = updateUserRequest.Role;
-                matchingUser.UserState = updateUserRequest.UserState;
-
-                _users[matchingUserIndex] = matchingUser;
-
-                // Return the updated object
-                return matchingUser.ToUserAddResponse();
+                throw new ArgumentNullException(nameof(updateUserRequest.UserId));
             }
+
+            // Check if the given object email is already registered
+            User? duplicateUser = _users.Where(u => u.UserId!= updateUserRequest.UserId && u.Email == updateUserRequest.Email).FirstOrDefault();
+            if (duplicateUser != null) 
+            { 
+                throw new DuplicateNameException(nameof(duplicateUser.Email));
+            }
+
+
+            // Check if the password and confirm password match
+            if(updateUserRequest.Password != updateUserRequest.ConfirmPassword)
+            {
+                throw new ArgumentException(nameof(updateUserRequest.ConfirmPassword));
+            }
+
+            // Validate the informations of the model
+            Helpers.HelpersValidation.ModelValidation(updateUserRequest);
+
+
+            // Updating the informations of the object
+
+            matchingUser.Name = updateUserRequest.Name;
+            matchingUser.Email = updateUserRequest.Email;
+            matchingUser.DateOfBirth = updateUserRequest.DateOfBirth;
+            matchingUser.ReceiveNewsLetter = updateUserRequest.ReceiveNewsLetter;
+            matchingUser.Password = updateUserRequest.Password;
+            matchingUser.Role = updateUserRequest.Role;
+            matchingUser.UserState = updateUserRequest.UserState;
+
+            _users[matchingUserIndex] = matchingUser;
+
+
+            // Return the updated object
+            return matchingUser.ToUserAddResponse();
 
 
         }
