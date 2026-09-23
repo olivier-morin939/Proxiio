@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Entities.Contexts
 {
+    /// <summary>
+    /// Le contexte qui represente les tables de notre base de donnee
+    /// </summary>
+    /// <param name="options"></param>
     public class UsersDbContext(DbContextOptions<UsersDbContext> options) : DbContext(options)
     {
         public DbSet<User> Users => Set<User>();

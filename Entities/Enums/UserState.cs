@@ -6,6 +6,8 @@ namespace Entities.Enums
 {
     public enum UserState
     {
-        Active, Inactive, Banned
+        Active,     // Un utilisateur actif
+        Inactive,   // Un utilisateur inactif
+        Banned      // Un utilisateur banni
     }
 }

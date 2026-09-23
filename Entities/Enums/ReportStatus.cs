@@ -6,6 +6,8 @@ namespace Entities.Enums
 {
     public enum ReportStatus
     {
-        Received, InTreatment, Terminated
+        Received,       // La signalisation a ete recu
+        InTreatment,    // La signalisation est en cours de traitement
+        Terminated      // La signalisation a ete traiter
     }
 }

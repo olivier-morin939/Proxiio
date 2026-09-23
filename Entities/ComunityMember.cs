@@ -4,6 +4,9 @@ using Entities.Enums;
 
 namespace Entities
 {
+    /// <summary>
+    ///  Represente la table ComunityMember
+    /// </summary>
     public class ComunityMember
     {
         public Guid ComunityId { get; set; }

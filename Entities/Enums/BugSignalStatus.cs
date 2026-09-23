@@ -6,6 +6,8 @@ namespace Entities.Enums
 {
     public enum BugSignalStatus
     {
-        Received, Correcting, Patched
+        Received,       // Le bug a ete recu
+        Correcting,     // Le bug est en cours de correction
+        Patched         // Le bug a ete patcher
     }
 }

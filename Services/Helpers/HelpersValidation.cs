@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Services.Helpers
 {
+    /// <summary>
+    ///  The class that helps validate our validation rules
+    /// </summary>
     public static class HelpersValidation
     {
         public static void ModelValidation(object? obj)

@@ -10,7 +10,7 @@ namespace ServiceContracts
     {
 
         /// <summary>
-        /// 
+        /// Add a report to the ReportsService
         /// </summary>
         /// <param name="addReportRequest"></param>
         /// <returns></returns>

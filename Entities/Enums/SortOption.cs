@@ -6,6 +6,7 @@ namespace Entities.Enums
 {
     public enum SortOption
     {
-        ASC,DESC
+        ASC,        // Permet de trier de maniere ascendante
+        DESC        // Permet de trie de maniere descendante
     }
 }

@@ -4,6 +4,9 @@ using Entities.Enums;
 
 namespace Entities
 {
+    /// <summary>
+    ///  Represente la table Signal
+    /// </summary>
     public class Signal
     {
         [Key]

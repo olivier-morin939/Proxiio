@@ -5,6 +5,9 @@ using Entities.Enums;
 
 namespace Entities
 {
+    /// <summary>
+    ///  Represente la table Report
+    /// </summary>
     public class Report
     {
         [Key]

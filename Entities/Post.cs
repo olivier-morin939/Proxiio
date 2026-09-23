@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Entities
 {
+    /// <summary>
+    ///  Represente la table Post
+    /// </summary>
     public class Post
     {
         [Key]

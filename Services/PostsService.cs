@@ -11,6 +11,8 @@ public class PostsService : IPostsService
 {
     private readonly UsersDbContext _db;
     public PostsService(UsersDbContext db) => _db = db;
+
+    // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
     public PostsService() : this(new UsersDbContext(new DbContextOptionsBuilder<UsersDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options)) { }
 
     public List<PostResponse> GetAllPosts() => AddReportCounts(_db.Posts.AsNoTracking().OrderByDescending(p => p.CreatedAt).ToList());
@@ -18,11 +20,18 @@ public class PostsService : IPostsService
 
     public List<FeedPostResponse> GetCommunityFeed(Guid? communityId = null)
     {
+        // The query to execute to get the displayed feed when no community id is given
         var query = from post in _db.Posts.AsNoTracking()
                     join user in _db.Users.AsNoTracking() on post.UserId equals user.UserId
                     join community in _db.Comunities.AsNoTracking() on post.CommunityId equals community.Id
                     select new { post, user, community };
-        if (communityId.HasValue) query = query.Where(item => item.community.Id == communityId.Value);
+
+
+        // The query to execute when the community id is given
+        if (communityId.HasValue) 
+            query = query.Where(item => item.community.Id == communityId.Value);
+
+        // Return the results from the sql requests
         return query.OrderByDescending(item => item.post.CreatedAt).Take(communityId.HasValue ? 100 : 30).ToList()
             .Select(item => new FeedPostResponse
             {
@@ -34,42 +43,80 @@ public class PostsService : IPostsService
 
     public PostResponse AddPost(AddPostRequest? request)
     {
+        // Check if the DTO request is null
         ArgumentNullException.ThrowIfNull(request);
+
+        // Model validation for the DTO request
         Helpers.HelpersValidation.ModelValidation(request);
-        if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Body)) throw new ArgumentException("A title and message are required.");
-        if (!_db.Comunities.Any(c => c.Id == request.ComunityId)) throw new ArgumentException("Community not found.", nameof(request.ComunityId));
-        if (!_db.Users.Any(u => u.UserId == request.UserId)) throw new ArgumentException("User not found.", nameof(request.UserId));
-        var post = request.ToPost();
+
+        // Validating the mandatory fields
+        if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Body)) 
+            throw new ArgumentException("A title and message are required.");
+
+        // Check if the community exists
+        if (!_db.Comunities.Any(c => c.Id == request.ComunityId))
+            throw new ArgumentException("Community not found.", nameof(request.ComunityId));
+
+        // Check if the user exists
+        if (!_db.Users.Any(u => u.UserId == request.UserId))
+            throw new ArgumentException("User not found.", nameof(request.UserId));
+
+        // Convert the DTO request into an entity post class
+        Post post = request.ToPost();
+
+        // Add it to the db
         _db.Posts.Add(post);
         _db.SaveChanges();
+
+        // Return the DTO response
         return post.ToPostResponse();
     }
 
     public PostResponse GetPostByPostId(Guid PostId)
     {
-        var post = _db.Posts.AsNoTracking().FirstOrDefault(p => p.Id == PostId) ?? throw new KeyNotFoundException($"Post {PostId} was not found.");
+        // Search the corresponding post and return the DTO response
+        Post post = _db.Posts.AsNoTracking().FirstOrDefault(p => p.Id == PostId) ?? throw new KeyNotFoundException($"Post {PostId} was not found.");
         return post.ToPostResponse();
     }
 
     public PostResponse UpdatePost(UpdatePostRequest request)
     {
+
+        // Check if the DTO request is null
         ArgumentNullException.ThrowIfNull(request);
+
+        // Model validation of the DTO request
         Helpers.HelpersValidation.ModelValidation(request);
-        var post = _db.Posts.FirstOrDefault(p => p.Id == request.Id) ?? throw new KeyNotFoundException($"Post {request.Id} was not found.");
-        if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Body)) throw new ArgumentException("A title and message are required.");
+
+        // Searching the corresponding post
+        Post post = _db.Posts.FirstOrDefault(p => p.Id == request.Id) ?? throw new KeyNotFoundException($"Post {request.Id} was not found.");
+        
+        // Checking for the mandatory fields
+        if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Body))
+            throw new ArgumentException("A title and message are required.");
+
+        // Fields updation
         post.Title = request.Title;
         post.Body = request.Body;
         post.ImagesPath = request.ImagesPath ?? new();
         post.AdditionalsPath = request.AdditionalsPath ?? new();
         post.ModifiedAt = DateTime.UtcNow;
         _db.SaveChanges();
+
+        // Return the DTO response
         return post.ToPostResponse();
     }
 
     public bool DeletePostByPostId(Guid PostId)
     {
-        var post = _db.Posts.FirstOrDefault(p => p.Id == PostId);
-        if (post is null) return false;
+        // Searching the corresponding post
+        Post? post = _db.Posts.FirstOrDefault(p => p.Id == PostId);
+
+        // The post is not found
+        if (post is null)
+            return false;
+
+        // Remove the post from the db
         _db.Posts.Remove(post);
         _db.SaveChanges();
         return true;
@@ -77,14 +124,24 @@ public class PostsService : IPostsService
 
     public List<PostResponse> GetAllPostsByComunity(Guid ComId)
     {
-        if (ComId == Guid.Empty) throw new ArgumentException("Community id cannot be empty.", nameof(ComId));
+        // Checking if the community id is valid
+        if (ComId == Guid.Empty) 
+            throw new ArgumentException("Community id cannot be empty.", nameof(ComId));
+
+        // Give the numbers of reports per posts of the given community id
         return AddReportCounts(_db.Posts.AsNoTracking().Where(p => p.CommunityId == ComId).OrderByDescending(p => p.CreatedAt).ToList());
     }
 
     public List<PostResponse> GetAllFilteredPostsByComunitiy(Guid ComId, string searchBy, string searchString)
     {
-        var all = GetAllPostsByComunity(ComId);
-        if (string.IsNullOrEmpty(searchBy) || string.IsNullOrEmpty(searchString)) return all;
+        // Get all posts
+        List<PostResponse> all = GetAllPostsByComunity(ComId);
+
+        // Checking if the searchBy and searchString is null or empty
+        if (string.IsNullOrEmpty(searchBy) || string.IsNullOrEmpty(searchString)) 
+            return all;
+
+        // Filtering the informations based on the given searchBy and searchString
         return searchBy switch
         {
             nameof(PostResponse.UserId) => all.Where(p => p.UserId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList(),
@@ -97,8 +154,16 @@ public class PostsService : IPostsService
 
     public List<PostResponse> GetAllSortedPostsByComunity(Guid ComId, List<PostResponse> posts, string sortBy, SortOption sortOrder)
     {
-        if (string.IsNullOrEmpty(sortBy)) return posts;
-        var desc = sortOrder != SortOption.ASC;
+
+        // Checking if the sortBy is null or empty
+        if (string.IsNullOrEmpty(sortBy)) 
+            return posts;
+
+        // Checking if the order is descending
+        bool desc = sortOrder != SortOption.ASC;
+
+
+        // Sort based on the sortBy fields and sort order
         return sortBy switch
         {
             nameof(PostResponse.UserId) => desc ? posts.OrderByDescending(p => p.UserId).ToList() : posts.OrderBy(p => p.UserId).ToList(),
@@ -111,14 +176,22 @@ public class PostsService : IPostsService
 
     private List<PostResponse> AddReportCounts(List<Post> posts)
     {
-        if (posts.Count == 0) return new();
+        // Checking if there is posts
+        if (posts.Count == 0) 
+            return new();
+
+        // Get all the ids of the posts
         var ids = posts.Select(p => p.Id).ToList();
+
+        // Get the number of reports of every posts
         var counts = _db.Reports.AsNoTracking().Where(r => ids.Contains(r.PostId))
             .GroupBy(r => r.PostId).Select(group => new { PostId = group.Key, Count = group.Count() })
             .ToDictionary(item => item.PostId, item => item.Count);
+
+        // Set the found count and return the DTO response 
         return posts.Select(post =>
         {
-            var response = post.ToPostResponse();
+            PostResponse response = post.ToPostResponse();
             response.ReportsCount = counts.GetValueOrDefault(post.Id);
             return response;
         }).ToList();

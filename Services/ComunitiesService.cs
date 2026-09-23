@@ -14,19 +14,39 @@ public class ComunitiesService : IComunitiesService
 {
     private readonly UsersDbContext _db;
     public ComunitiesService(UsersDbContext db) => _db = db;
+
+    // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
     public ComunitiesService() : this(new UsersDbContext(new DbContextOptionsBuilder<UsersDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options)) { }
 
     public ComunityResponse AddComunity(AddComunityRequest? request)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        // Check if the request is null
+        if(request == null) 
+            throw new ArgumentNullException(nameof(request));
+
+        // Model validation for the DTO object
         Helpers.HelpersValidation.ModelValidation(request);
-        if (request.TeacherId == Guid.Empty || !_db.Users.Any(u => u.UserId == request.TeacherId)) throw new ArgumentException("The teacher must be an existing user.", nameof(request.TeacherId));
-        if (string.IsNullOrWhiteSpace(request.Name)) throw new ArgumentException("A community name is required.", nameof(request.Name));
-        if (_db.Comunities.Any(c => c.Name != null && c.Name.ToLower() == request.Name.Trim().ToLower())) throw new DuplicateNameException("A community with the same name already exists.");
-        var community = new Comunity { Id = Guid.NewGuid(), TeacherId = request.TeacherId, Name = request.Name.Trim(), Description = request.Description?.Trim() };
+
+        // Check if the user exists
+        if (request.TeacherId == Guid.Empty || !_db.Users.Any(u => u.UserId == request.TeacherId))
+            throw new ArgumentException("The teacher must be an existing user.", nameof(request.TeacherId));
+
+        // Check if we have an community name
+        if (string.IsNullOrWhiteSpace(request.Name)) 
+            throw new ArgumentException("A community name is required.", nameof(request.Name));
+
+        // Check for duplicates
+        if (_db.Comunities.Any(c => c.Name != null && c.Name.ToLower() == request.Name.Trim().ToLower())) 
+            throw new DuplicateNameException("A community with the same name already exists.");
+
+        Comunity community = new Comunity { Id = Guid.NewGuid(), TeacherId = request.TeacherId, Name = request.Name.Trim(), Description = request.Description?.Trim() };
+        
+        // Add the new community to the db
         _db.Comunities.Add(community);
         _db.ComunityMembers.Add(new ComunityMember { ComunityId = community.Id, UserId = request.TeacherId, Role = ComunityRole.Teacher });
         _db.SaveChanges();
+
+        // Map users and posts from the community and return it as a response
         return MapCommunity(community);
     }
 
@@ -37,28 +57,50 @@ public class ComunitiesService : IComunitiesService
 
     public ComunityResponse GetComunityByComId(Guid ComId)
     {
-        var community = _db.Comunities.AsNoTracking().FirstOrDefault(c => c.Id == ComId) ?? throw new ArgumentNullException(nameof(ComId));
+        // Search the matching community and map users and posts from the community
+        Comunity community = _db.Comunities.AsNoTracking().FirstOrDefault(c => c.Id == ComId) ?? throw new ArgumentNullException(nameof(ComId));
         return MapCommunity(community);
     }
 
     public ComunityResponse UpdateComunity(UpdateComunityRequest request)
     {
+        // Checking if the request is null
         ArgumentNullException.ThrowIfNull(request);
+
+        // Model validation for the DTO object
         Helpers.HelpersValidation.ModelValidation(request);
-        var community = _db.Comunities.FirstOrDefault(c => c.Id == request.Id) ?? throw new ArgumentNullException(nameof(request.Id));
-        if (request.TeacherId == Guid.Empty || !_db.Users.Any(u => u.UserId == request.TeacherId)) throw new ArgumentException("The teacher must be an existing user.", nameof(request.TeacherId));
-        if (_db.Comunities.Any(c => c.Id != request.Id && c.Name != null && c.Name.ToLower() == request.Name!.Trim().ToLower())) throw new DuplicateNameException("A community with the same name already exists.");
+
+        // Search the matching community
+        Comunity community = _db.Comunities.FirstOrDefault(c => c.Id == request.Id) ?? throw new ArgumentNullException(nameof(request.Id));
+
+        // Search if the teacher exists
+        if (request.TeacherId == Guid.Empty || !_db.Users.Any(u => u.UserId == request.TeacherId)) 
+            throw new ArgumentException("The teacher must be an existing user.", nameof(request.TeacherId));
+
+        // Search for duplicates
+        if (_db.Comunities.Any(c => c.Id != request.Id && c.Name != null && c.Name.ToLower() == request.Name!.Trim().ToLower())) 
+            throw new DuplicateNameException("A community with the same name already exists.");
+
+        // Updating the informations
         community.TeacherId = request.TeacherId;
         community.Name = request.Name?.Trim();
         community.Description = request.Description?.Trim();
         _db.SaveChanges();
+
+        // Map users and posts from the community and return it as a response
         return MapCommunity(community);
     }
 
     public bool DeleteComunityByComId(Guid ComId)
     {
-        var community = _db.Comunities.FirstOrDefault(c => c.Id == ComId);
-        if (community is null) return false;
+        // Search the community
+        Comunity? community = _db.Comunities.FirstOrDefault(c => c.Id == ComId);
+
+        // Checking if we found the community
+        if (community is null)
+            return false;
+
+        // Delete the targeted community
         _db.Comunities.Remove(community);
         _db.SaveChanges();
         return true;
@@ -66,8 +108,14 @@ public class ComunitiesService : IComunitiesService
 
     public List<ComunityResponse> GetFilteredComunities(string searchBy, string searchString)
     {
-        var communities = GetAllComunities();
-        if (string.IsNullOrEmpty(searchBy) || string.IsNullOrEmpty(searchString)) return communities;
+        // Get all communities first
+        List<ComunityResponse> communities = GetAllComunities();
+
+        // Check if the searchBy and searchString is null or empty
+        if (string.IsNullOrEmpty(searchBy) || string.IsNullOrEmpty(searchString)) 
+            return communities;
+
+        // Filtering the communities based on their searchBy and searchString
         return searchBy switch
         {
             nameof(ComunityResponse.Id) => communities.Where(c => c.Id.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList(),
@@ -82,8 +130,14 @@ public class ComunitiesService : IComunitiesService
 
     public List<ComunityResponse> GetSortedComunities(List<ComunityResponse> communities, string sortBy, SortOption sortOrder)
     {
-        if (string.IsNullOrEmpty(sortBy)) return communities;
-        var descending = sortOrder != SortOption.ASC;
+        // Check if the sort by is set
+        if (string.IsNullOrEmpty(sortBy)) 
+            return communities;
+
+        // Look if it is in descending order
+        bool descending = sortOrder != SortOption.ASC;
+
+        // Sort base on the sortBy field and the sort order: ASC or DESC
         return sortBy switch
         {
             nameof(ComunityResponse.Name) => descending ? communities.OrderByDescending(c => c.Name).ToList() : communities.OrderBy(c => c.Name).ToList(),
@@ -97,10 +151,15 @@ public class ComunitiesService : IComunitiesService
 
     private ComunityResponse MapCommunity(Comunity community)
     {
-        var members = (from member in _db.ComunityMembers.AsNoTracking().Where(m => m.ComunityId == community.Id)
+        // Getting the users from the community
+        List<User>     members = (from member in _db.ComunityMembers.AsNoTracking().Where(m => m.ComunityId == community.Id)
                        join user in _db.Users.AsNoTracking() on member.UserId equals user.UserId
                        select user).ToList();
-        var posts = _db.Posts.AsNoTracking().Where(p => p.CommunityId == community.Id).ToList();
+
+        // Getting the posts from the community
+        List<Post> posts = _db.Posts.AsNoTracking().Where(p => p.CommunityId == community.Id).ToList();
+
+        // Return it as a DTO object
         return new ComunityResponse
         {
             Id = community.Id, TeacherId = community.TeacherId, Name = community.Name, Description = community.Description,

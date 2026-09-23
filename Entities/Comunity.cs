@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Entities
 {
+    /// <summary>
+    ///  Represente la table Comunity
+    /// </summary>
     public class Comunity
     {
         [Key]
