@@ -1,3 +1,23 @@
 @model ComunityResponse
-@{ ViewData["Title"] = "Modifier la communauté"; }
-<div class="admin-form-page"><a asp-action="DisplaySpecificComunity" asp-route-ComId="@Model.Id" class="admin-back-link">← Retour à la communauté</a><form asp-action="UpdateSpecificComunity" asp-route-ComId="@Model.Id" method="post" class="admin-form-card"><span class="admin-kicker">GESTION DES COMMUNAUTÉS</span><h1>Modifier la communauté</h1><p>Met à jour les informations de cet espace.</p><div asp-validation-summary="All" class="admin-validation"></div><input type="hidden" name="TeacherId" value="@Model.TeacherId" /><label class="admin-field">Nom<input name="Name" value="@Model.Name" class="admin-input" maxlength="120" required /></label><label class="admin-field">Description<textarea name="Description" class="admin-textarea" rows="4" maxlength="254">@Model.Description</textarea></label><div class="admin-form-actions"><a asp-action="DisplayComunities" class="admin-btn secondary">Annuler</a><button class="admin-btn" type="submit">Enregistrer</button></div></form></div>
+@{ 
+    ViewData["Title"] = "Modifier la communauté";
+}
+<div class="admin-form-page">
+    <a asp-action="DisplaySpecificComunity" asp-route-ComId="@Model.Id" class="admin-back-link">← Retour à la communauté</a>
+    <form asp-action="UpdateSpecificComunity" asp-route-ComId="@Model.Id" method="post" class="admin-form-card">
+        <span class="admin-kicker">GESTION DES COMMUNAUTÉS</span>
+        <h1>Modifier la communauté</h1>
+        <p>Met à jour les informations de cet espace.</p>
+        <div asp-validation-summary="All" class="admin-validation"></div>
+        <input type="hidden" name="TeacherId" value="@Model.TeacherId" />
+        <label class="admin-field">Nom<input name="Name" value="@Model.Name" class="admin-input" maxlength="120" required />
+    </label>
+    <label class="admin-field">Description
+        <textarea name="Description" class="admin-textarea" rows="4" maxlength="254">@Model.Description</textarea>
+        </label>
+        <div class="admin-form-actions">
+            <a asp-action="DisplayComunities" class="admin-btn secondary">Annuler</a>
+            <button class="admin-btn" type="submit">Enregistrer</button>
+        </div>
+    </form>
+</div>

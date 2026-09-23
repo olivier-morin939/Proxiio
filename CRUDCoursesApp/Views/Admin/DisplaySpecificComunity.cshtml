@@ -1,10 +1,139 @@
 @model CRUDCoursesApp.ViewModels.ComunityDetailsViewModel
-@{ ViewData["Title"] = Model.Comunity.Name; }
+@{
+    ViewData["Title"] = Model.Comunity.Name;
+}
+
 <div class="admin-detail-page">
-    <header class="admin-detail-header"><div><span class="admin-kicker">ESPACE COMMUNAUTAIRE</span><h1>@Model.Comunity.Name</h1><p>@Model.Comunity.Description</p></div><a asp-action="DisplayComunities" class="app-tab-btn app-tab-btn-secondary">← Communautés</a></header>
+    <header class="admin-detail-header">
+        <div>
+            <span class="admin-kicker">ESPACE COMMUNAUTAIRE</span>
+            <h1>@Model.Comunity.Name</h1>
+            <p>@Model.Comunity.Description</p>
+        </div>
+        <a asp-action="DisplayComunities" class="app-tab-btn app-tab-btn-secondary">← Communautés</a>
+    </header>
+
     @await Html.PartialAsync("_FlashMessagesComponent")
-    <section class="admin-detail-stats"><div><small>Membres</small><b>@Model.Comunity.UsersCount</b></div><div><small>Publications</small><b>@Model.Comunity.PostsCount</b></div><div><small>Enseignant</small><b class="admin-id-badge">@Model.Comunity.TeacherId.ToString()[..8]</b></div></section>
-    <div class="admin-detail-actions"><a asp-action="DisplayUserByComunity" asp-route-ComId="@Model.Comunity.Id" class="app-tab-btn app-tab-btn-secondary"><i class="fa-solid fa-users"></i> Gérer les membres</a><a asp-action="AddUserByComunity" asp-route-ComId="@Model.Comunity.Id" class="app-tab-btn app-tab-btn-primary"><i class="fa-solid fa-user-plus"></i> Ajouter un membre</a><a asp-action="DisplayPostsByComunity" asp-route-ComId="@Model.Comunity.Id" class="app-tab-btn app-tab-btn-secondary"><i class="fa-solid fa-file-lines"></i> Voir les publications</a><a asp-action="AddPostByComunity" asp-route-ComId="@Model.Comunity.Id" class="app-tab-btn app-tab-btn-primary"><i class="fa-solid fa-plus"></i> Nouvelle publication</a></div>
-    @if (Model.PagedPosts.Any()) { <section class="admin-detail-panel"><div class="admin-panel-heading"><div><span class="admin-kicker">CONTENU</span><h2>Publications récentes</h2></div><a asp-action="DisplayPostsByComunity" asp-route-ComId="@Model.Comunity.Id" class="admin-back-link">Tout voir →</a></div><div class="admin-detail-list">@foreach(var post in Model.PagedPosts){<article><div><b>@post.Title</b><p>@post.Body</p><small>@post.CreatedAt.ToLocalTime().ToString("dd MMM yyyy · HH:mm")</small></div><a asp-action="DisplayReports" asp-route-postId="@post.Id" class="admin-post-report @(post.ReportsCount == 0 ? "clear" : "")"><i class="fa-solid fa-flag"></i> @post.ReportsCount</a></article>}</div><div class="admin-pagination"><span>Page @Model.PostsPage · @Model.PostsTotal publication(s)</span><span>@if(Model.PostsPage>1){<a asp-action="DisplaySpecificComunity" asp-route-ComId="@Model.Comunity.Id" asp-route-postsPage="@(Model.PostsPage-1)" asp-route-postsPageSize="@Model.PostsPageSize">← Précédent</a>} @if(Model.PostsPage*Model.PostsPageSize<Model.PostsTotal){<a asp-action="DisplaySpecificComunity" asp-route-ComId="@Model.Comunity.Id" asp-route-postsPage="@(Model.PostsPage+1)" asp-route-postsPageSize="@Model.PostsPageSize">Suivant →</a>}</span></div></section> }
-    @if (Model.PagedMembers.Any()) { <section class="admin-detail-panel"><div class="admin-panel-heading"><div><span class="admin-kicker">COMMUNAUTÉ</span><h2>Membres</h2></div><a asp-action="DisplayUserByComunity" asp-route-ComId="@Model.Comunity.Id" class="admin-back-link">Gérer →</a></div><div class="admin-member-chips">@foreach(var member in Model.PagedMembers){<span><b>@member.UserId.ToString()[..8]</b><small>@member.Role</small></span>}</div><div class="admin-pagination"><span>Page @Model.MembersPage · @Model.MembersTotal membre(s)</span><span>@if(Model.MembersPage>1){<a asp-action="DisplaySpecificComunity" asp-route-ComId="@Model.Comunity.Id" asp-route-membersPage="@(Model.MembersPage-1)" asp-route-membersPageSize="@Model.MembersPageSize">← Précédent</a>} @if(Model.MembersPage*Model.MembersPageSize<Model.MembersTotal){<a asp-action="DisplaySpecificComunity" asp-route-ComId="@Model.Comunity.Id" asp-route-membersPage="@(Model.MembersPage+1)" asp-route-membersPageSize="@Model.MembersPageSize">Suivant →</a>}</span></div></section> }
+
+    <section class="admin-detail-stats">
+        <div>
+            <small>Membres</small>
+            <b>@Model.Comunity.UsersCount</b>
+        </div>
+        <div>
+            <small>Publications</small>
+            <b>@Model.Comunity.PostsCount</b>
+        </div>
+        <div>
+            <small>Enseignant</small>
+            <b class="admin-id-badge">@Model.Comunity.TeacherId.ToString()[..8]</b>
+        </div>
+    </section>
+
+    <div class="admin-detail-actions">
+        <a asp-action="DisplayUserByComunity" asp-route-ComId="@Model.Comunity.Id" class="app-tab-btn app-tab-btn-secondary">
+            <i class="fa-solid fa-users"></i> Gérer les membres
+        </a>
+        <a asp-action="AddUserByComunity" asp-route-ComId="@Model.Comunity.Id" class="app-tab-btn app-tab-btn-primary">
+            <i class="fa-solid fa-user-plus"></i> Ajouter un membre
+        </a>
+        <a asp-action="DisplayPostsByComunity" asp-route-ComId="@Model.Comunity.Id" class="app-tab-btn app-tab-btn-secondary">
+            <i class="fa-solid fa-file-lines"></i> Voir les publications
+        </a>
+        <a asp-action="AddPostByComunity" asp-route-ComId="@Model.Comunity.Id" class="app-tab-btn app-tab-btn-primary">
+            <i class="fa-solid fa-plus"></i> Nouvelle publication
+        </a>
+    </div>
+
+    @if (Model.PagedPosts.Any())
+    {
+        <section class="admin-detail-panel">
+            <div class="admin-panel-heading">
+                <div>
+                    <span class="admin-kicker">CONTENU</span>
+                    <h2>Publications récentes</h2>
+                </div>
+                <a asp-action="DisplayPostsByComunity" asp-route-ComId="@Model.Comunity.Id" class="admin-back-link">Tout voir →</a>
+            </div>
+
+            <div class="admin-detail-list">
+                @foreach (var post in Model.PagedPosts)
+                {
+                    <article>
+                        <div>
+                            <b>@post.Title</b>
+                            <p>@post.Body</p>
+                            <small>@post.CreatedAt.ToLocalTime().ToString("dd MMM yyyy · HH:mm")</small>
+                        </div>
+                        <a asp-action="DisplayReports" asp-route-postId="@post.Id" class="admin-post-report @(post.ReportsCount == 0 ? "clear" : "")">
+                            <i class="fa-solid fa-flag"></i> @post.ReportsCount
+                        </a>
+                    </article>
+                }
+            </div>
+
+            <div class="admin-pagination">
+                <span>Page @Model.PostsPage · @Model.PostsTotal publication(s)</span>
+                <span>
+                    @if (Model.PostsPage > 1)
+                    {
+                        <a asp-action="DisplaySpecificComunity" 
+                           asp-route-ComId="@Model.Comunity.Id" 
+                           asp-route-postsPage="@(Model.PostsPage - 1)" 
+                           asp-route-postsPageSize="@Model.PostsPageSize">← Précédent</a>
+                    }
+                    @if (Model.PostsPage * Model.PostsPageSize < Model.PostsTotal)
+                    {
+                        <a asp-action="DisplaySpecificComunity" 
+                           asp-route-ComId="@Model.Comunity.Id" 
+                           asp-route-postsPage="@(Model.PostsPage + 1)" 
+                           asp-route-postsPageSize="@Model.PostsPageSize">Suivant →</a>
+                    }
+                </span>
+            </div>
+        </section>
+    }
+
+    @if (Model.PagedMembers.Any())
+    {
+        <section class="admin-detail-panel">
+            <div class="admin-panel-heading">
+                <div>
+                    <span class="admin-kicker">COMMUNAUTÉ</span>
+                    <h2>Membres</h2>
+                </div>
+                <a asp-action="DisplayUserByComunity" asp-route-ComId="@Model.Comunity.Id" class="admin-back-link">Gérer →</a>
+            </div>
+
+            <div class="admin-member-chips">
+                @foreach (var member in Model.PagedMembers)
+                {
+                    <span>
+                        <b>@member.UserId.ToString()[..8]</b>
+                        <small>@member.Role</small>
+                    </span>
+                }
+            </div>
+
+            <div class="admin-pagination">
+                <span>Page @Model.MembersPage · @Model.MembersTotal membre(s)</span>
+                <span>
+                    @if (Model.MembersPage > 1)
+                    {
+                        <a asp-action="DisplaySpecificComunity" 
+                           asp-route-ComId="@Model.Comunity.Id" 
+                           asp-route-membersPage="@(Model.MembersPage - 1)" 
+                           asp-route-membersPageSize="@Model.MembersPageSize">← Précédent</a>
+                    }
+                    @if (Model.MembersPage * Model.MembersPageSize < Model.MembersTotal)
+                    {
+                        <a asp-action="DisplaySpecificComunity" 
+                           asp-route-ComId="@Model.Comunity.Id" 
+                           asp-route-membersPage="@(Model.MembersPage + 1)" 
+                           asp-route-membersPageSize="@Model.MembersPageSize">Suivant →</a>
+                    }
+                </span>
+            </div>
+        </section>
+    }
 </div>

@@ -1,15 +1,99 @@
-/* Styles for admin communities views (homemade) */
-.app-tabs-container{max-width:1200px;margin:0 auto}
-.app-tabs-header{display:flex;justify-content:space-between;align-items:center}
-.app-tab-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px}
-.app-tab-btn-primary{background:#2563eb;color:#fff}
-.app-tab-btn-icon{background:#f1f5f9;color:#374151}
-.app-tabs-table{width:100%;border-collapse:collapse}
-.app-tabs-td{padding:12px;border-bottom:1px solid #e5e7eb}
-.app-tab-action-btn{display:inline-block;padding:6px 10px;border-radius:6px;font-size:13px}
-.app-tab-action-details{background:#fff;border:1px solid #e5e7eb;color:#374151}
-.app-tab-action-update{background:#eff6ff;color:#1e3a8a}
-.app-tab-action-delete{background:#fff5f5;color:#7f1d1d}
-.app-tabs-empty-card{text-align:center;padding:36px}
-/* Responsive */
-@media (max-width:768px){.app-tabs-header{flex-direction:column;gap:8px}.app-tabs-table{font-size:13px}}
+/* ==========================================================================
+   Admin Communities Views (Homemade)
+   ========================================================================== */
+
+/* Layout Global
+   ========================================================================== */
+
+.app-tabs-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header & Boutons
+   ========================================================================== */
+
+.app-tabs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.app-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.app-tab-btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+.app-tab-btn-icon {
+    background-color: #f1f5f9;
+    color: #374151;
+}
+
+/* Tableaux
+   ========================================================================== */
+
+.app-tabs-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.app-tabs-td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Actions
+   ========================================================================== */
+
+.app-tab-action-btn {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.app-tab-action-details {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+.app-tab-action-update {
+    background-color: #eff6ff;
+    color: #1e3a8a;
+}
+
+.app-tab-action-delete {
+    background-color: #fff5f5;
+    color: #7f1d1d;
+}
+
+/* États vides
+   ========================================================================== */
+
+.app-tabs-empty-card {
+    padding: 36px;
+    text-align: center;
+}
+
+/* Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .app-tabs-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .app-tabs-table {
+        font-size: 13px;
+    }
+}

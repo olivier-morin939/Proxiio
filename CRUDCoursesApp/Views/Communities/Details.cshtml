@@ -1,12 +1,139 @@
 @model CRUDCoursesApp.ViewModels.CommunityDetailViewModel
-@{ ViewData["Title"] = Model.Community.Name; }
+@{
+    ViewData["Title"] = Model.Community.Name;
+}
+
 <div class="app-shell">
-    <aside class="sidebar"><a class="brand" href="/"><span class="brand-mark">p</span><span>proxiio</span></a><div class="side-label">ESPACE COMMUNAUTAIRE</div><a class="side-link" href="/"><span>⌂</span> Fil d'actualité</a><a class="side-link active" href="/#communautes"><span>▦</span> Découvrir</a><div class="side-label">TA COMMUNAUTÉ</div><a class="community-link" href="#"><span class="community-avatar">@Model.Community.Name?.Substring(0, 1).ToUpper()</span><span>@Model.Community.Name</span></a><div class="sidebar-bottom"><span class="avatar avatar-purple">@Model.CurrentUserName.Substring(0, 1).ToUpper()</span><span><b>@Model.CurrentUserName</b><small>Espace membre</small></span></div></aside>
-    <main class="main-area"><header class="topbar"><a href="/" class="back-link">← Accueil</a><div class="top-actions"><span class="avatar avatar-purple">@Model.CurrentUserName.Substring(0, 1).ToUpper()</span></div></header><div class="content-wrap community-detail-wrap">
-        <section class="community-hero"><div class="community-hero-icon">@Model.Community.Name?.Substring(0, 1).ToUpper()</div><div class="community-hero-copy"><span class="eyebrow dark-eyebrow">COMMUNAUTÉ PROXIIIO</span><h1>@Model.Community.Name</h1><p>@Model.Community.Description</p><div class="community-meta"><span>♧ &nbsp;@ViewBag.MemberCount membres</span><span>✦ &nbsp;Apprendre ensemble</span></div></div><div class="community-hero-action">@if (!(bool)ViewBag.IsMember) { <form asp-controller="Communities" asp-action="Join" asp-route-id="@Model.Community.Id" method="post"><button class="button button-dark">Rejoindre la communauté <span>→</span></button></form> } else { <span class="member-pill">✓ Membre</span> }</div></section>
-        @if (TempData["Error"] is string error) { <div class="notice">@error</div> }
-        <div class="section-heading detail-heading"><div><span class="eyebrow dark-eyebrow">LA CONVERSATION</span><h2>Publications</h2></div><a href="/" class="text-link">← Retour au fil</a></div>
-        @if ((bool)ViewBag.IsMember) { <form asp-controller="Communities" asp-action="Post" asp-route-id="@Model.Community.Id" method="post" class="compose-card"><div class="author-row"><span class="avatar avatar-purple">@Model.CurrentUserName.Substring(0, 1).ToUpper()</span><b>@Model.CurrentUserName</b><span class="compose-label">Partage une idée avec le groupe</span></div><input name="title" maxlength="120" required placeholder="Un titre pour ta publication" /><textarea name="body" maxlength="250" required rows="3" placeholder="Qu'aimerais-tu partager ?"></textarea><div class="compose-bottom"><span>Sois bienveillant, partage tes idées ✨</span><button class="button button-purple" type="submit">Publier <span>→</span></button></div></form> }
-        <section class="feed-column detail-feed">@foreach (var item in Model.Feed) { <article class="post-card"><div class="post-community"><span class="community-avatar">@Model.Community.Name?.Substring(0, 1).ToUpper()</span><div><b>@Model.Community.Name</b><small>Discussion de la communauté</small></div><button class="dots">•••</button></div><div class="post-content"><div class="author-row"><span class="avatar avatar-teal">@item.AuthorName.Substring(0, 1).ToUpper()</span><span><b>@item.AuthorName</b><small>@item.Post.CreatedAt.ToLocalTime().ToString("dd MMM 'à' HH:mm")</small></span></div><h3>@item.Post.Title</h3><p>@item.Post.Body</p></div><div class="post-footer"><span>♡ &nbsp;Réagir</span><span>◯ &nbsp;Commenter</span><span class="share-action">↗ &nbsp;Partager</span></div></article> } @if (!Model.Feed.Any()) { <div class="empty-state"><span>✦</span><h3>La première publication est à toi</h3><p>Ouvre la conversation en partageant ce que tu apprends.</p></div> }</section>
-    </div></main>
+    <aside class="sidebar">
+        <a class="brand" href="/">
+            <span class="brand-mark">p</span>
+            <span>proxiio</span>
+        </a>
+        <div class="side-label">ESPACE COMMUNAUTAIRE</div>
+        <a class="side-link" href="/"><span>⌂</span> Fil d'actualité</a>
+        <a class="side-link active" href="/#communautes"><span>▦</span> Découvrir</a>
+
+        <div class="side-label">TA COMMUNAUTÉ</div>
+        <a class="community-link" href="#">
+            <span class="community-avatar">@Model.Community.Name?.Substring(0, 1).ToUpper()</span>
+            <span>@Model.Community.Name</span>
+        </a>
+
+        <div class="sidebar-bottom">
+            <span class="avatar avatar-purple">@Model.CurrentUserName.Substring(0, 1).ToUpper()</span>
+            <span>
+                <b>@Model.CurrentUserName</b>
+                <small>Espace membre</small>
+            </span>
+        </div>
+    </aside>
+
+    <main class="main-area">
+        <header class="topbar">
+            <a href="/" class="back-link">← Accueil</a>
+            <div class="top-actions">
+                <span class="avatar avatar-purple">@Model.CurrentUserName.Substring(0, 1).ToUpper()</span>
+            </div>
+        </header>
+
+        <div class="content-wrap community-detail-wrap">
+            <section class="community-hero">
+                <div class="community-hero-icon">
+                    @Model.Community.Name?.Substring(0, 1).ToUpper()
+                </div>
+                <div class="community-hero-copy">
+                    <span class="eyebrow dark-eyebrow">COMMUNAUTÉ PROXIIIO</span>
+                    <h1>@Model.Community.Name</h1>
+                    <p>@Model.Community.Description</p>
+                    <div class="community-meta">
+                        <span>♧ &nbsp;@ViewBag.MemberCount membres</span>
+                        <span>✦ &nbsp;Apprendre ensemble</span>
+                    </div>
+                </div>
+                <div class="community-hero-action">
+                    @if (!(bool)ViewBag.IsMember)
+                    {
+                        <form asp-controller="Communities" asp-action="Join" asp-route-id="@Model.Community.Id" method="post">
+                            <button class="button button-dark">Rejoindre la communauté <span>→</span></button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="member-pill">✓ Membre</span>
+                    }
+                </div>
+            </section>
+
+            @if (TempData["Error"] is string error)
+            {
+                <div class="notice">@error</div>
+            }
+
+            <div class="section-heading detail-heading">
+                <div>
+                    <span class="eyebrow dark-eyebrow">LA CONVERSATION</span>
+                    <h2>Publications</h2>
+                </div>
+                <a href="/" class="text-link">← Retour au fil</a>
+            </div>
+
+            @if ((bool)ViewBag.IsMember)
+            {
+                <form asp-controller="Communities" asp-action="Post" asp-route-id="@Model.Community.Id" method="post" class="compose-card">
+                    <div class="author-row">
+                        <span class="avatar avatar-purple">@Model.CurrentUserName.Substring(0, 1).ToUpper()</span>
+                        <b>@Model.CurrentUserName</b>
+                        <span class="compose-label">Partage une idée avec le groupe</span>
+                    </div>
+                    <input name="title" maxlength="120" required placeholder="Un titre pour ta publication" />
+                    <textarea name="body" maxlength="250" required rows="3" placeholder="Qu'aimerais-tu partager ?"></textarea>
+                    <div class="compose-bottom">
+                        <span>Sois bienveillant, partage tes idées ✨</span>
+                        <button class="button button-purple" type="submit">Publier <span>→</span></button>
+                    </div>
+                </form>
+            }
+
+            <section class="feed-column detail-feed">
+                @foreach (var item in Model.Feed)
+                {
+                    <article class="post-card">
+                        <div class="post-community">
+                            <span class="community-avatar">@Model.Community.Name?.Substring(0, 1).ToUpper()</span>
+                            <div>
+                                <b>@Model.Community.Name</b>
+                                <small>Discussion de la communauté</small>
+                            </div>
+                            <button class="dots">•••</button>
+                        </div>
+                        <div class="post-content">
+                            <div class="author-row">
+                                <span class="avatar avatar-teal">@item.AuthorName.Substring(0, 1).ToUpper()</span>
+                                <span>
+                                    <b>@item.AuthorName</b>
+                                    <small>@item.Post.CreatedAt.ToLocalTime().ToString("dd MMM 'à' HH:mm")</small>
+                                </span>
+                            </div>
+                            <h3>@item.Post.Title</h3>
+                            <p>@item.Post.Body</p>
+                        </div>
+                        <div class="post-footer">
+                            <span>♡ &nbsp;Réagir</span>
+                            <span>◯ &nbsp;Commenter</span>
+                            <span class="share-action">↗ &nbsp;Partager</span>
+                        </div>
+                    </article>
+                }
+
+                @if (!Model.Feed.Any())
+                {
+                    <div class="empty-state">
+                        <span>✦</span>
+                        <h3>La première publication est à toi</h3>
+                        <p>Ouvre la conversation en partageant ce que tu apprends.</p>
+                    </div>
+                }
+            </section>
+        </div>
+    </main>
 </div>

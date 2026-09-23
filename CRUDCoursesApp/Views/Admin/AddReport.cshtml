@@ -1,3 +1,49 @@
 @model ServiceContracts.DTO.Reports.AddReportRequest
-@{ ViewData["Title"] = "Créer un signalement"; var posts = (List<PostResponse>)ViewBag.Posts; }
-<div class="admin-form-page"><a asp-action="DisplayReports" class="admin-back-link">← Retour aux signalements</a><form asp-action="AddReport" method="post" class="admin-form-card"><span class="admin-kicker">MODÉRATION</span><h1>Nouveau signalement</h1><p>Associe le signalement à une publication et indique le motif.</p><div asp-validation-summary="ModelOnly" class="admin-validation"></div><div class="admin-form-grid"><label class="admin-field full">Publication<select asp-for="PostId" class="admin-select" required><option value="">Sélectionner une publication</option>@foreach(var post in posts){<option value="@post.Id">@post.Title (@post.CreatedAt.ToLocalTime().ToString("dd MMM yyyy"))</option>}</select><span asp-validation-for="PostId"></span></label><label class="admin-field">Motif<select asp-for="TypeOfReport" asp-items="Html.GetEnumSelectList<ReportType>()" class="admin-select"></select></label><label class="admin-field full">Message<textarea asp-for="MessageOfReport" class="admin-textarea" rows="4" maxlength="254" required placeholder="Explique pourquoi cette publication doit être examinée"></textarea><span asp-validation-for="MessageOfReport"></span></label></div><div class="admin-form-actions"><a asp-action="DisplayReports" class="admin-btn secondary">Annuler</a><button class="admin-btn" type="submit">Créer le signalement <span>→</span></button></div></form></div>
+@{
+    ViewData["Title"] = "Créer un signalement";
+    var posts = (List<PostResponse>)ViewBag.Posts;
+}
+
+<div class="admin-form-page">
+    <a asp-action="DisplayReports" class="admin-back-link">← Retour aux signalements</a>
+
+    <form asp-action="AddReport" method="post" class="admin-form-card">
+        <span class="admin-kicker">MODÉRATION</span>
+        <h1>Nouveau signalement</h1>
+        <p>Associe le signalement à une publication et indique le motif.</p>
+
+        <div asp-validation-summary="ModelOnly" class="admin-validation"></div>
+
+        <div class="admin-form-grid">
+            <label class="admin-field full">
+                Publication
+                <select asp-for="PostId" class="admin-select" required>
+                    <option value="">Sélectionner une publication</option>
+                    @foreach (var post in posts)
+                    {
+                        <option value="@post.Id">
+                            @post.Title (@post.CreatedAt.ToLocalTime().ToString("dd MMM yyyy"))
+                        </option>
+                    }
+                </select>
+                <span asp-validation-for="PostId"></span>
+            </label>
+
+            <label class="admin-field">
+                Motif
+                <select asp-for="TypeOfReport" asp-items="Html.GetEnumSelectList<ReportType>()" class="admin-select"></select>
+            </label>
+
+            <label class="admin-field full">
+                Message
+                <textarea asp-for="MessageOfReport" class="admin-textarea" rows="4" maxlength="254" required placeholder="Explique pourquoi cette publication doit être examinée"></textarea>
+                <span asp-validation-for="MessageOfReport"></span>
+            </label>
+        </div>
+
+        <div class="admin-form-actions">
+            <a asp-action="DisplayReports" class="admin-btn secondary">Annuler</a>
+            <button class="admin-btn" type="submit">Créer le signalement <span>→</span></button>
+        </div>
+    </form>
+</div>

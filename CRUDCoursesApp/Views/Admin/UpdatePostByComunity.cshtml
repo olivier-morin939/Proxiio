@@ -1,3 +1,25 @@
 @model UpdatePostRequest
-@{ ViewData["Title"] = "Modifier la publication"; var communityId = (Guid)ViewBag.ComId; }
-<div class="admin-form-page"><a asp-action="DisplayPostsByComunity" asp-route-ComId="@communityId" class="admin-back-link">← Retour aux publications</a><form asp-action="UpdatePostByComunity" asp-route-ComId="@communityId" asp-route-UserId="@Model.Id" method="post" class="admin-form-card"><span class="admin-kicker">MODÉRATION DU CONTENU</span><h1>Modifier une publication</h1><div asp-validation-summary="All" class="admin-validation"></div><input asp-for="Id" type="hidden" /><input asp-for="UserId" type="hidden" /><label class="admin-field">Titre<input asp-for="Title" class="admin-input" maxlength="120" required /></label><label class="admin-field">Message<textarea asp-for="Body" class="admin-textarea" rows="5" maxlength="250" required></textarea></label><div class="admin-form-actions"><a asp-action="DisplayPostsByComunity" asp-route-ComId="@communityId" class="admin-btn secondary">Annuler</a><button class="admin-btn" type="submit">Enregistrer</button></div></form></div>
+@{ 
+    ViewData["Title"] = "Modifier la publication";
+    var communityId = (Guid)ViewBag.ComId;
+}
+<div class="admin-form-page">
+    <a asp-action="DisplayPostsByComunity" asp-route-ComId="@communityId" class="admin-back-link">← Retour aux publications</a>
+    <form asp-action="UpdatePostByComunity" asp-route-ComId="@communityId" asp-route-UserId="@Model.Id" method="post" class="admin-form-card">
+        <span class="admin-kicker">MODÉRATION DU CONTENU</span>
+        <h1>Modifier une publication</h1>
+        <div asp-validation-summary="All" class="admin-validation"></div>
+        <input asp-for="Id" type="hidden" />
+        <input asp-for="UserId" type="hidden" />
+        <label class="admin-field">Titre<input asp-for="Title" class="admin-input" maxlength="120" required /></label>
+        <label class="admin-field">Message
+            <textarea asp-for="Body" class="admin-textarea" rows="5" maxlength="250" required>
+
+            </textarea>
+        </label>
+        <div class="admin-form-actions">
+            <a asp-action="DisplayPostsByComunity" asp-route-ComId="@communityId" class="admin-btn secondary">Annuler</a>
+            <button class="admin-btn" type="submit">Enregistrer</button>
+        </div>
+    </form>
+</div>

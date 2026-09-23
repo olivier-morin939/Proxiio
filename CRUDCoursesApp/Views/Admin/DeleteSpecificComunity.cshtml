@@ -1,3 +1,28 @@
 @model ComunityResponse
-@{ ViewData["Title"] = "Supprimer la communauté"; }
-<div class="admin-form-page"><form asp-action="DeleteSpecificComunityConfirm" asp-route-ComId="@Model.Id" method="post" class="admin-form-card"><span class="admin-kicker">ZONE DE SUPPRESSION</span><h1>Supprimer cette communauté ?</h1><p>La communauté <b>@Model.Name</b>, ses publications et ses adhésions seront supprimées.</p><div class="admin-detail-callout">@Model.Description</div><div class="admin-form-actions"><a asp-action="DisplayComunities" class="admin-btn secondary">Annuler</a><button type="submit" class="admin-btn danger">Supprimer la communauté</button></div></form></div>
+@{
+    ViewData["Title"] = "Supprimer la communauté";
+}
+
+<div class="admin-form-page">
+    <form asp-action="DeleteSpecificComunityConfirm" 
+          asp-route-ComId="@Model.Id" 
+          method="post" 
+          class="admin-form-card">
+
+        <span class="admin-kicker">ZONE DE SUPPRESSION</span>
+        <h1>Supprimer cette communauté ?</h1>
+        
+        <p>
+            La communauté <b>@Model.Name</b>, ses publications et ses adhésions seront supprimées.
+        </p>
+
+        <div class="admin-detail-callout">
+            @Model.Description
+        </div>
+
+        <div class="admin-form-actions">
+            <a asp-action="DisplayComunities" class="admin-btn secondary">Annuler</a>
+            <button type="submit" class="admin-btn danger">Supprimer la communauté</button>
+        </div>
+    </form>
+</div>

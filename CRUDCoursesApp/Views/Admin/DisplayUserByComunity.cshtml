@@ -1,7 +1,56 @@
 @model IEnumerable<UserResponse>
-@{ ViewData["Title"] = "Membres de la communauté"; var communityId = (Guid)ViewBag.ComId; }
-<div class="app-tabs-container"><div class="app-tabs-header"><div><span class="admin-kicker">GESTION DE COMMUNAUTÉ</span><h1 class="app-tabs-title">Membres</h1><p class="app-tabs-subtitle">Les personnes inscrites à cet espace.</p></div><div class="admin-header-actions"><a asp-action="DisplaySpecificComunity" asp-route-ComId="@communityId" class="app-tab-btn app-tab-btn-secondary">← Communauté</a><a asp-action="AddUserByComunity" asp-route-ComId="@communityId" class="app-tab-btn app-tab-btn-primary"><i class="fa-solid fa-user-plus"></i> Ajouter un membre</a></div></div>
-@await Html.PartialAsync("_FlashMessagesComponent")
-<div class="app-tabs-table-card"><div class="app-tabs-table-responsive"><table class="app-tabs-table"><thead><tr><th>Membre</th><th>Email</th><th>Rôle</th><th>État</th><th>Action</th></tr></thead><tbody>
-@foreach (var user in Model) { <tr><td><b class="app-tabs-user-name">@user.Name</b></td><td>@user.Email</td><td><span class="admin-id-badge">@user.Role</span></td><td>@user.UserState</td><td><a asp-action="ConfirmDeleteUserByComunity" asp-route-ComId="@communityId" asp-route-UserId="@user.UserId" class="app-tab-action-btn app-tab-action-delete">Retirer</a></td></tr> }
-</tbody></table></div></div></div>
+@{
+    ViewData["Title"] = "Membres de la communauté";
+    var communityId = (Guid)ViewBag.ComId;
+}
+
+<div class="app-tabs-container">
+    <div class="app-tabs-header">
+        <div>
+            <span class="admin-kicker">GESTION DE COMMUNAUTÉ</span>
+            <h1 class="app-tabs-title">Membres</h1>
+            <p class="app-tabs-subtitle">Les personnes inscrites à cet espace.</p>
+        </div>
+        <div class="admin-header-actions">
+            <a asp-action="DisplaySpecificComunity" asp-route-ComId="@communityId" class="app-tab-btn app-tab-btn-secondary">← Communauté</a>
+            <a asp-action="AddUserByComunity" asp-route-ComId="@communityId" class="app-tab-btn app-tab-btn-primary"><i class="fa-solid fa-user-plus"></i> Ajouter un membre</a>
+        </div>
+    </div>
+
+    @await Html.PartialAsync("_FlashMessagesComponent")
+
+    <div class="app-tabs-table-card">
+        <div class="app-tabs-table-responsive">
+            <table class="app-tabs-table">
+                <thead>
+                    <tr>
+                        <th>Membre</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>État</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td><b class="app-tabs-user-name">@user.Name</b></td>
+                            <td>@user.Email</td>
+                            <td><span class="admin-id-badge">@user.Role</span></td>
+                            <td>@user.UserState</td>
+                            <td>
+                                <a asp-action="ConfirmDeleteUserByComunity"
+                                   asp-route-ComId="@communityId"
+                                   asp-route-UserId="@user.UserId"
+                                   class="app-tab-action-btn app-tab-action-delete">
+                                    Retirer
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
