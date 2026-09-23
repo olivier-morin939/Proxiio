@@ -6,13 +6,12 @@ using System;
 
 namespace ServiceContracts
 {
+    /// <summary>
+    /// This is the represenation of the data layer of the ComunitiesService.
+    /// </summary>
     public interface IComunitiesService
     {
-        #region ComunitiesSignature
-        /// <summary>
-        /// Generate some mock comunities inside the ComunitiesService
-        /// </summary>
-        void SeedMockComunities();
+
 
         /// <summary>
         /// Add a new comunity to the ComunitiesService
@@ -24,9 +23,8 @@ namespace ServiceContracts
         /// <summary>
         /// Get all comunities contained inside the ComunitiesService
         /// </summary>
-        /// <returns>Returns a list of DTO object of type ComunityResponse that contains all the informations of the comunity</returns>
+        /// <returns>Returns a list of DTO object of type ComunityResponse that contains all the informations of the comunities</returns>
         List<ComunityResponse> GetAllComunities();
-
 
 
         /// <summary>
@@ -41,8 +39,6 @@ namespace ServiceContracts
         /// </summary>
         /// <returns>An integer representing the number of posts in desired comunity</returns>
         public int GetComunityPostsCount(Guid comunityId);
-
-
 
 
         /// <summary>
@@ -85,52 +81,6 @@ namespace ServiceContracts
 
 
 
-
-        // Comunity members management
-        ComunityMemberResponse AddComunityMember(AddComunityMemberRequest? addComunityMemberRequest);
-
-
-        List<ComunityMemberResponse> GetComunityMembers(Guid comunityId);
-
-
-        /// <summary>
-        /// Get the counts of all members contained inside a specific comunity
-        /// </summary>
-        /// <returns>An integer representing the number of members in desired comunity</returns>
-        int GetComunityMembersCount(Guid comunityId);
-
-
-
-
-        bool RemoveComunityMember(Guid comunityId, Guid userId);
-        ComunityMemberResponse UpdateComunityMember(UpdateComunityMemberRequest updateComunityMemberRequest);
-
-        // Post likes management
-        PostLikeResponse AddPostLike(AddPostLikeRequest? addPostLikeRequest);
-        bool RemovePostLike(Guid postId, Guid userId);
-        List<PostLikeResponse> GetPostLikes(Guid postId);
-        #endregion
-
-        #region PostsSignature
-        public void SeedMockPosts();
-
-        public PostResponse AddPost(AddPostRequest? addPostRequest);
-
-        public List<PostResponse> GetAllPosts();
-
-        /// <summary>
-        /// Get the counts of all posts contained inside a CommunitiesService
-        /// </summary>
-        /// <returns>An integer representing the number of posts in the CommunitiesService</returns>
-        public int GetAllPostsCount();
-
-        public PostResponse GetPostByPostId(Guid PostId);
-
-        public PostResponse UpdatePost(UpdatePostRequest updatePostRequest);
-
-        public bool DeletePostByPostId(Guid PostId);
-
-        #endregion
 
     }
 }

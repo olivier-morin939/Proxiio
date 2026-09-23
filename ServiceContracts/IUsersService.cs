@@ -10,10 +10,7 @@ namespace ServiceContracts
     /// </summary>
     public interface IUsersService
     {
-        /// <summary>
-        /// Seed some mock users data inside the UsersService
-        /// </summary>
-        void SeedMockUsers();
+
 
         /// <summary>
         /// Add a user to the UsersService
@@ -25,7 +22,7 @@ namespace ServiceContracts
         /// <summary>
         /// Get all the users contained inside the UsersService
         /// </summary>
-        /// <returns>Returns a list of DTO object of type UserResponse that contains all the informations of the user</returns>
+        /// <returns>Returns a list of DTO object of type UserResponse that contains all the informations of the users</returns>
         List<UserResponse> GetAllUsers();
 
         /// <summary>

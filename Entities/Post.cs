@@ -1,24 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace Entities
 {
     public class Post
     {
+        [Key]
         public Guid Id { get; set; }
+        [Required]
+        public Guid CommunityId { get; set; }
+        [Required]
         public Guid UserId { get; set; }
 
-        public string? Title { get; set; }
-        public string? Body { get; set; } 
-        public List<string>? ImagesPath { get; set; } = new List<string>();
-        public List<string>? AdditionalsPath { get; set; } = new List<string>();
+        [Required]
+        [StringLength(120)]
+        public string Title { get; set; }
 
-        public List<Comment> Comments { get; set; } = new List<Comment>();
+        [Required]
+        [StringLength(250)]
+        public string Body { get; set; } 
 
-        // Relation avec la table de jointure
-        public List<PostLike> Likes { get; set; } = new List<PostLike>();
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public List<string> ImagesPath { get; set; } = new List<string>();
+        public List<string> AdditionalsPath { get; set; } = new List<string>();
+        public DateTime CreatedAt { get; set; }
+        public DateTime ModifiedAt { get; set; }
     }
 }

@@ -1,99 +1,36 @@
-﻿@{
-    ViewData["Title"] = "Admin - Dashboard";
+@{
+    ViewData["Title"] = "Administration";
+    var cards = new[] {
+        new { Title = "Utilisateurs", Description = "Comptes, rôles et accès", Count = (int)ViewBag.TotalUserCounts, Icon = "fa-users", Tone = "violet", Action = "DisplayUsers" },
+        new { Title = "Communautés", Description = "Espaces et membres", Count = (int)ViewBag.TotalComunitiesCounts, Icon = "fa-people-group", Tone = "mint", Action = "DisplayComunities" },
+        new { Title = "Publications", Description = "Conversations et contenu", Count = (int)ViewBag.TotalPostsCounts, Icon = "fa-file-lines", Tone = "blue", Action = "DisplayPosts" },
+        new { Title = "Signaux", Description = "Bugs et problèmes techniques", Count = (int)ViewBag.TotalSignalsCounts, Icon = "fa-triangle-exclamation", Tone = "amber", Action = "DisplaySignals" },
+        new { Title = "Signalements", Description = "Contenus rapportés", Count = (int)ViewBag.TotalReportsCounts, Icon = "fa-flag", Tone = "rose", Action = "DisplayReports" }
+    };
 }
-
-
-<div class="min-h-screen bg-gray-50/50 p-6">
-
-    <!-- Dashboard Header -->
-    <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Tableau de Bord Administration</h1>
-            <p class="text-sm text-gray-500">Welcome on the admin pannel.</p>
+<main class="admin-page">
+    <div class="admin-content">
+        <div class="admin-heading"><div><span class="admin-kicker">ESPACE DE GESTION</span><h1>Tableau de bord</h1><p>Bonjour ! Voici ce qui se passe dans ton espace communautaire.</p></div><span class="admin-status"><i></i> Système opérationnel</span></div>
+        @await Html.PartialAsync("_FlashMessagesComponent")
+        <section class="admin-stats-grid">
+            @foreach (var card in cards)
+            {
+                <a class="admin-stat-card" asp-controller="Admin" asp-action="@card.Action"><span class="admin-stat-icon @card.Tone"><i class="fa-solid @card.Icon"></i></span><span class="admin-stat-copy"><small>@card.Title</small><b>@card.Count</b><em>@card.Description</em></span><span class="admin-stat-arrow">↗</span></a>
+            }
+            <a class="admin-stat-card report-shortcut" asp-controller="Admin" asp-action="AddReport"><span class="admin-stat-icon rose"><i class="fa-solid fa-plus"></i></span><span class="admin-stat-copy"><small>Nouveau signalement</small><b>Créer</b><em>Signaler une publication</em></span><span class="admin-stat-arrow">↗</span></a>
+        </section>
+        <div class="admin-lower-grid">
+            <section class="admin-panel"><div class="admin-panel-heading"><div><span class="admin-kicker">ACCÈS RAPIDE</span><h2>Gérer la plateforme</h2></div><span class="admin-panel-spark">✳</span></div><div class="admin-quick-links">
+                <a asp-controller="Admin" asp-action="AddUser"><span class="quick-icon violet"><i class="fa-solid fa-user-plus"></i></span><span><b>Ajouter un utilisateur</b><small>Créer un compte membre</small></span><em>→</em></a>
+                <a asp-controller="Admin" asp-action="AddComunity"><span class="quick-icon mint"><i class="fa-solid fa-people-group"></i></span><span><b>Créer une communauté</b><small>Lancer un nouvel espace</small></span><em>→</em></a>
+                <a asp-controller="Admin" asp-action="DisplayPosts"><span class="quick-icon blue"><i class="fa-solid fa-list"></i></span><span><b>Modérer les publications</b><small>Consulter le fil complet</small></span><em>→</em></a>
+                <a asp-controller="Admin" asp-action="AddSignal"><span class="quick-icon amber"><i class="fa-solid fa-bug"></i></span><span><b>Créer un signal</b><small>Ajouter un problème technique</small></span><em>→</em></a>
+                <a asp-controller="Admin" asp-action="AddReport"><span class="quick-icon rose"><i class="fa-solid fa-flag"></i></span><span><b>Créer un signalement</b><small>Rapporter une publication</small></span><em>→</em></a>
+            </div></section>
+            <aside class="admin-welcome-panel"><div class="admin-welcome-art"><span>✦</span><i>✳</i><b>✧</b></div><span class="admin-kicker">PROXIIO · ADMIN</span><h2>Une communauté<br/>plus saine, ensemble.</h2><p>Gère les membres, encourage les échanges et traite les signalements depuis un seul endroit.</p><a asp-controller="Admin" asp-action="DisplayReports" class="admin-primary-link">Voir les signalements <span>→</span></a></aside>
         </div>
-        <div class="flex items-center space-x-3">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                <span class="w-2 h-2 mr-1.5 bg-green-500 rounded-full animate-pulse"></span> Operational System
-            </span>
         </div>
-    </div>
+</main>
 
-    <!-- Navigation Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
-        <!-- Users Cards -->
-        <a asp-controller="Admin" asp-action="DisplayUsers"
-           class="group bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-200/80 p-6 transition-all duration-200 flex items-center justify-between hover:-translate-y-0.5">
-            <div class="flex items-center space-x-4">
-                <div class="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                        Users Management
-                    </h3>
-                    <p class="text-sm text-gray-500">Manages accounts, roles and permissions.</p>
-                </div>
-            </div>
-            <div class="text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all">
-               <i class="fa-solid fa-arrow-right"></i>
-            </div>
-        </a>
 
-        <!-- Communities Cards -->
-        <a asp-controller="Admin" asp-action="DisplayComunities"
-           class="group bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-200/80 p-6 transition-all duration-200 flex items-center justify-between hover:-translate-y-0.5">
-            <div class="flex items-center space-x-4">
-                <div class="w-14 h-14 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-200">
-                    <i class="fa-solid fa-book"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
-                        Communities Management
-                    </h3>
-                    <p class="text-sm text-gray-500">Administer communities</p>
-                </div>
-            </div>
-            <div class="text-gray-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all">
-                <i class="fa-solid fa-arrow-right"></i>
-            </div>
-        </a>
-
-    </div>
-
-    <!-- Quick Stats -->
-    @{
-        await Html.RenderPartialAsync("_QuickStatsAdminComponent");
-    }
-
-    <!-- 3. Section Activités Récents -->
-    <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
-        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-            <h3 class="text-lg font-bold text-gray-900">Dernières Activités</h3>
-            <span class="text-xs font-medium text-gray-400">Temps réel</span>
-        </div>
-        <div class="divide-y divide-gray-100">
-            <div class="p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">JD</div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">John Doe s'est inscrit</p>
-                        <p class="text-xs text-gray-500">Il y a 10 minutes</p>
-                    </div>
-                </div>
-                <span class="text-xs font-medium bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">Utilisateur</span>
-            </div>
-            <div class="p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">C#</div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">Nouveau cours publié : ASP.NET Core & Tailwind</p>
-                        <p class="text-xs text-gray-500">Il y a 1 heure</p>
-                    </div>
-                </div>
-                <span class="text-xs font-medium bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">Cours</span>
-            </div>
-        </div>
-    </div>
-
-</div>

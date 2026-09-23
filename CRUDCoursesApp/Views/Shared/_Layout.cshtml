@@ -1,90 +1,30 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewBag.title</title>
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Font Awesome CDN -->
+    <title>@ViewData["Title"] · Proxiio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-
-    <style>
-        /* Petite personnalisation Tailwind (si besoin) */
-        .site-container { min-height: calc(100vh - 160px); }
-    </style>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-extra.css" asp-append-version="true" />
     @RenderSection("HeadContent", required: false)
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
-
-    <!-- NAVBAR -->
-    <header class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center gap-4">
-                    <a href="/" class="flex items-center text-indigo-600 hover:text-indigo-800">
-                        <i class="fa-solid fa-graduation-cap fa-lg mr-2"></i>
-                        <span class="font-bold text-lg">Proxiio</span>
-                    </a>
-                    <nav class="hidden md:flex items-center gap-3 ml-6">
-                        <a href="/" class="px-3 py-2 rounded-md hover:bg-indigo-50">Home</a>
-                        <a href="/admin" class="px-3 py-2 rounded-md hover:bg-indigo-50">Admin</a>
-                    </nav>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <div class="hidden sm:flex items-center bg-gray-100 rounded-md px-2">
-                        <i class="fa-solid fa-magnifying-glass text-gray-500 mr-2"></i>
-                        <input type="search" placeholder="Rechercher" class="bg-transparent focus:outline-none px-2 py-1 text-sm" />
-                    </div>
-
-                    <a href="/Account/Login" class="text-gray-600 hover:text-gray-800" title="Se connecter">
-                        <i class="fa-regular fa-user fa-lg"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
+<body>
+    <header class="topbar site-topbar">
+        <a class="site-topbar-brand" asp-controller="Home" asp-action="Index"><span class="brand-mark">p</span><span>proxiio</span></a>
+        <nav class="site-topbar-nav" aria-label="Navigation principale">
+            <a asp-controller="Home" asp-action="Index"><i class="fa-solid fa-house"></i> Accueil</a>
+            <a asp-controller="Admin" asp-action="Index"><i class="fa-solid fa-gauge-high"></i> Administration</a>
+        </nav>
     </header>
 
-    <!-- MAIN CONTENT -->
-    <div class="site-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        @RenderBody()
-    </div>
+    @RenderBody()
 
-    <!-- FOOTER -->
-    <footer class="bg-white border-t">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <a href="/" class="flex items-center text-indigo-600 hover:text-indigo-800 mb-2">
-                        <i class="fa-solid fa-graduation-cap fa-lg mr-2"></i>
-                        <span class="font-bold">Proxiio</span>
-                    </a>
-                    <p class="text-sm text-gray-600">Apprenez, développez, partagez.</p>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <a href="#" class="text-gray-600 hover:text-indigo-600" aria-label="Twitter">
-                        <i class="fa-brands fa-twitter fa-lg"></i>
-                    </a>
-                    <a href="#" class="text-gray-600 hover:text-indigo-600" aria-label="LinkedIn">
-                        <i class="fa-brands fa-linkedin fa-lg"></i>
-                    </a>
-                    <a href="https://github.com/olivier-morin939/Proxiio" class="text-gray-600 hover:text-indigo-600" aria-label="GitHub">
-                        <i class="fa-brands fa-github fa-lg"></i>
-                    </a>
-                </div>
-            </div>
-
-            <div class="mt-6 border-t pt-4 text-sm text-gray-500 flex flex-col md:flex-row justify-between">
-                <div>© @DateTime.Now.Year Proxiio. Tous droits réservés.</div>
-                <div class="mt-2 md:mt-0">Contact: <a href="mailto:proxiio-info@proxiio.ca" class="text-indigo-600">proxiio-info@proxiio.ca</a></div>
-            </div>
-        </div>
-    </footer>
-
+    <footer class="site-footer"><span>© @DateTime.Now.Year Proxiio</span><span>Fait pour apprendre, partager et grandir.</span></footer>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

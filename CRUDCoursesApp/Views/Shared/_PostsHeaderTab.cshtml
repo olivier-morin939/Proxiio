@@ -1,0 +1,105 @@
+﻿<thead class="bg-slate-100 border-b border-slate-200">
+    <tr>
+        <!-- Owner Id -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            @if (ViewBag.CurrentSortBy == nameof(PostResponse.UserId) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.UserId))" asp-route-sortOption="DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Owner Id <i class="fa-solid fa-chevron-up text-xs"></i>
+                </a>
+            }
+            else if (ViewBag.CurrentSortBy == nameof(PostResponse.UserId) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.UserId))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Owner Id <i class="fa-solid fa-chevron-down text-xs"></i>
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.UserId))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                    Owner Id
+                </a>
+            }
+        </th>
+
+        <!-- Title -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            @if (ViewBag.CurrentSortBy == nameof(PostResponse.Title) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.Title))" asp-route-sortOption="DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Title <i class="fa-solid fa-chevron-up text-xs"></i>
+                </a>
+            }
+            else if (ViewBag.CurrentSortBy == nameof(PostResponse.Title) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.Title))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Title <i class="fa-solid fa-chevron-down text-xs"></i>
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.Title))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                    Title
+                </a>
+            }
+        </th>
+
+        <!-- Body -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            @if (ViewBag.CurrentSortBy == nameof(PostResponse.Body) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.Body))" asp-route-sortOption="DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Body <i class="fa-solid fa-chevron-up text-xs"></i>
+                </a>
+            }
+            else if (ViewBag.CurrentSortBy == nameof(PostResponse.Body) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.Body))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Body <i class="fa-solid fa-chevron-down text-xs"></i>
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.Body))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                    Body
+                </a>
+            }
+        </th>
+
+        <!-- Created At -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            @if (ViewBag.CurrentSortBy == nameof(PostResponse.CreatedAt) && ViewBag.CurrentSortOrder == SortOption.ASC.ToString())
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.CreatedAt))" asp-route-sortOption="DESC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Created At <i class="fa-solid fa-chevron-up text-xs"></i>
+                </a>
+            }
+            else if (ViewBag.CurrentSortBy == nameof(PostResponse.CreatedAt) && ViewBag.CurrentSortOrder == SortOption.DESC.ToString())
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.CreatedAt))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors duration-150">
+                    Created At <i class="fa-solid fa-chevron-down text-xs"></i>
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Admin" asp-action="DisplayPostsByComunity" asp-route-searchBy="@(ViewBag.CurrentSearchBy)" asp-route-searchString="@(ViewBag.CurrentSearchString)" asp-route-sortBy="@(nameof(PostResponse.CreatedAt))" asp-route-sortOption="ASC" class="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors duration-150">
+                    Created At
+                </a>
+            }
+        </th>
+
+        <!-- Likes Count -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            Likes Count
+        </th>
+
+        <!-- Comments Count -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            Comments Count
+        </th>
+        <!-- Actions -->
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            Actions
+        </th>
+    </tr>
+</thead>

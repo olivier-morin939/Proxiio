@@ -1,7 +1,5 @@
 using ServiceContracts.DTO.Comunities;
 using ServiceContracts.DTO.Posts;
-using ServiceContracts.DTO.Comunities;
-using ServiceContracts.DTO.Posts;
 using System.Collections.Generic;
 
 namespace CRUDCoursesApp.ViewModels
