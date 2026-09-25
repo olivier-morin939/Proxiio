@@ -2,5 +2,5 @@ namespace ServiceContracts;
 
 public interface IDatabaseInitializer
 {
-    void Initialize();
+    Task Initialize();
 }

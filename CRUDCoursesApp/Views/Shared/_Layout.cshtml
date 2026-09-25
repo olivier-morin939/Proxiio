@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] · Proxiio</title>
+    <title>@ViewData["Title"] - Proxiio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -11,20 +11,27 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin-extra.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/static-pages.css" asp-append-version="true" />
     @RenderSection("HeadContent", required: false)
 </head>
 <body>
     <header class="topbar site-topbar">
         <a class="site-topbar-brand" asp-controller="Home" asp-action="Index"><span class="brand-mark">p</span><span>proxiio</span></a>
         <nav class="site-topbar-nav" aria-label="Navigation principale">
-            <a asp-controller="Home" asp-action="Index"><i class="fa-solid fa-house"></i> Accueil</a>
+            <a asp-controller="Static" asp-action="Index"><i class="fa-solid fa-house"></i> Home</a>
+            <a asp-controller="Static" asp-action="Contact"><i class="fa-solid fa-house"></i> Contact</a>
+            <a asp-controller="Static" asp-action="Services"><i class="fa-solid fa-house"></i> Services</a>
+            <a asp-controller="Static" asp-action="About"><i class="fa-solid fa-house"></i> About</a>
+            <a asp-controller="Static" asp-action="Register"><i class="fa-solid fa-house"></i> Register</a>
+            <a asp-controller="Static" asp-action="Authenticate"><i class="fa-solid fa-house"></i> Login</a>
+            <a asp-controller="Home" asp-action="Index"><i class="fa-solid fa-house"></i> Feed </a>
             <a asp-controller="Admin" asp-action="Index"><i class="fa-solid fa-gauge-high"></i> Administration</a>
         </nav>
     </header>
 
     @RenderBody()
 
-    <footer class="site-footer"><span>© @DateTime.Now.Year Proxiio</span><span>Fait pour apprendre, partager et grandir.</span></footer>
+    <footer class="site-footer"><span>© @DateTime.Now.Year Proxiio</span><nav class="static-footer-nav" aria-label="Liens utiles"><a href="/about-us">À propos</a><a href="/services">Services</a><a href="/contact">Contact</a><a href="/register">Créer un compte</a></nav><span>Fait pour apprendre, partager et grandir.</span></footer>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

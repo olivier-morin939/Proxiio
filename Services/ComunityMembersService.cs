@@ -9,13 +9,13 @@ namespace Services;
 
 public class ComunityMembersService : IComunityMembersService
 {
-    private readonly UsersDbContext _db;
-    public ComunityMembersService(UsersDbContext db) => _db = db;
+    private readonly ApplicationDbContext _db;
+    public ComunityMembersService(ApplicationDbContext db) => _db = db;
 
     // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
-    public ComunityMembersService() : this(new UsersDbContext(new DbContextOptionsBuilder<UsersDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options)) { }
+    public ComunityMembersService() : this(new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options)) { }
 
-    public ComunityMemberResponse AddComunityMember(AddComunityMemberRequest? request)
+    public async Task<ComunityMemberResponse> AddComunityMember(AddComunityMemberRequest? request)
     {
         // Check if the DTO object is null
         ArgumentNullException.ThrowIfNull(request);
@@ -24,15 +24,15 @@ public class ComunityMembersService : IComunityMembersService
         Helpers.HelpersValidation.ModelValidation(request);
 
         // Check if the community exists before adding a member
-        if (!_db.Comunities.Any(c => c.Id == request.ComunityId))
+        if (!await _db.Comunities.AnyAsync(c => c.Id == request.ComunityId))
             throw new ArgumentNullException(nameof(request.ComunityId));
 
         // Check if the users exists before adding it as a member
-        if (!_db.Users.Any(u => u.UserId == request.UserId)) 
+        if (!await _db.Users.AnyAsync(u => u.UserId == request.UserId)) 
             throw new ArgumentNullException(nameof(request.UserId));
 
         // Check if the user is already registered as a member in the community
-        if (_db.ComunityMembers.Any(m => m.ComunityId == request.ComunityId && m.UserId == request.UserId))
+        if (await _db.ComunityMembers.AnyAsync(m => m.ComunityId == request.ComunityId && m.UserId == request.UserId))
             throw new DuplicateNameException("Member already exists in the community.");
 
         // Create a new community member
@@ -40,22 +40,22 @@ public class ComunityMembersService : IComunityMembersService
 
         // Add the community in the db
         _db.ComunityMembers.Add(member);
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
 
         // Return the member in DTO response
         return member.ToComunityMemberResponse();
     }
 
-    public List<ComunityMemberResponse> GetComunityMembers(Guid comunityId) => _db.ComunityMembers.AsNoTracking().Where(m => m.ComunityId == comunityId).OrderBy(m => m.JoinedAt).ToList().Select(m => m.ToComunityMemberResponse()).ToList();
+    public async Task<List<ComunityMemberResponse>> GetComunityMembers(Guid comunityId) => (await _db.ComunityMembers.AsNoTracking().Where(m => m.ComunityId == comunityId).OrderBy(m => m.JoinedAt).ToListAsync()).Select(m => m.ToComunityMemberResponse()).ToList();
 
-    public bool IsComunityMember(Guid comunityId, Guid userId) => _db.ComunityMembers.Any(m => m.ComunityId == comunityId && m.UserId == userId);
+    public async Task<bool> IsComunityMember(Guid comunityId, Guid userId) => await _db.ComunityMembers.AnyAsync(m => m.ComunityId == comunityId && m.UserId == userId);
 
-    public int GetComunityMembersCount(Guid comunityId) => _db.ComunityMembers.Count(m => m.ComunityId == comunityId);
+    public async Task<int> GetComunityMembersCount(Guid comunityId) => await _db.ComunityMembers.CountAsync(m => m.ComunityId == comunityId);
 
-    public bool RemoveComunityMember(Guid comunityId, Guid userId)
+    public async Task<bool> RemoveComunityMember(Guid comunityId, Guid userId)
     {
         // Search for the member
-        ComunityMember? member = _db.ComunityMembers.FirstOrDefault(m => m.ComunityId == comunityId && m.UserId == userId);
+        ComunityMember? member = await _db.ComunityMembers.FirstOrDefaultAsync(m => m.ComunityId == comunityId && m.UserId == userId);
         
         // Check if we found the member
         if (member is null) 
@@ -63,11 +63,11 @@ public class ComunityMembersService : IComunityMembersService
 
         // Delete the member in the community
         _db.ComunityMembers.Remove(member);
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
         return true;
     }
 
-    public ComunityMemberResponse UpdateComunityMember(UpdateComunityMemberRequest request)
+    public async Task<ComunityMemberResponse> UpdateComunityMember(UpdateComunityMemberRequest request)
     {
         // Check if the DTO object is null
         ArgumentNullException.ThrowIfNull(request);
@@ -77,11 +77,11 @@ public class ComunityMembersService : IComunityMembersService
         Helpers.HelpersValidation.ModelValidation(request);
 
         // Getting the member from the community
-        ComunityMember member = _db.ComunityMembers.FirstOrDefault(m => m.ComunityId == request.ComunityId && m.UserId == request.UserId) ?? throw new ArgumentNullException("Member not found");
+        ComunityMember member = await _db.ComunityMembers.FirstOrDefaultAsync(m => m.ComunityId == request.ComunityId && m.UserId == request.UserId) ?? throw new ArgumentNullException("Member not found");
         
         // Updating the role in the community
         member.Role = request.Role;
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
 
         // Return the DTO response
         return member.ToComunityMemberResponse();

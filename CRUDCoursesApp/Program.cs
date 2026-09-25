@@ -10,6 +10,7 @@ namespace CRUDCoursesApp
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddControllersWithViews();
+            builder.Services.AddTransient<IEncryptionsService, EncryptionsService>();
             builder.Services.AddScoped<IUsersService, UsersService>();
             builder.Services.AddScoped<IComunitiesService, ComunitiesService>();
             builder.Services.AddScoped<IPostsService, PostsService>();
@@ -17,7 +18,7 @@ namespace CRUDCoursesApp
             builder.Services.AddScoped<IReportsService, ReportsService>();
             builder.Services.AddScoped<ISignalsService, SignaslService>();
 
-            builder.Services.AddDbContext<UsersDbContext>(
+            builder.Services.AddDbContext<ApplicationDbContext>(
                 options => options.UseSqlServer(
                     builder.Configuration.GetConnectionString("DefaultConnection"),
                     sqlServerOptions => sqlServerOptions.EnableRetryOnFailure())

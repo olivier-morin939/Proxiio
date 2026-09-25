@@ -8,13 +8,13 @@ namespace Services;
 
 public class ReportsService : IReportsService
 {
-    private readonly UsersDbContext _db;
-    public ReportsService(UsersDbContext db) => _db = db;
+    private readonly ApplicationDbContext _db;
+    public ReportsService(ApplicationDbContext db) => _db = db;
 
     // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
-    public ReportsService() : this(new UsersDbContext(new DbContextOptionsBuilder<UsersDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options)) { }
+    public ReportsService() : this(new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options)) { }
 
-    public ReportResponse AddReport(AddReportRequest? request)
+    public async Task<ReportResponse> AddReport(AddReportRequest? request)
     {
         // Check if the DTO object is null
         ArgumentNullException.ThrowIfNull(request);
@@ -23,7 +23,7 @@ public class ReportsService : IReportsService
         Helpers.HelpersValidation.ModelValidation(request);
 
         // Check if the post id is valid and found
-        if (request.PostId == Guid.Empty || !_db.Posts.Any(p => p.Id == request.PostId)) 
+        if (request.PostId == Guid.Empty || !await _db.Posts.AnyAsync(p => p.Id == request.PostId)) 
             throw new ArgumentException("The reported post was not found.", nameof(request.PostId));
 
         // Convert the request into entity post class
@@ -31,21 +31,21 @@ public class ReportsService : IReportsService
 
         // Add it to the db
         _db.Reports.Add(report);
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
 
         return report.ToReportResponse();
     }
 
-    public List<ReportResponse> GetAllReports() => _db.Reports.AsNoTracking().OrderByDescending(r => r.Id).ToList().Select(r => r.ToReportResponse()).ToList();
+    public async Task<List<ReportResponse>> GetAllReports() => (await _db.Reports.AsNoTracking().OrderByDescending(r => r.Id).ToListAsync()).Select(r => r.ToReportResponse()).ToList();
 
-    public ReportResponse GetReportByReportId(Guid ReportId)
+    public async Task<ReportResponse> GetReportByReportId(Guid ReportId)
     {
         // Search the corresponding report and convert it into the DTO response
-        Report report = _db.Reports.AsNoTracking().FirstOrDefault(r => r.Id == ReportId) ?? throw new KeyNotFoundException($"Report {ReportId} was not found.");
+        Report report = await _db.Reports.AsNoTracking().FirstOrDefaultAsync(r => r.Id == ReportId) ?? throw new KeyNotFoundException($"Report {ReportId} was not found.");
         return report.ToReportResponse();
     }
 
-    public ReportResponse UpdateReport(UpdateReportRequest? request)
+    public async Task<ReportResponse> UpdateReport(UpdateReportRequest? request)
     {
         // Checking if the DTO object is null
         ArgumentNullException.ThrowIfNull(request);
@@ -54,10 +54,10 @@ public class ReportsService : IReportsService
         Helpers.HelpersValidation.ModelValidation(request);
 
         // Check if the report exist first
-        Report report = _db.Reports.FirstOrDefault(r => r.Id == request.Id) ?? throw new KeyNotFoundException($"Report {request.Id} was not found.");
+        Report report = await _db.Reports.FirstOrDefaultAsync(r => r.Id == request.Id) ?? throw new KeyNotFoundException($"Report {request.Id} was not found.");
         
         // Check if the post exist second
-        if (!_db.Posts.Any(p => p.Id == request.PostId)) 
+        if (!await _db.Posts.AnyAsync(p => p.Id == request.PostId)) 
             throw new ArgumentException("The reported post was not found.", nameof(request.PostId));
 
         // Fields updation
@@ -65,16 +65,16 @@ public class ReportsService : IReportsService
         report.TypeOfReport = request.TypeOfReport;
         report.MessageOfReport = request.MessageOfReport;
         report.StatusOfReport = request.StatusOfReport;
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
 
         // Return the DTO response
         return report.ToReportResponse();
     }
 
-    public bool DeleteReportByReportId(Guid ReportId)
+    public async Task<bool> DeleteReportByReportId(Guid ReportId)
     {
         // Search the corresponding report
-        Report? report = _db.Reports.FirstOrDefault(r => r.Id == ReportId);
+        Report? report = await _db.Reports.FirstOrDefaultAsync(r => r.Id == ReportId);
 
         // Check if it is found
         if (report is null) 
@@ -82,7 +82,7 @@ public class ReportsService : IReportsService
 
         // Remove the report from db
         _db.Reports.Remove(report);
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
         return true;
     }
 }

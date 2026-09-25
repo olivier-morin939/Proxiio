@@ -34,9 +34,12 @@ using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
 try
 {
-    scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>().Initialize();
+    await scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>().Initialize();
     var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-    Console.WriteLine($"Schéma EF vérifié et données initiales appliquées à la base configurée. Utilisateurs: {db.Users.Count()}, communautés: {db.Comunities.Count()}, publications: {db.Posts.Count()}.");
+    var userCount = await db.Users.CountAsync();
+    var communityCount = await db.Comunities.CountAsync();
+    var postCount = await db.Posts.CountAsync();
+    Console.WriteLine($"Migrations appliquées et données initiales vérifiées. Utilisateurs: {userCount}, communautés: {communityCount}, publications: {postCount}.");
     return 0;
 }
 catch (Exception exception)

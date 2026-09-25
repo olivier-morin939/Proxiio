@@ -18,9 +18,9 @@ namespace ServiceContracts
         /// Get all the posts contained in the system
         /// </summary>
         /// <returns>Returns a list of DTO object of type PostResponse</returns>
-        List<PostResponse> GetAllPosts();
+        Task<List<PostResponse>> GetAllPosts();
 
-        List<FeedPostResponse> GetCommunityFeed(Guid? communityId = null);
+        Task<List<FeedPostResponse>> GetCommunityFeed(Guid? communityId = null);
 
         /// <summary>
         /// Get all the posts contained in the desired community filtered by searchBy and searchString
@@ -29,7 +29,7 @@ namespace ServiceContracts
         /// <param name="searchBy">The property name to search by</param>
         /// <param name="searchString">The content string to filter on</param>
         /// <returns>Returns a list of DTO object of type PostResponse filtered by the property name and search string of a specific community</returns>
-        public List<PostResponse> GetAllFilteredPostsByComunitiy(Guid ComId, string searchBy, string searchString);
+        public Task<List<PostResponse>> GetAllFilteredPostsByComunitiy(Guid ComId, string searchBy, string searchString);
 
         /// <summary>
         /// Get all the posts contained in the desired community sorted by sortBy and sortOrder
@@ -39,41 +39,41 @@ namespace ServiceContracts
         /// <param name="sortBy">The property name to sort by</param>
         /// <param name="sortOrder">The sort order, ASC or DESC</param>
         /// <returns>Returns a list of DTO object of type PostResponse sorted by the property name and sort order of a specific community</returns>
-        public List<PostResponse> GetAllSortedPostsByComunity(Guid ComId, List<PostResponse> allPostsResponseFromComunity, string sortBy, SortOption sortOrder);
+        public Task<List<PostResponse>> GetAllSortedPostsByComunity(Guid ComId, List<PostResponse> allPostsResponseFromComunity, string sortBy, SortOption sortOrder);
 
         /// <summary>
         /// Add a new post to a community (or default community)
         /// </summary>
         /// <param name="addPostRequest">The DTO containing the post data</param>
         /// <returns>Returns the created PostResponse</returns>
-        PostResponse AddPost(AddPostRequest? addPostRequest);
+        Task<PostResponse> AddPost(AddPostRequest? addPostRequest);
 
         /// <summary>
         /// Get a post by its id
         /// </summary>
         /// <param name="PostId">The post id</param>
         /// <returns>Returns a PostResponse for the specified post</returns>
-        PostResponse GetPostByPostId(Guid PostId);
+        Task<PostResponse> GetPostByPostId(Guid PostId);
 
         /// <summary>
         /// Update an existing post
         /// </summary>
         /// <param name="updatePostRequest">DTO containing updated post fields</param>
         /// <returns>Returns the updated PostResponse</returns>
-        PostResponse UpdatePost(UpdatePostRequest updatePostRequest);
+        Task<PostResponse> UpdatePost(UpdatePostRequest updatePostRequest);
 
         /// <summary>
         /// Delete a post by its id
         /// </summary>
         /// <param name="PostId">The post id to delete</param>
         /// <returns>True if deleted, otherwise false</returns>
-        bool DeletePostByPostId(Guid PostId);
+        Task<bool> DeletePostByPostId(Guid PostId);
 
         /// <summary>
         /// Get the counts of all posts contained inside the PostsService
         /// </summary>
         /// <returns>An integer representing the number of posts in the system</returns>
-        public int GetAllPostsCount();
+        public Task<int> GetAllPostsCount();
 
 
     }

@@ -10,14 +10,15 @@ namespace Services;
 
 public class UsersService : IUsersService
 {
-    private readonly UsersDbContext _db;
+    private readonly IEncryptionsService _encryptionsService;
+    private readonly ApplicationDbContext _db;
 
-    public UsersService(UsersDbContext db) => _db = db;
+    public UsersService(ApplicationDbContext db, IEncryptionsService encryptionsService) { _db = db; _encryptionsService = encryptionsService; }
 
     // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
-    public UsersService() : this(new UsersDbContext(new DbContextOptionsBuilder<UsersDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options)) { }
+    //public UsersService() : this(new UsersDbContext(new DbContextOptionsBuilder<UsersDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options), new IEncryptionsService()) { }
 
-    public UserResponse AddUser(AddUserRequest? request)
+    public async Task<UserResponse> AddUser(AddUserRequest? request)
     {
         // Check if the DTO object is null
         ArgumentNullException.ThrowIfNull(request);
@@ -33,46 +34,49 @@ public class UsersService : IUsersService
         if (request.Password != request.ConfirmPassword) 
             throw new ArgumentException("Passwords do not match.", nameof(request.ConfirmPassword));
 
+
         // Look for duplicates
-        if (_db.Users.Any(u => u.Email == request.Email)) 
+        if (await _db.Users.AnyAsync(u => u.Email == request.Email)) 
             throw new DuplicateNameException(nameof(request.Email));
 
         // Create the users in the db
         User user = request.ToUser();
+        user.Password = await _encryptionsService.EncryptData(user.Password!);
+
         _db.Users.Add(user);
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
 
         // Return the DTO response
         return user.ToUserAddResponse();
     }
 
-    public List<UserResponse> GetAllUsers() => _db.Users.AsNoTracking().ToList().Select(u => u.ToUserAddResponse()).ToList();
+    public async Task<List<UserResponse>> GetAllUsers() => (await _db.Users.AsNoTracking().ToListAsync()).Select(u => u.ToUserAddResponse()).ToList();
 
-    public int GetAllUsersCount() => _db.Users.Count();
+    public async Task<int> GetAllUsersCount() => await _db.Users.CountAsync();
 
-    public UserResponse GetUserById(Guid userId)
+    public async Task<UserResponse> GetUserById(Guid userId)
     {
         // Check if the id is valid
         if (userId == Guid.Empty) 
             throw new ArgumentNullException(nameof(userId));
 
         // Search for the user
-        User user = _db.Users.AsNoTracking().FirstOrDefault(u => u.UserId == userId) ?? throw new ArgumentNullException(nameof(userId));
+        User user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == userId) ?? throw new ArgumentNullException(nameof(userId));
         
         // Return the DTO response
         return user.ToUserAddResponse();
     }
 
-    public UserResponse UpdateUser(UpdateUserRequest? request)
+    public async Task<UserResponse> UpdateUser(UpdateUserRequest? request)
     {
         // Check if the request is null
         ArgumentNullException.ThrowIfNull(request);
 
         // Search the targeted user
-        User user = _db.Users.FirstOrDefault(u => u.UserId == request.UserId) ?? throw new ArgumentNullException(nameof(request.UserId));
+        User user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == request.UserId) ?? throw new ArgumentNullException(nameof(request.UserId));
         
         // Look for duplicate users
-        if (_db.Users.Any(u => u.UserId != user.UserId && u.Email == request.Email))
+        if (await _db.Users.AnyAsync(u => u.UserId != user.UserId && u.Email == request.Email))
             throw new DuplicateNameException(nameof(request.Email));
 
         // Look if the password and confirm password match
@@ -93,16 +97,16 @@ public class UsersService : IUsersService
 
         user.Role = request.Role;
         user.UserState = request.UserState;
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
 
         // Return the DTO response
         return user.ToUserAddResponse();
     }
 
-    public bool DeleteUser(Guid userId)
+    public async Task<bool> DeleteUser(Guid userId)
     {
         // Search the targeted user
-        User? user = _db.Users.FirstOrDefault(u => u.UserId == userId);
+        User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
 
         // Check if we found a user
         if (user is null)
@@ -110,14 +114,14 @@ public class UsersService : IUsersService
 
         // Delete the user
         _db.Users.Remove(user);
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
         return true;
     }
 
-    public List<UserResponse> GetFilteredUsers(string searchBy, string searchString)
+    public async Task<List<UserResponse>> GetFilteredUsers(string searchBy, string searchString)
     {
         // Get all users first
-        List<User> users = _db.Users.AsNoTracking().ToList();
+        List<User> users = await _db.Users.AsNoTracking().ToListAsync();
 
         // Checking if the searchBy field and searchString is empty or null
         if (string.IsNullOrEmpty(searchBy) || string.IsNullOrEmpty(searchString)) 
@@ -136,17 +140,17 @@ public class UsersService : IUsersService
         return filtered.Select(u => u.ToUserAddResponse()).ToList();
     }
 
-    public List<UserResponse> GetSortedUsers(List<UserResponse> users, string sortBy, SortOption sortOrder)
+    public Task<List<UserResponse>> GetSortedUsers(List<UserResponse> users, string sortBy, SortOption sortOrder)
     {
         // Checking if the sortBy field and empty or null
         if (string.IsNullOrEmpty(sortBy)) 
-            return users;
+            return Task.FromResult(users);
 
         // Check if the sort order is descending
         bool descending = sortOrder != SortOption.ASC;
 
         // Sort by the sortBy and sort order
-        return sortBy switch
+        List<UserResponse> sortedUsers = sortBy switch
         {
             nameof(UserResponse.Name) => descending ? users.OrderByDescending(u => u.Name).ToList() : users.OrderBy(u => u.Name).ToList(),
             nameof(UserResponse.Email) => descending ? users.OrderByDescending(u => u.Email).ToList() : users.OrderBy(u => u.Email).ToList(),
@@ -155,5 +159,6 @@ public class UsersService : IUsersService
             nameof(UserResponse.DateOfBirth) => descending ? users.OrderByDescending(u => u.DateOfBirth).ToList() : users.OrderBy(u => u.DateOfBirth).ToList(),
             _ => users
         };
+        return Task.FromResult(sortedUsers);
     }
 }

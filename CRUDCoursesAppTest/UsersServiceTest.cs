@@ -1,5 +1,7 @@
 ﻿using Entities;
+using Entities.Contexts;
 using Entities.Enums;
+using Microsoft.EntityFrameworkCore;
 using ServiceContracts;
 using ServiceContracts.DTO.Users;
 using Services;
@@ -9,6 +11,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 using Xunit.Abstractions;
+using EntityFrameworkCoreMock;
+using Moq;
 
 namespace CRUDCoursesAppTest
 {
@@ -18,11 +22,20 @@ namespace CRUDCoursesAppTest
     public class UsersServiceTest
     {
         private readonly IUsersService _usersService;
+        private readonly Mock<IEncryptionsService> _encryptionsServiceMock;
         private readonly ITestOutputHelper _outputHelper;
         public UsersServiceTest(ITestOutputHelper outputHelper)
         {
-            _usersService = new UsersService();
+
             _outputHelper = outputHelper;
+
+            _encryptionsServiceMock = new Mock<IEncryptionsService>();
+
+            var usersInitialData = new List<User>() { };
+            DbContextMock<ApplicationDbContext> appDbContextMock = new DbContextMock<ApplicationDbContext>(new DbContextOptionsBuilder<ApplicationDbContext>().Options);
+            var appDbContext = appDbContextMock.Object;
+            appDbContextMock.CreateDbSetMock(temp => temp.Users, usersInitialData);
+            _usersService = new UsersService(appDbContext, _encryptionsServiceMock.Object);
         }
 
         public AddUserRequest AddBasicUserRequest
@@ -68,23 +81,23 @@ namespace CRUDCoursesAppTest
 
         #region AddUser
         [Fact]
-        public void AddUser_EmptyObject()
+        public async Task AddUser_EmptyObject()
         {
             //Arrange
             AddUserRequest? new_user_add_null_request = null;
 
             //Assert
-            Assert.Throws<ArgumentNullException>(() => {
+            await Assert.ThrowsAsync<ArgumentNullException>(async() => {
 
                 //Act
-                _usersService.AddUser(new_user_add_null_request);
+                UserResponse invalid_user_response = await _usersService.AddUser(new_user_add_null_request);
 
             });
 
         }
 
         [Fact]
-        public void AddUser_EmptyProperties()
+        public async Task AddUser_EmptyProperties()
         {
             //Arrange
             List<AddUserRequest> new_user_null_properties = new List<AddUserRequest>()
@@ -104,17 +117,17 @@ namespace CRUDCoursesAppTest
             //Assert
             foreach (AddUserRequest addEmptyPropertyUserRequest in new_user_null_properties)
             {
-                Assert.Throws<ArgumentException>(() =>
+                await Assert.ThrowsAsync<ArgumentException>(async() =>
                 {
                     //Act
-                    user_responses_from_add_request.Add(_usersService.AddUser(addEmptyPropertyUserRequest));
+                    user_responses_from_add_request.Add( await _usersService.AddUser(addEmptyPropertyUserRequest));
                 });
             }
 
         }
 
         [Fact]
-        public void AddUser_ValidateProperties()
+        public async Task AddUser_ValidateProperties()
         {
             //Arrange
             List<AddUserRequest> new_user_invalid_properties_add_request = new List<AddUserRequest>()
@@ -134,17 +147,17 @@ namespace CRUDCoursesAppTest
             //Assert
             foreach (AddUserRequest addInvalidPropertyUserRequest in new_user_invalid_properties_add_request)
             {
-                Assert.Throws<ArgumentException>(() =>
+                await Assert.ThrowsAsync<ArgumentException>(async () =>
                 {
                     //Act
-                    user_responses_from_add_request.Add(_usersService.AddUser(addInvalidPropertyUserRequest));
+                    user_responses_from_add_request.Add( await _usersService.AddUser(addInvalidPropertyUserRequest));
                 });
             }
 
         }
 
         [Fact]
-        public void AddUser_DuplicateUser()
+        public async Task AddUser_DuplicateUser()
         {
             //Arrange
             List<AddUserRequest> new_user_duplicate_properties = new List<AddUserRequest>()
@@ -152,25 +165,25 @@ namespace CRUDCoursesAppTest
                 AddBasicUserRequest()
             };
             List<UserResponse> user_responses_from_add_request = new List<UserResponse>();
-            user_responses_from_add_request.Add(_usersService.AddUser(AddBasicUserRequest()));
+            user_responses_from_add_request.Add(await _usersService.AddUser(AddBasicUserRequest()));
 
             //Assert
             foreach (AddUserRequest addDuplicateUserRequest in new_user_duplicate_properties)
             {
-                Assert.Throws<DuplicateNameException>(() =>
+               await Assert.ThrowsAsync<DuplicateNameException>(async() =>
                 {
                     //Act
-                    user_responses_from_add_request.Add(_usersService.AddUser(addDuplicateUserRequest));
+                    user_responses_from_add_request.Add(await _usersService.AddUser(addDuplicateUserRequest));
                 });
             }
         }
 
         [Fact]
-        public void AddUser_ValidObject()
+        public async Task AddUser_ValidObject()
         {
             //Arrange
             List<AddUserRequest> user_add_requests = new List<AddUserRequest>()
-            { 
+            {
                AddBasicUserRequest(),
                AddBasicUserRequest(),
                AddBasicUserRequest(),
@@ -184,9 +197,9 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            foreach(AddUserRequest userRequestToAdd in user_add_requests)
+            foreach (AddUserRequest userRequestToAdd in user_add_requests)
             {
-                user_responses_from_add_request.Add(_usersService.AddUser(userRequestToAdd));
+                user_responses_from_add_request.Add(await _usersService.AddUser(userRequestToAdd));
             }
 
 
@@ -198,7 +211,7 @@ namespace CRUDCoursesAppTest
 
 
 
-            List<UserResponse> user_responses_from_get_request = _usersService.GetAllUsers();
+            List<UserResponse> user_responses_from_get_request = await _usersService.GetAllUsers();
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse userResponseFromGet in user_responses_from_get_request)
@@ -218,22 +231,23 @@ namespace CRUDCoursesAppTest
         #region GetAllUsers
 
         [Fact]
-        public void GetAllUsers_EmptyObject() {
+        public async Task GetAllUsers_EmptyObject()
+        {
 
             //Arrange & Act
-            List<UserResponse>? users_from_get = _usersService.GetAllUsers();
+            List<UserResponse>? users_from_get = await _usersService.GetAllUsers();
 
 
             //Assert
             Assert.Empty(users_from_get);
             Assert.True(users_from_get.Count == 0);
-        
+
         }
 
 
 
         [Fact]
-        public void GetAllUsers_FullObject()
+        public async Task GetAllUsers_FullObject()
         {
 
             //Arrange 
@@ -245,9 +259,9 @@ namespace CRUDCoursesAppTest
             };
             List<UserResponse> user_response_from_add = new List<UserResponse>();
 
-            foreach(AddUserRequest userRequest in user_requests) 
+            foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             _outputHelper.WriteLine("Expected:");
@@ -257,7 +271,7 @@ namespace CRUDCoursesAppTest
             }
 
             //Act
-            List<UserResponse>? users_from_get = _usersService.GetAllUsers();
+            List<UserResponse>? users_from_get = await _usersService.GetAllUsers();
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse userResponsesFromGet in users_from_get)
@@ -279,7 +293,7 @@ namespace CRUDCoursesAppTest
         #region GetUserByUserId
 
         [Fact]
-        public void GetUserByUserId_IdDoesNotExist()
+        public async Task GetUserByUserId_IdDoesNotExist()
         {
             //Arrange 
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -291,15 +305,15 @@ namespace CRUDCoursesAppTest
             List<UserResponse> user_response_from_add = new List<UserResponse>();
 
             //Assert
-            Assert.Throws<ArgumentNullException>(() =>
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
             {
                 //Act
-                user_response_from_add.Add(_usersService.GetUserById(Guid.NewGuid()));
+                user_response_from_add.Add(await _usersService.GetUserById(Guid.NewGuid()));
             });
         }
 
         [Fact]
-        public void GetUserByUserId_ValidId()
+        public async Task GetUserByUserId_ValidId()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -309,10 +323,10 @@ namespace CRUDCoursesAppTest
                 AddBasicUserRequest(Email:"testing9999@email.com")
             };
             List<UserResponse> user_response_from_add = new List<UserResponse>();
-           
+
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             UserResponse expected_user_response = user_response_from_add[1];
@@ -321,7 +335,7 @@ namespace CRUDCoursesAppTest
             _outputHelper.WriteLine($"{expected_user_response.ToString()}");
 
             //Act
-            UserResponse actual_user_response = _usersService.GetUserById(user_response_from_add[1].UserId);
+            UserResponse actual_user_response = await _usersService.GetUserById(user_response_from_add[1].UserId);
 
             _outputHelper.WriteLine("Actual:");
             _outputHelper.WriteLine($"{actual_user_response.ToString()}");
@@ -338,7 +352,7 @@ namespace CRUDCoursesAppTest
 
         // If the search text is null it should return the all users
         [Fact]
-        public void GetFilteredUsers_EmptySearchText()
+        public async Task GetFilteredUsers_EmptySearchText()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -351,7 +365,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             _outputHelper.WriteLine("Expected:");
@@ -362,7 +376,7 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> user_responses_from_filtered_get = _usersService.GetFilteredUsers(nameof(User.Name), "");
+            List<UserResponse> user_responses_from_filtered_get = await _usersService.GetFilteredUsers(nameof(User.Name), "");
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_filtered_get)
@@ -381,7 +395,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the matching person
         [Fact]
-        public void GetFilteredUsers_SearchByName()
+        public async Task GetFilteredUsers_SearchByName()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -394,7 +408,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             _outputHelper.WriteLine("Expected:");
@@ -412,7 +426,7 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> user_responses_from_filtered_get = _usersService.GetFilteredUsers(nameof(User.Name), "john");
+            List<UserResponse> user_responses_from_filtered_get = await _usersService.GetFilteredUsers(nameof(User.Name), "john");
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_filtered_get)
@@ -423,7 +437,7 @@ namespace CRUDCoursesAppTest
             //Assert
             foreach (UserResponse expectedUserResponse in user_response_from_add)
             {
-                if(expectedUserResponse.Name != null)
+                if (expectedUserResponse.Name != null)
                 {
                     if (expectedUserResponse.Name.Contains("john", StringComparison.OrdinalIgnoreCase))
                     {
@@ -437,7 +451,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the matching role
         [Fact]
-        public void GetFilteredUsers_SearchByRole()
+        public async Task GetFilteredUsers_SearchByRole()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -450,24 +464,24 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             _outputHelper.WriteLine("Expected:");
             foreach (UserResponse expectedUserResponse in user_response_from_add)
             {
- 
-               if (expectedUserResponse.Role.ToString().Contains(Role.User.ToString(), StringComparison.OrdinalIgnoreCase))
-               {
-                   _outputHelper.WriteLine($"{expectedUserResponse.ToString()}");
-               }
-                
+
+                if (expectedUserResponse.Role.ToString().Contains(Role.User.ToString(), StringComparison.OrdinalIgnoreCase))
+                {
+                    _outputHelper.WriteLine($"{expectedUserResponse.ToString()}");
+                }
+
 
             }
 
 
             //Act
-            List<UserResponse> user_responses_from_filtered_get = _usersService.GetFilteredUsers(nameof(User.Role), Role.User.ToString());
+            List<UserResponse> user_responses_from_filtered_get = await _usersService.GetFilteredUsers(nameof(User.Role), Role.User.ToString());
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_filtered_get)
@@ -483,7 +497,7 @@ namespace CRUDCoursesAppTest
                 {
                     Assert.Contains(expectedUserResponse, user_responses_from_filtered_get);
                 }
-                
+
             }
 
         }
@@ -491,7 +505,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the matching email
         [Fact]
-        public void GetFilteredUsers_SearchByEmail()
+        public async Task GetFilteredUsers_SearchByEmail()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -504,7 +518,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             _outputHelper.WriteLine("Expected:");
@@ -522,7 +536,7 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> user_responses_from_filtered_get = _usersService.GetFilteredUsers(nameof(User.Email), "john");
+            List<UserResponse> user_responses_from_filtered_get = await _usersService.GetFilteredUsers(nameof(User.Email), "john");
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_filtered_get)
@@ -548,7 +562,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the matching date of birth
         [Fact]
-        public void GetFilteredUsers_SearchByDateOfBirth()
+        public async Task GetFilteredUsers_SearchByDateOfBirth()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -561,7 +575,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
             DateTime filteredDate = user_response_from_add[0].DateOfBirth.Value;
 
@@ -576,12 +590,12 @@ namespace CRUDCoursesAppTest
                         _outputHelper.WriteLine($"{expectedUserResponse.ToString()}");
                     }
                 }
-                    
+
             }
 
 
             //Act
-            List<UserResponse> user_responses_from_filtered_get = _usersService.GetFilteredUsers(nameof(User.DateOfBirth), filteredDate.ToString("dd MMM yyyy"));
+            List<UserResponse> user_responses_from_filtered_get = await _usersService.GetFilteredUsers(nameof(User.DateOfBirth), filteredDate.ToString("dd MMM yyyy"));
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_filtered_get)
@@ -594,7 +608,7 @@ namespace CRUDCoursesAppTest
             {
                 if (expectedUserResponse.DateOfBirth != null || expectedUserResponse.DateOfBirth.HasValue)
                 {
-                    if(expectedUserResponse.DateOfBirth.Value.ToString("dd MMM yyyy").Contains(filteredDate.ToString("dd MMM yyyy"), StringComparison.OrdinalIgnoreCase))
+                    if (expectedUserResponse.DateOfBirth.Value.ToString("dd MMM yyyy").Contains(filteredDate.ToString("dd MMM yyyy"), StringComparison.OrdinalIgnoreCase))
                     {
                         Assert.Contains(expectedUserResponse, user_responses_from_filtered_get);
                     }
@@ -611,7 +625,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the list of UserResponse sorted by Name in Ascending order
         [Fact]
-        public void GetSortedUsers_SortByNameAsc()
+        public async Task GetSortedUsers_SortByNameAsc()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -624,7 +638,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             user_response_from_add.OrderBy(temp => temp.Name).ToList();
@@ -637,8 +651,8 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> all_user_responses = _usersService.GetAllUsers();
-            List<UserResponse> user_responses_from_sorted_get = _usersService.GetSortedUsers(all_user_responses, nameof(User.Name), SortOption.ASC);
+            List<UserResponse> all_user_responses = await _usersService.GetAllUsers();
+            List<UserResponse> user_responses_from_sorted_get = await _usersService.GetSortedUsers(all_user_responses, nameof(User.Name), SortOption.ASC);
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_sorted_get)
@@ -651,7 +665,7 @@ namespace CRUDCoursesAppTest
             {
 
                 Assert.Contains(expectedUserResponse, user_responses_from_sorted_get);
-                
+
             }
 
         }
@@ -659,7 +673,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the list of UserResponse sorted by Name in Descending order
         [Fact]
-        public void GetSortedUsers_SortByNameDesc()
+        public async Task GetSortedUsers_SortByNameDesc()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -672,7 +686,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             user_response_from_add.OrderByDescending(temp => temp.Name).ToList();
@@ -685,8 +699,8 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> all_user_responses = _usersService.GetAllUsers();
-            List<UserResponse> user_responses_from_sorted_get = _usersService.GetSortedUsers(all_user_responses, nameof(User.Name), SortOption.DESC);
+            List<UserResponse> all_user_responses = await _usersService.GetAllUsers();
+            List<UserResponse> user_responses_from_sorted_get = await _usersService.GetSortedUsers(all_user_responses, nameof(User.Name), SortOption.DESC);
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_sorted_get)
@@ -707,7 +721,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the list of UserResponse sorted by Email in Ascending order
         [Fact]
-        public void GetSortedUsers_SortByEmailAsc()
+        public async Task GetSortedUsers_SortByEmailAsc()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -720,7 +734,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             user_response_from_add.OrderBy(temp => temp.Email).ToList();
@@ -733,8 +747,8 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> all_user_responses = _usersService.GetAllUsers();
-            List<UserResponse> user_responses_from_sorted_get = _usersService.GetSortedUsers(all_user_responses, nameof(User.Email), SortOption.ASC);
+            List<UserResponse> all_user_responses = await _usersService.GetAllUsers();
+            List<UserResponse> user_responses_from_sorted_get = await _usersService.GetSortedUsers(all_user_responses, nameof(User.Email), SortOption.ASC);
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_sorted_get)
@@ -755,7 +769,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the list of UserResponse sorted by Email in Descending order
         [Fact]
-        public void GetSortedUsers_SortByEmailDesc()
+        public async Task GetSortedUsers_SortByEmailDesc()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -768,7 +782,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             user_response_from_add.OrderByDescending(temp => temp.Email).ToList();
@@ -781,8 +795,8 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> all_user_responses = _usersService.GetAllUsers();
-            List<UserResponse> user_responses_from_sorted_get = _usersService.GetSortedUsers(all_user_responses, nameof(User.Email), SortOption.DESC);
+            List<UserResponse> all_user_responses = await _usersService.GetAllUsers();
+            List<UserResponse> user_responses_from_sorted_get = await _usersService.GetSortedUsers(all_user_responses, nameof(User.Email), SortOption.DESC);
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_sorted_get)
@@ -803,7 +817,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the list of UserResponse sorted by Role in Ascending order
         [Fact]
-        public void GetSortedUsers_SortByRoleAsc()
+        public async Task GetSortedUsers_SortByRoleAsc()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -816,7 +830,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             user_response_from_add.OrderBy(temp => temp.Role.ToString()).ToList();
@@ -829,8 +843,8 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> all_user_responses = _usersService.GetAllUsers();
-            List<UserResponse> user_responses_from_sorted_get = _usersService.GetSortedUsers(all_user_responses, nameof(User.Role), SortOption.ASC);
+            List<UserResponse> all_user_responses = await _usersService.GetAllUsers();
+            List<UserResponse> user_responses_from_sorted_get = await _usersService.GetSortedUsers(all_user_responses, nameof(User.Role), SortOption.ASC);
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_sorted_get)
@@ -851,7 +865,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the list of UserResponse sorted by Role in Descending order
         [Fact]
-        public void GetSortedUsers_SortByRoleDesc()
+        public async Task GetSortedUsers_SortByRoleDesc()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -864,7 +878,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             user_response_from_add.OrderByDescending(temp => temp.Role.ToString()).ToList();
@@ -877,8 +891,8 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> all_user_responses = _usersService.GetAllUsers();
-            List<UserResponse> user_responses_from_sorted_get = _usersService.GetSortedUsers(all_user_responses, nameof(User.Role), SortOption.DESC);
+            List<UserResponse> all_user_responses = await _usersService.GetAllUsers();
+            List<UserResponse> user_responses_from_sorted_get = await _usersService.GetSortedUsers(all_user_responses, nameof(User.Role), SortOption.DESC);
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_sorted_get)
@@ -898,7 +912,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the list of UserResponse sorted by Date of Birth in Ascending order
         [Fact]
-        public void GetSortedUsers_SortByDateOfBirthAsc()
+        public async Task GetSortedUsers_SortByDateOfBirthAsc()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -911,7 +925,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             user_response_from_add.OrderBy(temp => temp.DateOfBirth).ToList();
@@ -924,8 +938,8 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> all_user_responses = _usersService.GetAllUsers();
-            List<UserResponse> user_responses_from_sorted_get = _usersService.GetSortedUsers(all_user_responses, nameof(User.DateOfBirth), SortOption.ASC);
+            List<UserResponse> all_user_responses = await _usersService.GetAllUsers();
+            List<UserResponse> user_responses_from_sorted_get = await _usersService.GetSortedUsers(all_user_responses, nameof(User.DateOfBirth), SortOption.ASC);
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_sorted_get)
@@ -946,7 +960,7 @@ namespace CRUDCoursesAppTest
 
         // It should return the list of UserResponse sorted by Date of Birth in Descending order
         [Fact]
-        public void GetSortedUsers_SortByDateOfBirthDesc()
+        public async Task GetSortedUsers_SortByDateOfBirthDesc()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -959,7 +973,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             user_response_from_add.OrderByDescending(temp => temp.DateOfBirth).ToList();
@@ -972,8 +986,8 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            List<UserResponse> all_user_responses = _usersService.GetAllUsers();
-            List<UserResponse> user_responses_from_sorted_get = _usersService.GetSortedUsers(all_user_responses, nameof(User.DateOfBirth), SortOption.DESC);
+            List<UserResponse> all_user_responses = await _usersService.GetAllUsers();
+            List<UserResponse> user_responses_from_sorted_get = await _usersService.GetSortedUsers(all_user_responses, nameof(User.DateOfBirth), SortOption.DESC);
 
             _outputHelper.WriteLine("Actual:");
             foreach (UserResponse actualUserResponse in user_responses_from_sorted_get)
@@ -997,7 +1011,7 @@ namespace CRUDCoursesAppTest
         #region UpdateUser
 
         [Fact]
-        public void UpdateUser_EmptyObject()
+        public async Task UpdateUser_EmptyObject()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -1010,23 +1024,23 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             UpdateUserRequest? new_user_add_null_request = null;
 
             //Assert
-            Assert.Throws<ArgumentNullException>(() => {
+            await Assert.ThrowsAsync<ArgumentNullException>(async() => {
 
                 //Act
-                _usersService.UpdateUser(new_user_add_null_request);
+                await _usersService.UpdateUser(new_user_add_null_request);
 
             });
 
         }
 
         [Fact]
-        public void UpdateUser_EmptyProperties()
+        public async Task UpdateUser_EmptyProperties()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -1041,7 +1055,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             List<UpdateUserRequest> new_user_update_empty_prop_request = new List<UpdateUserRequest>()
@@ -1065,12 +1079,12 @@ namespace CRUDCoursesAppTest
 
 
             //Assert
-            foreach(UpdateUserRequest userInvalidUpdateRequest in new_user_update_empty_prop_request)
+            foreach (UpdateUserRequest userInvalidUpdateRequest in new_user_update_empty_prop_request)
             {
-                Assert.Throws<ArgumentException>(() => {
+                await Assert.ThrowsAsync<ArgumentException>(async() => {
 
                     //Act
-                    user_responses_from_update_requests.Add(_usersService.UpdateUser(userInvalidUpdateRequest));
+                    user_responses_from_update_requests.Add(await _usersService.UpdateUser(userInvalidUpdateRequest));
 
                 });
             }
@@ -1079,7 +1093,7 @@ namespace CRUDCoursesAppTest
         }
 
         [Fact]
-        public void UpdateUser_ValidateProperties()
+        public async Task UpdateUser_ValidateProperties()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -1094,7 +1108,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             List<UpdateUserRequest> new_user_update_empty_prop_request = new List<UpdateUserRequest>()
@@ -1124,10 +1138,10 @@ namespace CRUDCoursesAppTest
             //Assert
             foreach (UpdateUserRequest userInvalidUpdateRequest in new_user_update_empty_prop_request)
             {
-                Assert.Throws<ArgumentException>(() => {
+               await Assert.ThrowsAsync<ArgumentException>(async() => {
 
                     //Act
-                    user_responses_from_update_requests.Add(_usersService.UpdateUser(userInvalidUpdateRequest));
+                    user_responses_from_update_requests.Add(await _usersService.UpdateUser(userInvalidUpdateRequest));
 
                 });
             }
@@ -1135,7 +1149,7 @@ namespace CRUDCoursesAppTest
         }
 
         [Fact]
-        public void UpdateUser_DuplicateUser()
+        public async Task UpdateUser_DuplicateUser()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -1150,7 +1164,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             UpdateUserRequest new_user_update_invalid_request = UpdateBasicUserRequest();
@@ -1159,16 +1173,16 @@ namespace CRUDCoursesAppTest
 
 
             //Assert
-            Assert.Throws<DuplicateNameException>(() =>
+            await Assert.ThrowsAsync<DuplicateNameException>(async() =>
             {
                 //Act
-                UserResponse invalid_user_response_from_update_request = _usersService.UpdateUser(new_user_update_invalid_request);
+                UserResponse invalid_user_response_from_update_request = await _usersService.UpdateUser(new_user_update_invalid_request);
             });
 
         }
 
         [Fact]
-        public void UpdateUser_ValidObject()
+        public async Task UpdateUser_ValidObject()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -1183,7 +1197,7 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
             UpdateUserRequest valid_user_update_request = UpdateBasicUserRequest();
@@ -1191,22 +1205,22 @@ namespace CRUDCoursesAppTest
 
 
             //Act
-            UserResponse expected_updated_user_response = _usersService.UpdateUser(valid_user_update_request);
+            UserResponse expected_updated_user_response = await _usersService.UpdateUser(valid_user_update_request);
 
             _outputHelper.WriteLine("Expected:");
             _outputHelper.WriteLine($"{expected_updated_user_response.ToString()}");
 
 
-            UserResponse actual_response_from_get = _usersService.GetUserById(expected_updated_user_response.UserId);
+            UserResponse actual_response_from_get = await _usersService.GetUserById(expected_updated_user_response.UserId);
 
-            
+
             _outputHelper.WriteLine("Actual:");
             _outputHelper.WriteLine($"{actual_response_from_get.ToString()}");
-            
+
 
             //Assert
             Assert.Equal(expected_updated_user_response, actual_response_from_get);
-            
+
         }
 
 
@@ -1214,7 +1228,7 @@ namespace CRUDCoursesAppTest
 
         #region DeleteUserByUserId
         [Fact]
-        public void DeleteUserByUserId_DoesNotExist()
+        public async Task DeleteUserByUserId_DoesNotExist()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -1229,20 +1243,20 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
 
 
             //Act
-            bool isDeleted = _usersService.DeleteUser(Guid.NewGuid());
+            bool isDeleted = await _usersService.DeleteUser(Guid.NewGuid());
 
             //Assert
             Assert.False(isDeleted);
-           
+
         }
 
         [Fact]
-        public void DeleteUserByUserId_DoExist()
+        public async Task DeleteUserByUserId_DoExist()
         {
             //Arrange
             List<AddUserRequest> user_requests = new List<AddUserRequest>()
@@ -1257,15 +1271,15 @@ namespace CRUDCoursesAppTest
 
             foreach (AddUserRequest userRequest in user_requests)
             {
-                user_response_from_add.Add(_usersService.AddUser(userRequest));
+                user_response_from_add.Add(await _usersService.AddUser(userRequest));
             }
             //Act
-            bool isDeleted = _usersService.DeleteUser(user_response_from_add[0].UserId);
+            bool isDeleted = await _usersService.DeleteUser(user_response_from_add[0].UserId);
 
             //Assert
             Assert.True(isDeleted);
 
-            
+
         }
         #endregion
     }

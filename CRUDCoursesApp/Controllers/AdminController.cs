@@ -20,6 +20,7 @@ namespace CRUDCoursesApp.Controllers
     {
 
         private readonly IUsersService _usersService;
+        
         private readonly IPostsService _postsService;
 
         private readonly IComunityMembersService _comunityMembersService;
@@ -28,7 +29,7 @@ namespace CRUDCoursesApp.Controllers
         private readonly ISignalsService _signalsService;
 
         public AdminController(
-            IUsersService usersService, 
+            IUsersService usersService,
             IComunitiesService comunitiesService,
             IComunityMembersService communityMembersService,
             IPostsService postsService,
@@ -58,14 +59,14 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             // Fill the quick stats informations
-            ViewBag.TotalUserCounts = _usersService.GetAllUsersCount();
-            ViewBag.TotalComunitiesCounts = _comunitiesService.GetAllComunitiesCount();
-            ViewBag.TotalPostsCounts = _postsService.GetAllPostsCount();
-            ViewBag.TotalSignalsCounts = _signalsService.GetAllSignals().Count;
-            ViewBag.TotalReportsCounts = _reportsService.GetAllReports().Count;
+            ViewBag.TotalUserCounts = await _usersService.GetAllUsersCount();
+            ViewBag.TotalComunitiesCounts = await _comunitiesService.GetAllComunitiesCount();
+            ViewBag.TotalPostsCounts = await _postsService.GetAllPostsCount();
+            ViewBag.TotalSignalsCounts = (await _signalsService.GetAllSignals()).Count;
+            ViewBag.TotalReportsCounts = (await _reportsService.GetAllReports()).Count;
             return View();
         }
 
@@ -74,7 +75,7 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/users/view")]
-        public IActionResult DisplayUsers([FromQuery] string searchBy, [FromQuery] string searchString, [FromQuery] string sortBy = nameof(UserResponse.Name), [FromQuery] SortOption sortOption = SortOption.ASC)
+        public async Task<IActionResult> DisplayUsers([FromQuery] string searchBy, [FromQuery] string searchString, [FromQuery] string sortBy = nameof(UserResponse.Name), [FromQuery] SortOption sortOption = SortOption.ASC)
         {
 
             ViewBag.SearchFields = new Dictionary<string, string>()
@@ -87,13 +88,13 @@ namespace CRUDCoursesApp.Controllers
             };
 
             // Search and filter
-            List<UserResponse> allFilteredResponses = _usersService.GetFilteredUsers(searchBy, searchString);
+            List<UserResponse> allFilteredResponses = await _usersService.GetFilteredUsers(searchBy, searchString);
             ViewBag.CurrentSearchBy = searchBy;
             ViewBag.CurrentSearchString = searchString;
 
 
             // Sort
-            List<UserResponse> sortedUserResponses = _usersService.GetSortedUsers(allFilteredResponses, sortBy, sortOption);
+            List<UserResponse> sortedUserResponses = await _usersService.GetSortedUsers(allFilteredResponses, sortBy, sortOption);
             ViewBag.CurrentSortBy = sortBy;
             ViewBag.CurrentSortOrder = sortOption.ToString();
 
@@ -104,11 +105,11 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/users/view/{UserId:guid}")]
-        public IActionResult DisplaySpecificUser([FromRoute] Guid UserId)
+        public async Task<IActionResult> DisplaySpecificUser([FromRoute] Guid UserId)
         {
             try
             {
-                UserResponse matchingUserResponse = _usersService.GetUserById(UserId);
+                UserResponse matchingUserResponse = await _usersService.GetUserById(UserId);
                 return View(matchingUserResponse);
             }
             catch (ArgumentNullException ex) { 
@@ -122,7 +123,7 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/users/add")]
-        public IActionResult AddUser()
+        public async Task<IActionResult> AddUser()
         {
 
             return View();
@@ -132,7 +133,7 @@ namespace CRUDCoursesApp.Controllers
         [HttpPost]
         [Route("admin/users/add")]
         [ValidateAntiForgeryToken]
-        public IActionResult AddUser([Bind][FromForm] AddUserRequest newUserAddRequest)
+        public async Task<IActionResult> AddUser([Bind][FromForm] AddUserRequest newUserAddRequest)
         {
             try
             {
@@ -144,7 +145,7 @@ namespace CRUDCoursesApp.Controllers
                     return RedirectToAction("AddUser", "Admin");
                 }
 
-                UserResponse newUserResponse = _usersService.AddUser(newUserAddRequest);
+                UserResponse newUserResponse = await _usersService.AddUser(newUserAddRequest);
                 TempData["SuccessMessage"] = "User added with success !";
                 return RedirectToAction("DisplayUsers", "Admin");
             }
@@ -163,11 +164,11 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/users/update/{UserId:guid}")]
-        public IActionResult UpdateSpecificUser([FromRoute] Guid UserId)
+        public async Task<IActionResult> UpdateSpecificUser([FromRoute] Guid UserId)
         {
             try
             {
-                UserResponse userResponse = _usersService.GetUserById(UserId);
+                UserResponse userResponse = await _usersService.GetUserById(UserId);
                 UpdateUserRequest updateRequest = userResponse.ToUpdateUserRequest();
                 return View(updateRequest);
             }
@@ -181,7 +182,7 @@ namespace CRUDCoursesApp.Controllers
         [HttpPost]
         [Route("admin/users/update/{UserId:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateSpecificUser([Bind][FromForm] UpdateUserRequest updateUserRequest,[FromRoute] Guid UserId)
+        public async Task<IActionResult> UpdateSpecificUser([Bind][FromForm] UpdateUserRequest updateUserRequest,[FromRoute] Guid UserId)
         {
 
             try
@@ -195,7 +196,7 @@ namespace CRUDCoursesApp.Controllers
                 }
 
                 updateUserRequest.UserId = UserId;
-                UserResponse updatedUser = _usersService.UpdateUser(updateUserRequest);
+                UserResponse updatedUser = await _usersService.UpdateUser(updateUserRequest);
                 TempData["SuccessMessage"] = "User updated with success !";
                 return RedirectToAction("DisplayUsers");
             }
@@ -213,11 +214,11 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/users/delete/{UserId:guid}")]
-        public IActionResult DeleteSpecificUser([FromRoute] Guid UserId)
+        public async Task<IActionResult> DeleteSpecificUser([FromRoute] Guid UserId)
         {
             try
             {
-                UserResponse userResponse = _usersService.GetUserById(UserId);
+                UserResponse userResponse = await _usersService.GetUserById(UserId);
                 return View(userResponse);
             }
             catch (Exception)
@@ -231,11 +232,11 @@ namespace CRUDCoursesApp.Controllers
         [HttpPost]
         [Route("admin/users/delete/{UserId:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteSpecificUserConfirm([FromRoute] Guid UserId)
+        public async Task<IActionResult> DeleteSpecificUserConfirm([FromRoute] Guid UserId)
         {
             try
             {
-                bool isDeleted = _usersService.DeleteUser(UserId);
+                bool isDeleted = await _usersService.DeleteUser(UserId);
                 if (isDeleted)
                 {
                     TempData["SuccessMessage"] = "User deleted with success !";
@@ -259,7 +260,7 @@ namespace CRUDCoursesApp.Controllers
         #region CommunityActionsMethod
         [HttpGet]
         [Route("admin/comunities/view")]
-        public IActionResult DisplayComunities([FromQuery] string searchBy, [FromQuery] string searchString, [FromQuery] string sortBy = nameof(ComunityResponse.Name), [FromQuery] SortOption sortOption = SortOption.ASC)
+        public async Task<IActionResult> DisplayComunities([FromQuery] string searchBy, [FromQuery] string searchString, [FromQuery] string sortBy = nameof(ComunityResponse.Name), [FromQuery] SortOption sortOption = SortOption.ASC)
         {
             ViewBag.SearchFields = new Dictionary<string, string>()
             {
@@ -272,13 +273,13 @@ namespace CRUDCoursesApp.Controllers
 
 
             // Search and filter
-            List<ComunityResponse> allFilteredResponses = _comunitiesService.GetFilteredComunities(searchBy, searchString);
+            List<ComunityResponse> allFilteredResponses = await _comunitiesService.GetFilteredComunities(searchBy, searchString);
             ViewBag.CurrentSearchBy = searchBy;
             ViewBag.CurrentSearchString = searchString;
 
 
             // Sort
-            List<ComunityResponse> sortedComunityResponses = _comunitiesService.GetSortedComunities(allFilteredResponses, sortBy, sortOption);
+            List<ComunityResponse> sortedComunityResponses = await _comunitiesService.GetSortedComunities(allFilteredResponses, sortBy, sortOption);
             ViewBag.CurrentSortBy = sortBy;
             ViewBag.CurrentSortOrder = sortOption.ToString();
 
@@ -287,14 +288,14 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/comunities/view/{ComId:guid}")]
-        public IActionResult DisplaySpecificComunity([FromRoute] Guid ComId, [FromQuery] int postsPage = 1, [FromQuery] int postsPageSize = 8, [FromQuery] int membersPage = 1, [FromQuery] int membersPageSize = 8)
+        public async Task<IActionResult> DisplaySpecificComunity([FromRoute] Guid ComId, [FromQuery] int postsPage = 1, [FromQuery] int postsPageSize = 8, [FromQuery] int membersPage = 1, [FromQuery] int membersPageSize = 8)
         {
             try
             {
-                ComunityResponse comResponse = _comunitiesService.GetComunityByComId(ComId);
+                ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
 
                 // prepare paged posts
-                var allPosts = _postsService.GetAllFilteredPostsByComunitiy(ComId, string.Empty, string.Empty);
+                var allPosts = await _postsService.GetAllFilteredPostsByComunitiy(ComId, string.Empty, string.Empty);
                 int postsTotal = allPosts.Count;
                 postsPage = Math.Max(1, postsPage);
                 postsPageSize = Math.Clamp(postsPageSize, 1, 50);
@@ -303,7 +304,7 @@ namespace CRUDCoursesApp.Controllers
                 var pagedPosts = allPosts.Skip((postsPage - 1) * postsPageSize).Take(postsPageSize).ToList();
 
                 // prepare paged members
-                var allMembers = _comunityMembersService.GetComunityMembers(ComId) ?? new List<ComunityMemberResponse>();
+                var allMembers = await _comunityMembersService.GetComunityMembers(ComId) ?? new List<ComunityMemberResponse>();
                 int membersTotal = allMembers.Count;
                 var pagedMembers = allMembers.Skip((membersPage - 1) * membersPageSize).Take(membersPageSize).ToList();
 
@@ -330,7 +331,7 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/comunities/add")]
-        public IActionResult AddComunity()
+        public async Task<IActionResult> AddComunity()
         {
             return View();
         }
@@ -338,7 +339,7 @@ namespace CRUDCoursesApp.Controllers
         [HttpPost]
         [Route("admin/comunities/add")]
         [ValidateAntiForgeryToken]
-        public IActionResult AddComunity([Bind][FromForm] AddComunityRequest addComunityRequest)
+        public async Task<IActionResult> AddComunity([Bind][FromForm] AddComunityRequest addComunityRequest)
         {
             try
             {
@@ -350,7 +351,7 @@ namespace CRUDCoursesApp.Controllers
                     return RedirectToAction("AddComunity", "Admin");
                 }
 
-                ComunityResponse created = _comunitiesService.AddComunity(addComunityRequest);
+                ComunityResponse created = await _comunitiesService.AddComunity(addComunityRequest);
                 TempData["SuccessMessage"] = "Community added successfully!";
                 return RedirectToAction("DisplayComunities", "Admin");
             }
@@ -369,11 +370,11 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/comunities/update/{ComId:guid}")]
-        public IActionResult UpdateComunity([FromRoute]Guid ComId)
+        public async Task<IActionResult> UpdateComunity([FromRoute]Guid ComId)
         {
             try
             {
-                ComunityResponse comResponse = _comunitiesService.GetComunityByComId(ComId);
+                ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
                 return View(comResponse);
             }
             catch (Exception)
@@ -386,7 +387,7 @@ namespace CRUDCoursesApp.Controllers
         [HttpPost]
         [Route("admin/comunities/update/{ComId:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateSpecificComunity([Bind][FromForm] UpdateComunityRequest updateComunityRequest, [FromRoute] Guid ComId)
+        public async Task<IActionResult> UpdateSpecificComunity([Bind][FromForm] UpdateComunityRequest updateComunityRequest, [FromRoute] Guid ComId)
         {
             try
             {
@@ -401,11 +402,11 @@ namespace CRUDCoursesApp.Controllers
                 updateComunityRequest.Id = ComId;
                 if (updateComunityRequest.TeacherId == Guid.Empty)
                 {
-                    ComunityResponse existing = _comunitiesService.GetComunityByComId(ComId);
+                    ComunityResponse existing = await _comunitiesService.GetComunityByComId(ComId);
                     updateComunityRequest.TeacherId = existing.TeacherId;
                 }
 
-                ComunityResponse updated = _comunitiesService.UpdateComunity(updateComunityRequest);
+                ComunityResponse updated = await _comunitiesService.UpdateComunity(updateComunityRequest);
                 SafeSetTempData("SuccessMessage", "Community updated successfully!");
                 return RedirectToAction("DisplaySpecificComunity", new { ComId });
             }
@@ -423,11 +424,11 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/comunities/delete/{ComId:guid}")]
-        public IActionResult DeleteSpecificComunity([FromRoute] Guid ComId)
+        public async Task<IActionResult> DeleteSpecificComunity([FromRoute] Guid ComId)
         {
             try
             {
-                ComunityResponse comResponse = _comunitiesService.GetComunityByComId(ComId);
+                ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
                 return View(comResponse);
             }
             catch (Exception)
@@ -440,11 +441,11 @@ namespace CRUDCoursesApp.Controllers
         [HttpPost]
         [Route("admin/comunities/delete/{ComId:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteSpecificComunityConfirm([FromRoute] Guid ComId)
+        public async Task<IActionResult> DeleteSpecificComunityConfirm([FromRoute] Guid ComId)
         {
             try
             {
-                bool deleted = _comunitiesService.DeleteComunityByComId(ComId);
+                bool deleted = await _comunitiesService.DeleteComunityByComId(ComId);
                 if (deleted)
                 {
                     SafeSetTempData("SuccessMessage", "Community deleted successfully.");
@@ -466,11 +467,11 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/comunities/view/{ComId:guid}/users/view")]
-        public IActionResult DisplayUserByComunity([FromRoute] Guid ComId)
+        public async Task<IActionResult> DisplayUserByComunity([FromRoute] Guid ComId)
         {
             try
             {
-                ComunityResponse comResponse = _comunitiesService.GetComunityByComId(ComId);
+                ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
                 ViewBag.ComId = ComId;
                 return View(comResponse.Users ?? new List<UserResponse>());
             }
@@ -481,10 +482,10 @@ namespace CRUDCoursesApp.Controllers
 
 
         [HttpGet]
-        [Route("admin/comunities/view/{ComId:guid}/users/add")]
-        public IActionResult AddUserByComunity([FromRoute] Guid ComId)
+        [Route("admin/comunities/view/{ComId:guid}/users/add")] 
+        public async Task<IActionResult> AddUserByComunity([FromRoute] Guid ComId)
         {
-            if (!_comunitiesService.GetAllComunities().Any(c => c.Id == ComId))
+            if (!(await _comunitiesService.GetAllComunities()).Any(c => c.Id == ComId))
                 return NotFound();
 
             ViewBag.ComId = ComId;
@@ -494,7 +495,7 @@ namespace CRUDCoursesApp.Controllers
         [HttpPost]
         [Route("admin/comunities/view/{ComId:guid}/users/add")]
         [ValidateAntiForgeryToken]
-        public IActionResult AddUserByComunity([FromRoute] Guid ComId, [Bind][FromForm] AddUserRequest addUserRequest)
+        public async Task<IActionResult> AddUserByComunity([FromRoute] Guid ComId, [Bind][FromForm] AddUserRequest addUserRequest)
         {
             if (!ModelState.IsValid) 
             { 
@@ -503,8 +504,8 @@ namespace CRUDCoursesApp.Controllers
             }
             try
             {
-                UserResponse user = _usersService.AddUser(addUserRequest);
-                _comunityMembersService.AddComunityMember(new AddComunityMemberRequest { ComunityId = ComId, UserId = user.UserId, Role = ComunityRole.Member });
+                UserResponse user = await _usersService.AddUser(addUserRequest);
+                await _comunityMembersService.AddComunityMember(new AddComunityMemberRequest { ComunityId = ComId, UserId = user.UserId, Role = ComunityRole.Member });
                 TempData["SuccessMessage"] = "Le membre a été ajouté à la communauté.";
                 return RedirectToAction(nameof(DisplayUserByComunity), new { ComId });
             }
@@ -518,11 +519,11 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/comunities/view/{ComId:guid}/users/delete/{UserId:guid}")]
-        public IActionResult ConfirmDeleteUserByComunity([FromRoute] Guid ComId, [FromRoute] Guid UserId)
+        public async Task<IActionResult> ConfirmDeleteUserByComunity([FromRoute] Guid ComId, [FromRoute] Guid UserId)
         {
             try { 
                 ViewBag.ComId = ComId;
-                return View(_usersService.GetUserById(UserId));
+                return View(await _usersService.GetUserById(UserId));
             }
             catch (ArgumentNullException) { 
                 return NotFound();
@@ -533,9 +534,9 @@ namespace CRUDCoursesApp.Controllers
         [HttpPost]
         [Route("admin/comunities/view/{ComId:guid}/users/delete/{UserId:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteUserByComunity([FromRoute] Guid ComId, [FromRoute] Guid UserId)
+        public async Task<IActionResult> DeleteUserByComunity([FromRoute] Guid ComId, [FromRoute] Guid UserId)
         {
-            if (!_comunityMembersService.RemoveComunityMember(ComId, UserId)) 
+            if (!await _comunityMembersService.RemoveComunityMember(ComId, UserId)) 
                 TempData["ErrorMessage"] = "Ce membre n'a pas été trouvé dans cette communauté.";
             else 
                 TempData["SuccessMessage"] = "Le membre a été retiré de la communauté.";
@@ -547,7 +548,7 @@ namespace CRUDCoursesApp.Controllers
         #region PostsActionMethods
         [HttpGet]
         [Route("admin/comunities/view/{ComId:guid}/posts/view")]
-        public IActionResult DisplayPostsByComunity([FromRoute] Guid ComId, [FromQuery] string searchBy, [FromQuery] string searchString, [FromQuery] string sortBy = nameof(PostResponse.Title), [FromQuery] SortOption sortOrder = SortOption.ASC)
+        public async Task<IActionResult> DisplayPostsByComunity([FromRoute] Guid ComId, [FromQuery] string searchBy, [FromQuery] string searchString, [FromQuery] string sortBy = nameof(PostResponse.Title), [FromQuery] SortOption sortOrder = SortOption.ASC)
         {
             ViewBag.SearchFields = new Dictionary<string, string>()
             {
@@ -560,15 +561,15 @@ namespace CRUDCoursesApp.Controllers
 
             try
             {
-                ComunityResponse comResponse = _comunitiesService.GetComunityByComId(ComId);
+                ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
 
                 // Filter the posts
-                List<PostResponse> comunityFilteredPosts = _postsService.GetAllFilteredPostsByComunitiy(ComId, searchBy, searchString);
+                List<PostResponse> comunityFilteredPosts = await _postsService.GetAllFilteredPostsByComunitiy(ComId, searchBy, searchString);
                 ViewBag.CurrentSearchBy = searchBy;
                 ViewBag.CurrentSearchString = searchString;
 
                 // Sort the posts
-                List<PostResponse> comunitySortedPosts = _postsService.GetAllSortedPostsByComunity(ComId, comunityFilteredPosts, sortBy, sortOrder);
+                List<PostResponse> comunitySortedPosts = await _postsService.GetAllSortedPostsByComunity(ComId, comunityFilteredPosts, sortBy, sortOrder);
                 ViewBag.CurrentSortBy = sortBy;
                 ViewBag.CurrentSortOrder = sortOrder.ToString();
                 ViewBag.ComId = ComId;
@@ -585,19 +586,19 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/comunities/view/{ComId:guid}/posts/add")]
-        public IActionResult AddPostByComunity([FromRoute] Guid ComId)
+        public async Task<IActionResult> AddPostByComunity([FromRoute] Guid ComId)
         {
-            try { _comunitiesService.GetComunityByComId(ComId); }
+            try { await _comunitiesService.GetComunityByComId(ComId); }
             catch (ArgumentNullException) { return NotFound(); }
             ViewBag.ComId = ComId;
-            ViewBag.Users = _comunitiesService.GetComunityByComId(ComId).Users ?? new List<UserResponse>();
+            ViewBag.Users = (await _comunitiesService.GetComunityByComId(ComId)).Users ?? new List<UserResponse>();
             return View();
         }
 
         [HttpPost]
         [Route("admin/comunities/view/{ComId:guid}/posts/add")]
         [ValidateAntiForgeryToken]
-        public IActionResult AddPostByComunity([FromRoute] Guid ComId, [Bind][FromForm] AddPostRequest addPostRequest)
+        public async Task<IActionResult> AddPostByComunity([FromRoute] Guid ComId, [Bind][FromForm] AddPostRequest addPostRequest)
         {
             if (!ModelState.IsValid) 
             { 
@@ -607,7 +608,7 @@ namespace CRUDCoursesApp.Controllers
             try
             {
                 addPostRequest.ComunityId = ComId;
-                _postsService.AddPost(addPostRequest);
+                await _postsService.AddPost(addPostRequest);
                 TempData["SuccessMessage"] = "La publication a été créée.";
                 return RedirectToAction(nameof(DisplayPostsByComunity), new { ComId });
             }
@@ -621,9 +622,9 @@ namespace CRUDCoursesApp.Controllers
         [HttpPost]
         [Route("admin/comunities/view/{ComId:guid}/posts/delete/{UserId:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeletePostsByComunity([FromRoute] Guid ComId, [FromRoute] Guid UserId)
+        public async Task<IActionResult> DeletePostsByComunity([FromRoute] Guid ComId, [FromRoute] Guid UserId)
         {
-            if (!_postsService.DeletePostByPostId(UserId)) 
+            if (!await _postsService.DeletePostByPostId(UserId)) 
                 TempData["ErrorMessage"] = "La publication est introuvable.";
             else 
                 TempData["SuccessMessage"] = "La publication a été supprimée.";
@@ -633,11 +634,11 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpGet]
         [Route("admin/comunities/view/{ComId:guid}/posts/update/{UserId:guid}")]
-        public IActionResult UpdatePostByComunity([FromRoute]Guid ComId, [FromRoute]Guid UserId)
+        public async Task<IActionResult> UpdatePostByComunity([FromRoute]Guid ComId, [FromRoute]Guid UserId)
         {
             try
             {
-                PostResponse post = _postsService.GetPostByPostId(UserId);
+                PostResponse post = await _postsService.GetPostByPostId(UserId);
                 ViewBag.ComId = ComId;
                 return View(new UpdatePostRequest { Id = post.Id, ComunityId = ComId, UserId = post.UserId, Title = post.Title ?? "", Body = post.Body ?? "", ImagesPath = post.ImagesPath ?? new(), AdditionalsPath = post.AdditionalsPath ?? new() });
             }
@@ -649,7 +650,7 @@ namespace CRUDCoursesApp.Controllers
         [HttpPost]
         [Route("admin/comunities/view/{ComId:guid}/posts/update/{UserId:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdatePostByComunity([FromRoute]Guid ComId, [FromRoute]Guid UserId, [Bind][FromForm] UpdatePostRequest request)
+        public async Task<IActionResult> UpdatePostByComunity([FromRoute]Guid ComId, [FromRoute]Guid UserId, [Bind][FromForm] UpdatePostRequest request)
         {
             if (!ModelState.IsValid) 
                 return RedirectToAction(nameof(UpdatePostByComunity), new { ComId, UserId });
@@ -657,7 +658,7 @@ namespace CRUDCoursesApp.Controllers
             {
                 request.Id = UserId;
                 request.ComunityId = ComId;
-                _postsService.UpdatePost(request);
+                await _postsService.UpdatePost(request);
                 TempData["SuccessMessage"] = "La publication a été mise à jour.";
             }
             catch (Exception ex) { 
@@ -668,40 +669,40 @@ namespace CRUDCoursesApp.Controllers
 
 
         [HttpGet("/admin/posts")]
-        public IActionResult DisplayPosts()
+        public async Task<IActionResult> DisplayPosts()
         {
             ViewBag.PageTitle = "Toutes les publications";
             ViewBag.ComId = Guid.Empty;
-            return View("DisplayPostsByComunity", _postsService.GetAllPosts());
+            return View("DisplayPostsByComunity", await _postsService.GetAllPosts());
         }
         #endregion
 
         #region SignalActionsMethod
         [HttpGet("/admin/signals")]
-        public IActionResult DisplaySignals() => View(_signalsService.GetAllSignals());
+        public async Task<IActionResult> DisplaySignals() => View(await _signalsService.GetAllSignals());
 
         [HttpGet("/admin/signals/add")]
-        public IActionResult AddSignal() => View(new AddSignalRequest());
+        public async Task<IActionResult> AddSignal() => View(new AddSignalRequest());
 
         [HttpPost("/admin/signals/add")]
         [ValidateAntiForgeryToken]
-        public IActionResult AddSignal([Bind][FromForm]AddSignalRequest request)
+        public async Task<IActionResult> AddSignal([Bind][FromForm]AddSignalRequest request)
         {
             if (!ModelState.IsValid) 
                 return View(request);
 
-            _signalsService.AddSignal(request);
+            await _signalsService.AddSignal(request);
             TempData["SuccessMessage"] = "Le signalement technique a été créé.";
 
             return RedirectToAction(nameof(DisplaySignals));
         }
 
         [HttpGet("/admin/signals/update/{id:guid}")]
-        public IActionResult UpdateSignal([FromRoute]Guid id)
+        public async Task<IActionResult> UpdateSignal([FromRoute]Guid id)
         {
             try
             {
-                var signal = _signalsService.GetSignalById(id);
+                var signal = await _signalsService.GetSignalById(id);
                 return View(new UpdateSignalRequest { Id = signal.Id, ProblemName = signal.ProblemName, ProblemDescription = signal.ProblemDescription, Level = signal.Level, Status = signal.Status, IsConfirmed = signal.IsConfirmed });
             }
             catch (KeyNotFoundException) { 
@@ -711,13 +712,13 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpPost("/admin/signals/update/{id:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateSignal([FromRoute]Guid id, [Bind][FromForm] UpdateSignalRequest request)
+        public async Task<IActionResult> UpdateSignal([FromRoute]Guid id, [Bind][FromForm] UpdateSignalRequest request)
         {
             if (!ModelState.IsValid)
                 return View(request);
 
             request.Id = id;
-            _signalsService.UpdateSignal(request);
+            await _signalsService.UpdateSignal(request);
 
             TempData["SuccessMessage"] = "Le signal technique a été mis à jour.";
             return RedirectToAction(nameof(DisplaySignals));
@@ -725,63 +726,63 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpPost("/admin/signals/delete/{id:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteSignal([FromRoute] Guid id)
+        public async Task<IActionResult> DeleteSignal([FromRoute] Guid id)
         {
-            bool deleted = _signalsService.DeleteSignal(id);
+            bool deleted = await _signalsService.DeleteSignal(id);
             TempData[deleted ? "SuccessMessage" : "ErrorMessage"] = deleted ? "Le signal technique a été supprimé." : "Ce signal technique est introuvable.";
             return RedirectToAction(nameof(DisplaySignals));
         }
 
         [HttpGet("/admin/reports")]
-        public IActionResult DisplayReports([FromRoute] Guid? postId = null)
+        public async Task<IActionResult> DisplayReports([FromRoute] Guid? postId = null)
         {
-            List<ReportResponse> reports = _reportsService.GetAllReports();
+            List<ReportResponse> reports = await _reportsService.GetAllReports();
             if (postId.HasValue) 
                 reports = reports.Where(r => r.PostId == postId.Value).ToList();
 
             ViewBag.PostId = postId;
-            ViewBag.PostTitles = _postsService.GetAllPosts().ToDictionary(p => p.Id, p => p.Title ?? "Publication");
+            ViewBag.PostTitles = (await _postsService.GetAllPosts()).ToDictionary(p => p.Id, p => p.Title ?? "Publication");
             return View(reports);
         }
 
         [HttpGet("/admin/reports/add")]
-        public IActionResult AddReport()
+        public async Task<IActionResult> AddReport()
         {
-            ViewBag.Posts = _postsService.GetAllPosts();
+            ViewBag.Posts = await _postsService.GetAllPosts();
             return View(new AddReportRequest());
         }
 
         [HttpPost("/admin/reports/add")]
         [ValidateAntiForgeryToken]
-        public IActionResult AddReport([Bind][FromForm] AddReportRequest request)
+        public async Task<IActionResult> AddReport([Bind][FromForm] AddReportRequest request)
         {
             if (!ModelState.IsValid) 
             { 
-                ViewBag.Posts = _postsService.GetAllPosts();
+                ViewBag.Posts = await _postsService.GetAllPosts();
                 return View(request);
             }
             try
             {
                 request.StatusOfReport = ReportStatus.Received;
-                _reportsService.AddReport(request);
+                await _reportsService.AddReport(request);
                 TempData["SuccessMessage"] = "Le signalement de publication a été créé.";
                 return RedirectToAction(nameof(DisplayReports));
             }
             catch (Exception ex) { 
                 ModelState.AddModelError(string.Empty, ex.Message);
-                ViewBag.Posts = _postsService.GetAllPosts();
+                ViewBag.Posts = await _postsService.GetAllPosts();
                 return View(request);
             }
         }
 
         [HttpPost("/admin/reports/status/{id:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateReportStatus([FromRoute]Guid id, [Bind][FromForm]ReportStatus status)
+        public async Task<IActionResult> UpdateReportStatus([FromRoute]Guid id, [Bind][FromForm]ReportStatus status)
         {
             try
             {
-                ReportResponse report = _reportsService.GetReportByReportId(id);
-                _reportsService.UpdateReport(new UpdateReportRequest { Id = report.Id, PostId = report.PostId, TypeOfReport = report.TypeOfReport, MessageOfReport = report.MessageOfReport, StatusOfReport = status });
+                ReportResponse report = await _reportsService.GetReportByReportId(id);
+                await _reportsService.UpdateReport(new UpdateReportRequest { Id = report.Id, PostId = report.PostId, TypeOfReport = report.TypeOfReport, MessageOfReport = report.MessageOfReport, StatusOfReport = status });
                 TempData["SuccessMessage"] = "Le statut du signalement a été mis à jour.";
             }
             catch (Exception ex) { 
@@ -792,9 +793,9 @@ namespace CRUDCoursesApp.Controllers
 
         [HttpPost("/admin/reports/delete/{id:guid}")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteReport([FromRoute]Guid id)
+        public async Task<IActionResult> DeleteReport([FromRoute]Guid id)
         {
-            bool deleted = _reportsService.DeleteReportByReportId(id);
+            bool deleted = await _reportsService.DeleteReportByReportId(id);
             TempData[deleted ? "SuccessMessage" : "ErrorMessage"] = deleted ? "Le signalement a été supprimé." : "Ce signalement est introuvable.";
             return RedirectToAction(nameof(DisplayReports));
         }

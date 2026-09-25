@@ -14,34 +14,34 @@ namespace ServiceContracts
         /// </summary>
         /// <param name="addReportRequest"></param>
         /// <returns></returns>
-        public ReportResponse AddReport(AddReportRequest? addReportRequest);
+        public Task<ReportResponse> AddReport(AddReportRequest? addReportRequest);
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public List<ReportResponse> GetAllReports();
+        public Task<List<ReportResponse>> GetAllReports();
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="ReportId"></param>
         /// <returns></returns>
-        public ReportResponse GetReportByReportId(Guid ReportId);
+        public Task<ReportResponse> GetReportByReportId(Guid ReportId);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="updateReportRequest"></param>
         /// <returns></returns>
-        public ReportResponse UpdateReport(UpdateReportRequest? updateReportRequest);
+        public Task<ReportResponse> UpdateReport(UpdateReportRequest? updateReportRequest);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="ReportId"></param>
         /// <returns></returns>
-        public bool DeleteReportByReportId(Guid ReportId);
+        public Task<bool> DeleteReportByReportId(Guid ReportId);
 
     }
 }

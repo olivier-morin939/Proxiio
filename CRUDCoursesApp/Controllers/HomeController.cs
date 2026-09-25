@@ -23,19 +23,20 @@ namespace CRUDCoursesApp.Controllers
         }
 
         [Route("/")]
-        public IActionResult Index([FromQuery] string? q)
+        public async Task<IActionResult> Index([FromQuery] string? q)
         {
-            UserResponse currentUser = _usersService.GetAllUsers().OrderBy(u => u.Name).First();
-            List<ComunityResponse> allCommunities = _comunitiesService.GetAllComunities();
+            List<UserResponse> allUsers = await _usersService.GetAllUsers();
+            UserResponse? currentUser = allUsers.OrderBy(u => u.Name).FirstOrDefault();
+            List<ComunityResponse> allCommunities = await _comunitiesService.GetAllComunities();
             if (!string.IsNullOrWhiteSpace(q)) 
                 allCommunities = allCommunities.Where(c => c.Name?.Contains(q, StringComparison.OrdinalIgnoreCase) == true || c.Description?.Contains(q, StringComparison.OrdinalIgnoreCase) == true).ToList();
         
             return View(new CommunityHomeViewModel
             {
-                CurrentUserId = currentUser.UserId,
-                CurrentUserName = currentUser.Name ?? "Membre",
+                CurrentUserId = currentUser?.UserId ?? Guid.Empty,
+                CurrentUserName = currentUser?.Name ?? "Membre",
                 Communities = allCommunities,
-                Feed = _postsService.GetCommunityFeed()
+                Feed = await _postsService.GetCommunityFeed()
             });
         }
     }

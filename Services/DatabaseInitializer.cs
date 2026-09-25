@@ -6,16 +6,16 @@ using ServiceContracts;
 
 namespace Services;
 
-public class DatabaseInitializer(UsersDbContext db) : IDatabaseInitializer
+public class DatabaseInitializer(ApplicationDbContext db) : IDatabaseInitializer
 {
     /// <summary>
     ///  Initialize some mock data for the first use od the database
     /// </summary>
-    public void Initialize()
+    public async Task Initialize()
     {
-        db.Database.EnsureCreated();
+        await db.Database.MigrateAsync();
 
-        if (db.Users.Any()) 
+        if (await db.Users.AnyAsync())
             return;
 
 
@@ -37,6 +37,6 @@ public class DatabaseInitializer(UsersDbContext db) : IDatabaseInitializer
             new Post { Id = Guid.NewGuid(), CommunityId = design.Id, UserId = teacher.UserId, Title = "Bienvenue dans la communauté 👋", Body = "Présentez-vous dans les commentaires : sur quoi travaillez-vous en ce moment et qu’aimeriez-vous apprendre ?", CreatedAt = now.AddHours(-2), ModifiedAt = now.AddHours(-2) },
             new Post { Id = Guid.NewGuid(), CommunityId = design.Id, UserId = learner.UserId, Title = "Mon premier projet de refonte", Body = "Je commence une refonte de mon portfolio cette semaine. Vos conseils pour bien démarrer sur Figma sont les bienvenus !", CreatedAt = now.AddMinutes(-48), ModifiedAt = now.AddMinutes(-48) },
             new Post { Id = Guid.NewGuid(), CommunityId = dev.Id, UserId = teacher.UserId, Title = "Défi de la semaine : construisez une API", Body = "Cette semaine, on construit une petite API, on partage nos solutions et on s’entraide dans les commentaires.", CreatedAt = now.AddDays(-1), ModifiedAt = now.AddDays(-1) });
-        db.SaveChanges();
+        await db.SaveChangesAsync();
     }
 }
