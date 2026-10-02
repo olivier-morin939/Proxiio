@@ -122,19 +122,12 @@
 
                                 <!-- Date de naissance -->
                                 <td class="app-tabs-td app-tabs-text-muted">
-                                    @if (userResponse.DateOfBirth.HasValue)
-                                    {
-                                        <span>@userResponse.DateOfBirth.Value.ToString("dd MMM yyyy")</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="app-tabs-text-empty">N/A</span>
-                                    }
+                                    <span>@userResponse.DateOfBirth.ToString("dd MMM yyyy")</span>
                                 </td>
 
                                 <!-- Newsletter -->
                                 <td class="app-tabs-td">
-                                    @if (userResponse.ReceiveNewsLetter.HasValue && userResponse.ReceiveNewsLetter.Value)
+                                    @if (userResponse.ReceiveNewsLetter)
                                     {
                                         <span class="app-tab-badge app-tab-badge-newsletter">
                                             <span class="app-tab-badge-dot app-tab-dot-emerald"></span>

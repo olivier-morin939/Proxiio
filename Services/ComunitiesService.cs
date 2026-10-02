@@ -172,7 +172,7 @@ public class ComunitiesService : IComunitiesService
         {
             Id = community.Id, TeacherId = community.TeacherId, Name = community.Name, Description = community.Description,
             UsersCount = members.Count, PostsCount = posts.Count,
-            Users = members.Select(u => u.ToUserAddResponse()).ToList(),
+            Users = members.Select(u => u.ToUserResponse()).ToList(),
             Posts = posts.Select(p => p.ToPostResponse()).ToList()
         };
     }

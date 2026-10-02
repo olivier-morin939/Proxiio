@@ -1,13 +1,11 @@
 ﻿using Entities;
-using Entities.Contexts;
 using Entities.Enums;
-using Microsoft.EntityFrameworkCore;
 using ServiceContracts;
 using ServiceContracts.DTO.Users;
 using Services;
+using RepositoryContracts;
 using System.Data;
 using Xunit.Abstractions;
-using EntityFrameworkCoreMock;
 using Moq;
 using AutoFixture;
 using FluentAssertions;
@@ -21,6 +19,9 @@ namespace CRUDCoursesAppTest
     {
         private readonly IUsersService _usersService;
         private readonly Mock<IEncryptionsService> _encryptionsServiceMock;
+        private readonly IEncryptionsService _encryptionsService;
+        private readonly Mock<IUsersRepository> _usersRepositoryMock;
+        private readonly IUsersRepository _usersRepository;
         private readonly ITestOutputHelper _outputHelper;
 
         private readonly IFixture _fixture;
@@ -28,26 +29,41 @@ namespace CRUDCoursesAppTest
         {
             _fixture = new Fixture();
             _outputHelper = outputHelper;
-            _encryptionsServiceMock = new Mock<IEncryptionsService>();
-            var usersInitialData = new List<User>() { };
-            DbContextMock<ApplicationDbContext> appDbContextMock = new DbContextMock<ApplicationDbContext>(new DbContextOptionsBuilder<ApplicationDbContext>().Options);
-            var appDbContext = appDbContextMock.Object;
-            appDbContextMock.CreateDbSetMock(temp => temp.Users, usersInitialData);
-            _usersService = new UsersService(appDbContext, _encryptionsServiceMock.Object);
-        }
 
+            _encryptionsServiceMock = new Mock<IEncryptionsService>();
+            _encryptionsService = _encryptionsServiceMock.Object;
+
+            _usersRepositoryMock = new Mock<IUsersRepository>();
+            _usersRepository = _usersRepositoryMock.Object;
+            _usersService = new UsersService(_usersRepository, _encryptionsService);
+        }
 
         #region AddUser
         [Fact]
-        public async Task AddUser_EmptyObject()
+        public async Task AddUser_EmptyObject_ToBeRejected()
         {
             // Arrange
             AddUserRequest? new_user_add_null_request = null;
+            User? invalid_user = null;
+            UserResponse? expected_invalid_user_response = null;
+
+
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+            .ReturnsAsync(invalid_user);
+
+
+            User already_existing_user = _fixture.Build<User>()
+            .With(temp => temp.Email, "something@default.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .Create();
+
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+            .ReturnsAsync(already_existing_user);
 
             // Prepared Act
             Func<Task> action = async () =>
             {
-                UserResponse invalid_user_response = await _usersService.AddUser(new_user_add_null_request);
+                UserResponse actual_invalid_user_response = await _usersService.AddUser(new_user_add_null_request);
             };
 
             //Assert
@@ -55,47 +71,38 @@ namespace CRUDCoursesAppTest
 
         }
 
+
         [Fact]
-        public async Task AddUser_EmptyProperties()
+        public async Task AddUser_EmptyNameProperty_ToBeRejected()
         {
 
             //Arrange 
-            AddUserRequest new_user_request1 = _fixture.Build<AddUserRequest>()
+            AddUserRequest new_user_request = _fixture.Build<AddUserRequest>()
             .With(temp => temp.Name, null as string)
             .With(temp => temp.Email, "example@email.com")
             .With(temp => temp.Password, "ValidPassword1234!")
             .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
             .Create();
 
-            AddUserRequest new_user_request2 = _fixture.Build<AddUserRequest>()
-            .With(temp => temp.Email, null as string)
+            User invalid_user = new_user_request.ToUser();
+            UserResponse expected_invalid_user_response = invalid_user.ToUserResponse();
+
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+             .ReturnsAsync(invalid_user);
+
+            User already_existing_user = _fixture.Build<User>()
+            .With(temp => temp.Email, "something@example.com")
             .With(temp => temp.Password, "ValidPassword1234!")
-            .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
             .Create();
 
-            AddUserRequest new_user_request3 = _fixture.Build<AddUserRequest>()
-            .With(temp => temp.Email, "example@email.com")
-            .With(temp => temp.Password, null as string)
-            .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
-            .Create();
-
-            AddUserRequest new_user_request4 = _fixture.Build<AddUserRequest>()
-            .With(temp => temp.Email, "example@email.com")
-            .With(temp => temp.Password, "ValidPassword1234!")
-            .With(temp => temp.ConfirmPassword, null as string)
-            .Create();
-
-            List<AddUserRequest> invalid_user_add_request = new List<AddUserRequest>() { new_user_request1, new_user_request2, new_user_request3, new_user_request4 };
-            List<UserResponse> user_responses_from_add_request = new List<UserResponse>();
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User> { already_existing_user });
 
             // Prepared Act
-            Func<Task> action = async () =>
+            Func <Task> action = async () =>
             {
-                foreach (AddUserRequest addEmptyPropertyUserRequest in invalid_user_add_request)
-                {
-                    user_responses_from_add_request.Add(await _usersService.AddUser(addEmptyPropertyUserRequest));
-                }
-                    
+                UserResponse actual_invalid_user_response =  await _usersService.AddUser(new_user_request);
+
             };
 
             // Assert
@@ -104,12 +111,130 @@ namespace CRUDCoursesAppTest
 
         }
 
+
         [Fact]
-        public async Task AddUser_ValidateProperties()
+        public async Task AddUser_EmptyEmailProperty_ToBeRejected()
         {
 
             //Arrange 
-            AddUserRequest new_user_request1 = _fixture.Build<AddUserRequest>()
+            AddUserRequest new_user_request = _fixture.Build<AddUserRequest>()
+            .With(temp => temp.Email, null as string)
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
+            .Create();
+
+            User invalid_user = new_user_request.ToUser();
+            UserResponse expected_invalid_user_response = invalid_user.ToUserResponse();
+
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+             .ReturnsAsync(invalid_user);
+
+            User already_existing_user = _fixture.Build<User>()
+            .With(temp => temp.Email, "something@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .Create();
+
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User> { already_existing_user });
+
+            // Prepared Act
+            Func<Task> action = async () =>
+            {
+                UserResponse actual_invalid_user_response = await _usersService.AddUser(new_user_request);
+
+            };
+
+            // Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+
+
+        }
+
+
+        [Fact]
+        public async Task AddUser_EmptyPasswordProperty_ToBeRejected()
+        {
+
+            //Arrange 
+            AddUserRequest new_user_request = _fixture.Build<AddUserRequest>()
+            .With(temp => temp.Email, "example@email.com")
+            .With(temp => temp.Password, null as string)
+            .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
+            .Create();
+
+            User invalid_user = new_user_request.ToUser();
+            UserResponse expected_invalid_user_response = invalid_user.ToUserResponse();
+
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+             .ReturnsAsync(invalid_user);
+
+            User already_existing_user = _fixture.Build<User>()
+            .With(temp => temp.Email, "something@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .Create();
+
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User> { already_existing_user });
+
+            // Prepared Act
+            Func<Task> action = async () =>
+            {
+                UserResponse actual_invalid_user_response = await _usersService.AddUser(new_user_request);
+
+            };
+
+            // Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+
+
+        }
+
+
+        [Fact]
+        public async Task AddUser_EmptyConfirmPasswordProperty_ToBeRejected()
+        {
+
+            //Arrange 
+            AddUserRequest new_user_request = _fixture.Build<AddUserRequest>()
+            .With(temp => temp.Email, "example@email.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .With(temp => temp.ConfirmPassword, null as string)
+            .Create();
+
+            User invalid_user = new_user_request.ToUser();
+            UserResponse expected_invalid_user_response = invalid_user.ToUserResponse();
+
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+             .ReturnsAsync(invalid_user);
+
+            User already_existing_user = _fixture.Build<User>()
+            .With(temp => temp.Email, "something@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .Create();
+
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User> { already_existing_user });
+
+            // Prepared Act
+            Func<Task> action = async () =>
+            {
+                UserResponse actual_invalid_user_response = await _usersService.AddUser(new_user_request);
+
+            };
+
+            // Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+
+
+        }
+
+
+        [Fact]
+        public async Task AddUser_ValidateNameProperty_ToBeRejected()
+        {
+
+            //Arrange 
+            AddUserRequest new_user_request = _fixture.Build<AddUserRequest>()
             .With(temp => temp.Name, @"John SmithJohn SmithJohn SmithJohn SmithJohn Smith
                                        John SmithJohn SmithJohn SmithJohn SmithJohn Smith
                                        John SmithJohn SmithJohn SmithJohn SmithJohn Smith")
@@ -118,39 +243,143 @@ namespace CRUDCoursesAppTest
             .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
             .Create();
 
-            AddUserRequest new_user_request2 = _fixture.Build<AddUserRequest>()
-            .With(temp => temp.Email, "something.com")
+            User invalidUser = new_user_request.ToUser();
+            UserResponse expected_invalid_user_response = invalidUser.ToUserResponse();
+
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+            .ReturnsAsync(invalidUser);
+
+            User already_existing_user = _fixture.Build<User>()
+            .With(temp => temp.Email, "example@example.com")
             .With(temp => temp.Password, "ValidPassword1234!")
-            .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
             .Create();
 
-            AddUserRequest new_user_request3 = _fixture.Build<AddUserRequest>()
-            .With(temp => temp.Email, "example@email.com")
-            .With(temp => temp.Password, "password")
-            .With(temp => temp.ConfirmPassword, "password")
-            .Create();
-
-            List<AddUserRequest> invalid_user_add_request = new List<AddUserRequest>() { new_user_request1, new_user_request2, new_user_request3 };
-            List<UserResponse> user_responses_from_add_request = new List<UserResponse>();
-
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User>(){ already_existing_user });
 
             // Prepared Act
             Func<Task> action = async () =>
             {
-                foreach (AddUserRequest addInvalidPropertyUserRequest in invalid_user_add_request)
-                {
-                    user_responses_from_add_request.Add(await _usersService.AddUser(addInvalidPropertyUserRequest));
-                }
+                UserResponse actual_invalid_user_response = await _usersService.AddUser(new_user_request);
+  
+            };
+            
+            // Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+
+        [Fact]
+        public async Task AddUser_ValidateEmailProperty_ToBeRejected()
+        {
+
+            //Arrange 
+            AddUserRequest new_user_request = _fixture.Build<AddUserRequest>()
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
+            .Create();
+
+            User invalidUser = new_user_request.ToUser();
+            UserResponse expected_invalid_user_response = invalidUser.ToUserResponse();
+
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+            .ReturnsAsync(invalidUser);
+
+            User already_existing_user = _fixture.Build<User>()
+            .With(temp => temp.Email, "example@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .Create();
+
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User>() { already_existing_user });
+
+            // Prepared Act
+            Func<Task> action = async () =>
+            {
+                UserResponse actual_invalid_user_response = await _usersService.AddUser(new_user_request);
+
             };
 
             // Assert
             await action.Should().ThrowAsync<ArgumentException>();
+        }
 
 
+        [Fact]
+        public async Task AddUser_ValidatePasswordProperty_ToBeRejected()
+        {
+
+            //Arrange 
+            AddUserRequest new_user_request = _fixture.Build<AddUserRequest>()
+            .With(temp => temp.Email, "example@email.com")
+            .With(temp => temp.Password, "test")
+            .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
+            .Create();
+
+            User invalidUser = new_user_request.ToUser();
+            UserResponse expected_invalid_user_response = invalidUser.ToUserResponse();
+
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+            .ReturnsAsync(invalidUser);
+
+            User already_existing_user = _fixture.Build<User>()
+            .With(temp => temp.Email, "example@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .Create();
+
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User>() { already_existing_user });
+
+            // Prepared Act
+            Func<Task> action = async () =>
+            {
+                UserResponse actual_invalid_user_response = await _usersService.AddUser(new_user_request);
+
+            };
+
+            // Assert
+            await action.Should().ThrowAsync<ArgumentException>();
         }
 
         [Fact]
-        public async Task AddUser_DuplicateUser()
+        public async Task AddUser_ValidateConfirmPasswordProperty_ToBeRejected()
+        {
+
+            //Arrange 
+            AddUserRequest new_user_request = _fixture.Build<AddUserRequest>()
+            .With(temp => temp.Email, "example@email.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .With(temp => temp.ConfirmPassword, "DifferentPassword1234!")
+            .Create();
+
+            User invalidUser = new_user_request.ToUser();
+            UserResponse expected_invalid_user_response = invalidUser.ToUserResponse();
+
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+            .ReturnsAsync(invalidUser);
+
+            User already_existing_user = _fixture.Build<User>()
+            .With(temp => temp.Email, "example@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .Create();
+
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User>() { already_existing_user });
+
+            // Prepared Act
+            Func<Task> action = async () =>
+            {
+                UserResponse actual_invalid_user_response = await _usersService.AddUser(new_user_request);
+
+            };
+
+            // Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+        }
+
+
+        [Fact]
+        public async Task AddUser_DuplicateUser_ToBeRejected()
         {
             //Arrange
             AddUserRequest valid_new_user_request = _fixture.Build<AddUserRequest>()
@@ -159,23 +388,27 @@ namespace CRUDCoursesAppTest
             .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
             .Create();
 
-            AddUserRequest duplicate_new_user_request = _fixture.Build<AddUserRequest>()
+            User duplicate_user = valid_new_user_request.ToUser();
+            UserResponse expected_invalid_user_response = duplicate_user.ToUserResponse();
+
+            // Should return the duplicate user when the AddUser() method of the repository is called
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+            .ReturnsAsync(duplicate_user);
+
+            // Should be return by the GetAllUsers() method of the repository
+            User existing_user = _fixture.Build<User>()
             .With(temp => temp.Email, "something@example.com")
             .With(temp => temp.Password, "ValidPassword1234!")
-            .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
             .Create();
 
-            List<AddUserRequest> new_user_duplicate_properties = new List<AddUserRequest>() { duplicate_new_user_request };
-            List<UserResponse> user_responses_from_add_request = new List<UserResponse>();
-            user_responses_from_add_request.Add(await _usersService.AddUser(valid_new_user_request));
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User> { existing_user });
+
 
             // Prepared Act
             Func <Task> action = async () =>
-            {
-                foreach (AddUserRequest addDuplicateUserRequest in new_user_duplicate_properties)
-                {
-                    user_responses_from_add_request.Add(await _usersService.AddUser(addDuplicateUserRequest));
-                }
+            {     
+                UserResponse actual_invalid_response = await _usersService.AddUser(valid_new_user_request);  
             };
 
             // Assert
@@ -185,60 +418,43 @@ namespace CRUDCoursesAppTest
         }
 
         [Fact]
-        public async Task AddUser_ValidObject()
+        public async Task AddUser_FullPersonDetails_ToBeSuccessful()
         {
             // Arrange
-            AddUserRequest new_user_request1 = _fixture.Build<AddUserRequest>()
+            AddUserRequest new_user_request = _fixture.Build<AddUserRequest>()
             .With(temp => temp.Email, "example@email.com")
             .With(temp => temp.Password, "ValidPassword1234!")
             .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
             .Create();
 
-            AddUserRequest new_user_request2 = _fixture.Build<AddUserRequest>()
-            .With(temp => temp.Email, "other@email.com")
+            User newUser = new_user_request.ToUser();
+            UserResponse new_user_response_expected = newUser.ToUserResponse();
+
+            User existingUser = _fixture.Build<User>()
+            .With(temp => temp.Email, "example2@email.com")
             .With(temp => temp.Password, "ValidPassword1234!")
-            .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
             .Create();
 
-            AddUserRequest new_user_request3 = _fixture.Build<AddUserRequest>()
-            .With(temp => temp.Email, "something@email.com")
-            .With(temp => temp.Password, "ValidPassword1234!")
-            .With(temp => temp.ConfirmPassword, "ValidPassword1234!")
-            .Create();
+            // If we supply the full details objet of an User, it should return the User response
+            _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
+            .ReturnsAsync(newUser);
 
-            List<AddUserRequest> user_add_requests = new List<AddUserRequest>() { new_user_request1 , new_user_request2, new_user_request3};
-            List <UserResponse> user_responses_from_add_request = new List<UserResponse>();
-
-            // Prepared Act
-            Func<Task> action = async () =>
-            {
-                
-                foreach (AddUserRequest userRequestToAdd in user_add_requests)
-                {
-                    user_responses_from_add_request.Add(await _usersService.AddUser(userRequestToAdd));
-                }
-
-                _outputHelper.WriteLine("Expected:");
-                foreach (UserResponse userResponseFromAdd in user_responses_from_add_request)
-                {
-                    _outputHelper.WriteLine($"{userResponseFromAdd.ToString()}");
-                }
-            };
+            // If we supply the full details object of an User, it should return the list of all users
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User> { existingUser });
 
             // Act
-            await action.Invoke();
-
-            List<UserResponse> user_responses_from_get_request = await _usersService.GetAllUsers();
-
+            UserResponse user_responses_from_add_request = await _usersService.AddUser(new_user_request);
+            new_user_response_expected.UserId = user_responses_from_add_request.UserId;
+            _outputHelper.WriteLine("Expected:");
+            _outputHelper.WriteLine($"{new_user_response_expected.ToString()}");
             _outputHelper.WriteLine("Actual:");
-            foreach (UserResponse userResponseFromGet in user_responses_from_get_request)
-            {
-                // Helper
-                _outputHelper.WriteLine($"{userResponseFromGet.ToString()}");
-                
-                // Assert
-                user_responses_from_get_request.Should().Contain(userResponseFromGet);
-            }
+            _outputHelper.WriteLine($"{user_responses_from_add_request.ToString()}");
+
+
+            // Assert
+            user_responses_from_add_request.UserId.Should().NotBe(Guid.Empty);
+            user_responses_from_add_request.Should().Be(new_user_response_expected);
 
 
         }
@@ -246,82 +462,145 @@ namespace CRUDCoursesAppTest
         #endregion
 
         #region GetAllUsers
-
         [Fact]
-        public async Task GetAllUsers_EmptyObject()
+        public async Task GetAllUsers_EmptyObject_ToBeSuccessful()
         {
 
             //Arrange & Act
-            List<UserResponse>? users_from_get = await _usersService.GetAllUsers();
-
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User> { });
+          
+            List<UserResponse>? actual_user_responses = await _usersService.GetAllUsers();
 
             //Assert
-            Assert.Empty(users_from_get);
-            Assert.True(users_from_get.Count == 0);
-
+            actual_user_responses.Should().NotBeNull();
+            actual_user_responses.Should().HaveCount(0);
         }
 
         [Fact]
-        public async Task GetAllUsers_FullObject()
+        public async Task GetAllUsers_FullObject_ToBeSuccessful()
         {
 
             //Arrange 
-            AddUserRequest full_user_request1 = _fixture.Build<AddUserRequest>()
-            .With(temp => temp.Email, "something@example.com")
-            .With(temp => temp.Password, "TestingPassword1234!")
-            .With(temp => temp.ConfirmPassword, "TestingPassword1234!")
+            User already_existing_user1 = _fixture.Build<User>()
+            .With(temp => temp.Email, "something1@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
             .Create();
 
-            AddUserRequest full_user_request2 = _fixture.Build<AddUserRequest>()
-            .With(temp => temp.Email, "hello@example.com")
-            .With(temp => temp.Password, "TestingPassword1234!")
-            .With(temp => temp.ConfirmPassword, "TestingPassword1234!")
+            User already_existing_user2 = _fixture.Build<User>()
+            .With(temp => temp.Email, "something2@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
             .Create();
 
-
-            AddUserRequest full_user_request3 = _fixture.Build<AddUserRequest>()
-            .With(temp => temp.Email, "other@example.com")
-            .With(temp => temp.Password, "TestingPassword1234!")
-            .With(temp => temp.ConfirmPassword, "TestingPassword1234!")
+            User already_existing_user3 = _fixture.Build<User>()
+            .With(temp => temp.Email, "something3@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
             .Create();
 
-            List<AddUserRequest> full_user_requests = new List<AddUserRequest>() { full_user_request1, full_user_request2, full_user_request3 };
-            List<UserResponse> user_response_from_add = new List<UserResponse>();
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User> { already_existing_user1, already_existing_user2, already_existing_user3 });
 
-
-
-            // Prepared Act
-            Func<Task> action = async () =>
+            // Act
+            List<UserResponse> expected_user_responses = new List<UserResponse>()
             {
-                foreach (AddUserRequest userRequest in full_user_requests)
-                {
-                    user_response_from_add.Add(await _usersService.AddUser(userRequest));
-                }
-
-                _outputHelper.WriteLine("Expected:");
-                foreach (UserResponse userResponse in user_response_from_add)
-                {
-                    _outputHelper.WriteLine($"{userResponse.ToString()}");
-                }
-
+                already_existing_user1.ToUserResponse(),
+                already_existing_user2.ToUserResponse(),
+                already_existing_user3.ToUserResponse()
             };
 
-            //Act
-            await action.Invoke();
-            List<UserResponse> users_from_get = await _usersService.GetAllUsers();
-
-            _outputHelper.WriteLine("Actual:");
-            foreach (UserResponse userResponsesFromGet in users_from_get)
+            _outputHelper.WriteLine("Expected:");
+            foreach (UserResponse userResponse in expected_user_responses)
             {
-                // Helper
-                _outputHelper.WriteLine($"{userResponsesFromGet.ToString()}");
-
-                // Assert
-                user_response_from_add.Should().Contain(userResponsesFromGet);
-
+                _outputHelper.WriteLine($"{userResponse.ToString()}");
             }
 
 
+
+            List<UserResponse> actual_user_responses = await _usersService.GetAllUsers();
+            _outputHelper.WriteLine("Expected:");
+            foreach (UserResponse userResponse in actual_user_responses)
+            {
+                _outputHelper.WriteLine($"{userResponse.ToString()}");
+            }
+
+            
+
+            // Assert
+            expected_user_responses.Should().BeEquivalentTo(actual_user_responses);
+            actual_user_responses.Should().NotBeEmpty();
+            actual_user_responses.Should().HaveCount(3);
+
+        }
+        #endregion
+
+        #region GetUsersCount
+
+        [Fact]
+        public async Task GetUserCount_UsersAreEmpty_ToBeSuccessful()
+        {
+            //Arrange & Act
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User> { });
+
+            List<UserResponse> expected_user_responses = new List<UserResponse>();
+            List<UserResponse> actual_user_responses = await _usersService.GetAllUsers();
+
+            //Assert
+            actual_user_responses.Should().NotBeNull();
+            actual_user_responses.Should().HaveCount(0);
+            expected_user_responses.Should().BeEquivalentTo(actual_user_responses);
+
+        }
+
+
+        [Fact]
+        public async Task GetUserCount_UsersAreFull_ToBeSuccessful()
+        {
+            //Arrange 
+            User already_existing_user1 = _fixture.Build<User>()
+            .With(temp => temp.Email, "something1@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .Create();
+
+            User already_existing_user2 = _fixture.Build<User>()
+            .With(temp => temp.Email, "something2@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .Create();
+
+            User already_existing_user3 = _fixture.Build<User>()
+            .With(temp => temp.Email, "something3@example.com")
+            .With(temp => temp.Password, "ValidPassword1234!")
+            .Create();
+
+            _usersRepositoryMock.Setup(temp => temp.GetAllUsers())
+            .ReturnsAsync(new List<User> { already_existing_user1, already_existing_user2, already_existing_user3 });
+
+            // Act
+            List<UserResponse> expected_user_responses = new List<UserResponse>()
+            {
+                already_existing_user1.ToUserResponse(),
+                already_existing_user2.ToUserResponse(),
+                already_existing_user3.ToUserResponse()
+            };
+
+            _outputHelper.WriteLine("Expected:");
+            foreach (UserResponse userResponse in expected_user_responses)
+            {
+                _outputHelper.WriteLine($"{userResponse.ToString()}");
+            }
+
+
+            List<UserResponse> actual_user_responses = await _usersService.GetAllUsers();
+            _outputHelper.WriteLine("Actual:");
+            foreach (UserResponse userResponse in actual_user_responses)
+            {
+                _outputHelper.WriteLine($"{userResponse.ToString()}");
+            }
+
+            // Assert
+            expected_user_responses.Should().BeEquivalentTo(actual_user_responses);
+            actual_user_responses.Should().NotBeEmpty();
+            actual_user_responses.Should().HaveCount(3);
 
         }
 
@@ -644,7 +923,7 @@ namespace CRUDCoursesAppTest
             foreach (AddUserRequest request in requests)
             {
                 UserResponse response = await _usersService.AddUser(request);
-                if (response.DateOfBirth.HasValue && response.DateOfBirth.Value.Date.Equals(targetDate.Date))
+                if (response.DateOfBirth.Date.Equals(targetDate.Date))
                 {
                     expectedUsers.Add(response);
                 }
@@ -1072,7 +1351,7 @@ namespace CRUDCoursesAppTest
 
             List<AddUserRequest> full_user_requests = new List<AddUserRequest>() { full_user_request1, full_user_request2, full_user_request3 };
             List<UserResponse> user_response_from_add = new List<UserResponse>();
-            user_response_from_add.OrderBy(temp => temp.DateOfBirth?.ToString("dd MMM yyyy") ?? string.Empty).ToList();
+            user_response_from_add.OrderBy(temp => temp.DateOfBirth.ToString("dd MMM yyyy") ?? string.Empty).ToList();
 
             // Prepared Act
             Func<Task> action = async () =>
@@ -1134,7 +1413,7 @@ namespace CRUDCoursesAppTest
 
             List<AddUserRequest> full_user_requests = new List<AddUserRequest>() { full_user_request1, full_user_request2, full_user_request3 };
             List<UserResponse> user_response_from_add = new List<UserResponse>();
-            user_response_from_add.OrderByDescending(temp => temp.DateOfBirth?.ToString("dd MMM yyyy") ?? string.Empty).ToList();
+            user_response_from_add.OrderByDescending(temp => temp.DateOfBirth.ToString("dd MMM yyyy") ?? string.Empty).ToList();
 
             // Prepared Act
             Func<Task> action = async () =>

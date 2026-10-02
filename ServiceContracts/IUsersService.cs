@@ -53,15 +53,15 @@ namespace ServiceContracts
         /// Get the desired user contained inside the UsersService
         /// </summary>
         /// <param name="userId">The desired Guid of the user to get</param>
-        /// <returns>Returns an DTO object of type UserResponse that contains all the informations of the user</returns>
-        Task<UserResponse> GetUserById(Guid userId);
+        /// <returns>Returns an DTO object of type UserResponse that contains all the informations of the user or null</returns>
+        Task<UserResponse?> GetUserById(Guid userId);
 
         /// <summary>
         /// Update the desired user contained inside the UsersService
         /// </summary>
         /// <param name="updateUserRequest">A DTO object of type UpdateUserRequest which contains the updating informations of the User object</param>
-        /// <returns>Returns an DTO object of type UserResponse that contains all the informations of the user</returns>
-        Task<UserResponse> UpdateUser(UpdateUserRequest? updateUserRequest);
+        /// <returns>Returns an DTO object of type UserResponse that contains all the informations of the user or null</returns>
+        Task<UserResponse?> UpdateUser(UpdateUserRequest? updateUserRequest);
 
         /// <summary>
         ///  Delete the desired user contained inside the UsersService

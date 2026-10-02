@@ -39,7 +39,7 @@ namespace ServiceContracts.DTO.Comunities
                 Name = com.Name,
                 Description = com.Description,
                 Posts = com.PostsList?.Select(p => p.ToPostResponse()).ToList() ?? new List<PostResponse>(),
-                Users = com.Users?.Select(u => u.ToUserAddResponse()).ToList() ?? new List<UserResponse>()
+                Users = com.Users?.Select(u => u.ToUserResponse()).ToList() ?? new List<UserResponse>()
             };
         }
     }

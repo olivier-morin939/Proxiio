@@ -15,19 +15,19 @@ namespace ServiceContracts.DTO.Users
 
         public Guid UserId { get; set; }
 
-        public string? Name { get; set; }
+        public string Name { get; set; }
 
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
-        public string? Password { get; set; }
+        public string Password { get; set; }
 
         public Role Role { get; set; }
 
         public UserState UserState { get; set; }
 
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
 
-        public bool? ReceiveNewsLetter { get; set; }
+        public bool ReceiveNewsLetter { get; set; }
 
         public override bool Equals(object? obj)
         {
@@ -72,7 +72,7 @@ namespace ServiceContracts.DTO.Users
 
     public static class UserAddResponseExtension
     {
-        public static UserResponse ToUserAddResponse(this User user)
+        public static UserResponse ToUserResponse(this User user)
         {
 
             return new UserResponse()

@@ -13,21 +13,24 @@ namespace Entities
         [Key]
         public Guid UserId { get; set; }
 
+        [Required]
         [StringLength(120)]
-        public string? Name { get; set; }
+        public string Name { get; set; }
 
+        [Required]
         [StringLength(254)]
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
         public Role Role { get; set; }
 
         public UserState UserState { get; set; }
 
+        [Required]
         [StringLength(255)]
-        public string? Password { get; set; }
+        public string Password { get; set; }
 
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
 
-        public bool? ReceiveNewsLetter { get; set; }
+        public bool ReceiveNewsLetter { get; set; }
     }
 }

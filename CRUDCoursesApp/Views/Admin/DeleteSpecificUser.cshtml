@@ -110,7 +110,7 @@
                     <label class="app-form-label">Date of Birth</label>
                     <div class="app-form-input-wrapper">
                         <div class="app-form-icon"><i class="fa-solid fa-calendar text-sm"></i></div>
-                        <input type="text" value="@(Model.DateOfBirth.HasValue ? Model.DateOfBirth.Value.ToString("dd MMMM yyyy") : "N/A")" readonly class="app-form-input" style="cursor: not-allowed;" />
+                        <input type="text" value="@(Model.DateOfBirth.ToString("dd MMMM yyyy"))" readonly class="app-form-input" style="cursor: not-allowed;" />
                     </div>
                 </div>
 
@@ -127,7 +127,7 @@
                             </div>
                         </div>
                         <div>
-                            @if (Model.ReceiveNewsLetter.HasValue && Model.ReceiveNewsLetter.Value)
+                            @if (Model.ReceiveNewsLetter)
                             {
                                 <span class="app-badge app-badge-success">
                                     <span class="app-badge-dot"></span> Subscribed

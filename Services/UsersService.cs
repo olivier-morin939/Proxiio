@@ -2,6 +2,7 @@ using Entities;
 using Entities.Contexts;
 using Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using RepositoryContracts;
 using ServiceContracts;
 using ServiceContracts.DTO.Users;
 using System.Data;
@@ -11,9 +12,9 @@ namespace Services;
 public class UsersService : IUsersService
 {
     private readonly IEncryptionsService _encryptionsService;
-    private readonly ApplicationDbContext _db;
+    private readonly IUsersRepository _repository;
 
-    public UsersService(ApplicationDbContext db, IEncryptionsService encryptionsService) { _db = db; _encryptionsService = encryptionsService; }
+    public UsersService(IUsersRepository repository, IEncryptionsService encryptionsService) { _repository = repository; _encryptionsService = encryptionsService; }
 
     // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
     //public UsersService() : this(new UsersDbContext(new DbContextOptionsBuilder<UsersDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options), new IEncryptionsService()) { }
@@ -21,62 +22,67 @@ public class UsersService : IUsersService
     public async Task<UserResponse> AddUser(AddUserRequest? request)
     {
         // Check if the DTO object is null
-        ArgumentNullException.ThrowIfNull(request);
+        if(request == null)
+            throw new ArgumentNullException(nameof(request));
 
         // Model validation for the DTO object
         Helpers.HelpersValidation.ModelValidation(request);
 
         // Validating the mandatory fields
-        if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password)) 
-            throw new ArgumentException("Name, email and password are required.");
+        if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || request.DateOfBirth.ToString() == null) 
+            throw new ArgumentException("Name, email, password and date of birth are required.");
 
         // Check if the password and confirm password match
         if (request.Password != request.ConfirmPassword) 
             throw new ArgumentException("Passwords do not match.", nameof(request.ConfirmPassword));
 
-
-        // Look for duplicates
-        if (await _db.Users.AnyAsync(u => u.Email == request.Email)) 
+        // Look for duplicate users
+        if ((await _repository.GetAllUsers()).Any(u => u.Email == request.Email))
             throw new DuplicateNameException(nameof(request.Email));
 
         // Create the users in the db
         User user = request.ToUser();
         user.Password = await _encryptionsService.EncryptData(user.Password!);
+        User createdUser = await _repository.AddUser(user);
 
-        _db.Users.Add(user);
-        await _db.SaveChangesAsync();
 
         // Return the DTO response
-        return user.ToUserAddResponse();
+        return createdUser.ToUserResponse();
     }
 
-    public async Task<List<UserResponse>> GetAllUsers() => (await _db.Users.AsNoTracking().ToListAsync()).Select(u => u.ToUserAddResponse()).ToList();
+    public async Task<List<UserResponse>> GetAllUsers() => (await _repository.GetAllUsers()).Select(u => u.ToUserResponse()).ToList();
 
-    public async Task<int> GetAllUsersCount() => await _db.Users.CountAsync();
+    public async Task<int> GetAllUsersCount() => await _repository.GetAllUsersCount();
 
-    public async Task<UserResponse> GetUserById(Guid userId)
+    public async Task<UserResponse?> GetUserById(Guid userId)
     {
         // Check if the id is valid
         if (userId == Guid.Empty) 
             throw new ArgumentNullException(nameof(userId));
 
         // Search for the user
-        User user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == userId) ?? throw new ArgumentNullException(nameof(userId));
+        User? matchingUser = await _repository.GetUserById(userId);
+
+        if (matchingUser == null)
+            return null;
         
         // Return the DTO response
-        return user.ToUserAddResponse();
+        return matchingUser.ToUserResponse();
     }
 
-    public async Task<UserResponse> UpdateUser(UpdateUserRequest? request)
+    public async Task<UserResponse?> UpdateUser(UpdateUserRequest? request)
     {
         // Check if the request is null
         ArgumentNullException.ThrowIfNull(request);
 
         // Search the targeted user
-        User user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == request.UserId) ?? throw new ArgumentNullException(nameof(request.UserId));
-        
+        User? matchingUser = await _repository.GetUserById(request.UserId);
+        if (matchingUser == null)
+            return null;
+
+
         // Look for duplicate users
-        if (await _db.Users.AnyAsync(u => u.UserId != user.UserId && u.Email == request.Email))
+        if ((await _repository.GetAllUsers()).Any(u => u.UserId != matchingUser.UserId && u.Email == request.Email))
             throw new DuplicateNameException(nameof(request.Email));
 
         // Look if the password and confirm password match
@@ -87,57 +93,60 @@ public class UsersService : IUsersService
         Helpers.HelpersValidation.ModelValidation(request);
 
         // Updating the user informations
-        user.Name = request.Name;
-        user.Email = request.Email;
-        user.DateOfBirth = request.DateOfBirth;
-        user.ReceiveNewsLetter = request.ReceiveNewsLetter;
-
-        if (!string.IsNullOrWhiteSpace(request.Password)) 
-            user.Password = request.Password;
-
-        user.Role = request.Role;
-        user.UserState = request.UserState;
-        await _db.SaveChangesAsync();
+        User? updatedUser = await _repository.UpdateUser(matchingUser);
+        if (updatedUser == null)
+            return null;
 
         // Return the DTO response
-        return user.ToUserAddResponse();
+        return updatedUser.ToUserResponse();
     }
 
     public async Task<bool> DeleteUser(Guid userId)
     {
         // Search the targeted user
-        User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        User? user = await _repository.GetUserById(userId);
 
         // Check if we found a user
         if (user is null)
             return false;
 
         // Delete the user
-        _db.Users.Remove(user);
-        await _db.SaveChangesAsync();
-        return true;
+        return await _repository.DeleteUser(userId);
     }
 
     public async Task<List<UserResponse>> GetFilteredUsers(string searchBy, string searchString)
     {
         // Get all users first
-        List<User> users = await _db.Users.AsNoTracking().ToListAsync();
+        List<User> users = await _repository.GetAllUsers();
 
         // Checking if the searchBy field and searchString is empty or null
         if (string.IsNullOrEmpty(searchBy) || string.IsNullOrEmpty(searchString)) 
-            return users.Select(u => u.ToUserAddResponse()).ToList();
+            return users.Select(u => u.ToUserResponse()).ToList();
+
+
+
 
         // Filtering the informations based on the searchBy and searchString
-        var filtered = searchBy switch
+        List<User> filteredUsers = searchBy switch
         {
-            nameof(UserResponse.Name) => users.Where(u => u.Name?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true),
-            nameof(UserResponse.Email) => users.Where(u => u.Email?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true),
-            nameof(UserResponse.Role) => users.Where(u => u.Role.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)),
-            nameof(UserResponse.UserState) => users.Where(u => u.UserState.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)),
-            nameof(UserResponse.DateOfBirth) => users.Where(u => u.DateOfBirth?.ToString("dd MMM yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase) == true),
+            nameof(UserResponse.Name) =>
+                await _repository.GetFilteredUsers(temp => (!string.IsNullOrEmpty(temp.Name) ? temp.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) : true)),
+         
+            nameof(UserResponse.Email) => 
+                await _repository.GetFilteredUsers(temp => (!string.IsNullOrEmpty(temp.Email) ? temp.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase) : true)),
+            
+            nameof(UserResponse.Role) =>
+                await _repository.GetFilteredUsers(temp => (!string.IsNullOrEmpty(temp.Role.ToString()) ? temp.Role.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) : true)),
+
+            nameof(UserResponse.UserState) =>
+                await _repository.GetFilteredUsers(temp => (!string.IsNullOrEmpty(temp.UserState.ToString()) ? temp.UserState.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) : true)),
+
+            nameof(UserResponse.DateOfBirth) => 
+                await _repository.GetFilteredUsers(temp => (!string.IsNullOrEmpty(temp.DateOfBirth.ToString()) ? temp.DateOfBirth.ToString("dd MMM yyyy").Contains(searchString, StringComparison.OrdinalIgnoreCase) : true)),
+               
             _ => users
         };
-        return filtered.Select(u => u.ToUserAddResponse()).ToList();
+        return filteredUsers.Select(u => u.ToUserResponse()).ToList();
     }
 
     public Task<List<UserResponse>> GetSortedUsers(List<UserResponse> users, string sortBy, SortOption sortOrder)

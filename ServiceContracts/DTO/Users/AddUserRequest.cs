@@ -47,7 +47,7 @@ namespace ServiceContracts.DTO.Users
         [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; }
 
-        public bool? ReceiveNewsLetter { get; set; }
+        public bool ReceiveNewsLetter { get; set; }
 
 
         public User ToUser()
