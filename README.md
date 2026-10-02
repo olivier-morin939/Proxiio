@@ -308,7 +308,7 @@ L'objectif est de limiter l'interruption du service en cas de panne du serveur d
 
 ---
 
-# 🏛️ Flux général de l'application
+# Flux général de l'application
 
 Le fonctionnement général d'une requête peut être représenté comme ceci :
 
@@ -374,7 +374,7 @@ Les technologies actuellement utilisées dans le projet sont :
 
 ---
 
-# 📁 Structure du projet
+# Structure du projet
 
 Une représentation simplifiée de la structure actuelle est :
 
