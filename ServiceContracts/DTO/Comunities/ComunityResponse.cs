@@ -24,6 +24,39 @@ namespace ServiceContracts.DTO.Comunities
         public List<PostResponse>? Posts { get; set; } = new List<PostResponse>();
 
         public List<UserResponse>? Users { get; set; } = new List<UserResponse>();
+
+
+
+        public override bool Equals(object? obj)
+        {
+            ComunityResponse? convObj = (ComunityResponse?)obj as ComunityResponse;
+            if(convObj == null)
+                return false;
+            
+            return 
+                Id.ToString() == convObj.Id.ToString() &&
+                TeacherId.ToString() == convObj.TeacherId.ToString() &&
+                Name == convObj.Name &&
+                Description == convObj.Description &&
+                UsersCount == convObj.UsersCount &&
+                PostsCount == convObj.PostsCount;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return $@"ComunityResponse: Id={Id},
+                      TeacherId={TeacherId},
+                      Name={Name},
+                      Description={Description},
+                      UsersCount={UsersCount},
+                      PostsCount={PostsCount}";
+        }
+
     }
 
     public static class ComunityResponseExtensions
