@@ -16,9 +16,9 @@ namespace ServiceContracts
         /// <summary>
         /// Add a new comunity to the ComunitiesService
         /// </summary>
-        /// <param name="addComunityRequest">A DTO object of type AddComunityRequest which contains the adding informations of the Comunity object</param>
+        /// <param name="request">A DTO object of type AddComunityRequest which contains the adding informations of the Comunity object</param>
         /// <returns>Returns an DTO object of type ComunityResponse that contains all the informations of the comunity</returns>
-        Task<ComunityResponse> AddComunity(AddComunityRequest? addComunityRequest);
+        Task<ComunityResponse> AddComunity(AddComunityRequest? request);
 
         /// <summary>
         /// Get all comunities contained inside the ComunitiesService

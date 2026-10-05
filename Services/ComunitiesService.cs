@@ -3,6 +3,7 @@ using Entities;
 using Entities.Contexts;
 using Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using RepositoryContracts;
 using ServiceContracts;
 using ServiceContracts.DTO.Comunities;
 using ServiceContracts.DTO.Posts;
@@ -12,11 +13,8 @@ namespace Services;
 
 public class ComunitiesService : IComunitiesService
 {
-    private readonly ApplicationDbContext _db;
-    public ComunitiesService(ApplicationDbContext db) => _db = db;
-
-    // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
-    public ComunitiesService() : this(new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options)) { }
+    private readonly IComunitiesRepository _repository;
+    public ComunitiesService(IComunitiesRepository repository) => _repository = repository;
 
     public async Task<ComunityResponse> AddComunity(AddComunityRequest? request)
     {
@@ -28,45 +26,110 @@ public class ComunitiesService : IComunitiesService
         Helpers.HelpersValidation.ModelValidation(request);
 
         // Check if the user exists
-        if (request.TeacherId == Guid.Empty || !await _db.Users.AnyAsync(u => u.UserId == request.TeacherId))
-            throw new ArgumentException("The teacher must be an existing user.", nameof(request.TeacherId));
+        if (request.TeacherId == Guid.Empty)
+            throw new ArgumentException("The teacher must be have a valid ID.", nameof(request.TeacherId));
 
         // Check if we have an community name
         if (string.IsNullOrWhiteSpace(request.Name)) 
             throw new ArgumentException("A community name is required.", nameof(request.Name));
 
         // Check for duplicates
-        if (await _db.Comunities.AnyAsync(c => c.Name != null && c.Name.ToLower() == request.Name.Trim().ToLower())) 
+        if ((await _repository.GetAllComunities()).Any(c => c.Name != null && c.Name.ToLower() == request.Name.Trim().ToLower())) 
             throw new DuplicateNameException("A community with the same name already exists.");
 
         Comunity community = new Comunity { Id = Guid.NewGuid(), TeacherId = request.TeacherId, Name = request.Name.Trim(), Description = request.Description?.Trim() };
         
         // Add the new community to the db
-        _db.Comunities.Add(community);
-        _db.ComunityMembers.Add(new ComunityMember { ComunityId = community.Id, UserId = request.TeacherId, Role = ComunityRole.Teacher });
-        await _db.SaveChangesAsync();
+        Comunity addedCommunity = await _repository.AddComunity(community, request.TeacherId);
 
-        // Map users and posts from the community and return it as a response
-        return await MapCommunity(community);
+        return addedCommunity.ToComunityResponse();
     }
 
     public async Task<List<ComunityResponse>> GetAllComunities()
     {
-        List<Comunity> communities = await _db.Comunities.AsNoTracking().ToListAsync();
-        List<ComunityResponse> responses = new(communities.Count);
-        foreach (Comunity community in communities)
-            responses.Add(await MapCommunity(community));
-        return responses;
+        var raw = await _repository.GetAllComunities();
+        // Garantir que raw n'est jamais null
+        var communities = raw ?? new List<Comunity>();
+
+        return communities
+            .Select(c => new ComunityResponse
+            {
+                Id = c.Id,
+                TeacherId = c.TeacherId,
+                Name = c.Name,
+                Description = c.Description,
+                UsersCount = c.Users?.Count() ?? 0,
+                PostsCount = c.PostsList?.Count() ?? 0,
+                Users = (c.Users ?? Enumerable.Empty<User>()).Select(u => new UserResponse
+                {
+                    UserId = u.UserId,
+                    Name = u.Name,
+                    Email = u.Email,
+                    DateOfBirth = u.DateOfBirth,
+                    UserState = u.UserState,
+                    Role = u.Role,
+                    ReceiveNewsLetter = u.ReceiveNewsLetter
+                }).ToList(),
+                Posts = (c.PostsList ?? Enumerable.Empty<Post>()).Select(p => new PostResponse
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Body = p.Body,
+                    CreatedAt = p.CreatedAt,
+                    ModifiedAt = p.ModifiedAt,
+                    AdditionalsPath = p.AdditionalsPath,
+                    ImagesPath = p.ImagesPath,
+                    UserId = p.UserId,
+                    CommunityId = p.CommunityId
+                }).ToList()
+            })
+            .ToList();
     }
 
-    public async Task<int> GetAllComunitiesCount() => await _db.Comunities.CountAsync();
-    public async Task<int> GetComunityPostsCount(Guid comunityId) => await _db.Posts.CountAsync(p => p.CommunityId == comunityId);
+    public async Task<int> GetAllComunitiesCount() => await _repository.GetAllComunitiesCount();
+    public async Task<int> GetComunityPostsCount(Guid comunityId) => await _repository.GetAllComunityPostsCount(comunityId);
 
     public async Task<ComunityResponse> GetComunityByComId(Guid ComId)
     {
-        // Search the matching community and map users and posts from the community
-        Comunity community = await _db.Comunities.AsNoTracking().FirstOrDefaultAsync(c => c.Id == ComId) ?? throw new ArgumentNullException(nameof(ComId));
-        return await MapCommunity(community);
+
+        Comunity? community = await _repository.GetComunityById(ComId);
+
+        if (community == null)
+            return null;
+
+        return new ComunityResponse
+        {
+            Id = community.Id,
+            TeacherId = community.TeacherId,
+            Name = community.Name,
+            Description = community.Description,
+            UsersCount = community.Users?.Count ?? 0,
+            PostsCount = community.PostsList?.Count ?? 0,
+            Users = community.Users?.Select(u => new UserResponse
+            {
+                UserId = u.UserId,
+                Name = u.Name,
+                Email = u.Email,
+                DateOfBirth = u.DateOfBirth,
+                UserState = u.UserState,
+                Role = u.Role,
+                ReceiveNewsLetter = u.ReceiveNewsLetter
+            }).ToList() ?? new(),
+            Posts = community.PostsList?.Select(p => new PostResponse
+            {
+                Id = p.Id,
+                Title = p.Title,
+                Body = p.Body,
+                CreatedAt = p.CreatedAt,
+                ModifiedAt = p.ModifiedAt,
+                AdditionalsPath = p.AdditionalsPath,
+                ImagesPath = p.ImagesPath,
+                UserId = p.UserId,
+                CommunityId = p.CommunityId
+            }).ToList() ?? new()
+        };
+
+
     }
 
     public async Task<ComunityResponse> UpdateComunity(UpdateComunityRequest request)
@@ -78,61 +141,60 @@ public class ComunitiesService : IComunitiesService
         Helpers.HelpersValidation.ModelValidation(request);
 
         // Search the matching community
-        Comunity community = await _db.Comunities.FirstOrDefaultAsync(c => c.Id == request.Id) ?? throw new ArgumentNullException(nameof(request.Id));
+        Comunity community = await _repository.GetComunityById(request.Id) ?? throw new ArgumentNullException(nameof(request.Id));
+
+        // Search if the teacher has a valid ID
+        if (request.TeacherId == Guid.Empty)
+            throw new ArgumentException("The teacher must have a valid ID.", nameof(request.TeacherId));
 
         // Search if the teacher exists
-        if (request.TeacherId == Guid.Empty || !await _db.Users.AnyAsync(u => u.UserId == request.TeacherId)) 
+        if (!await _repository.UserExistsInComunity(request.TeacherId, request.Id))
             throw new ArgumentException("The teacher must be an existing user.", nameof(request.TeacherId));
 
         // Search for duplicates
-        if (await _db.Comunities.AnyAsync(c => c.Id != request.Id && c.Name != null && c.Name.ToLower() == request.Name!.Trim().ToLower())) 
+        if ((await _repository.GetAllComunities()).Any(c => c.Id != request.Id && c.Name != null && c.Name.ToLower() == request.Name!.Trim().ToLower()))
             throw new DuplicateNameException("A community with the same name already exists.");
 
         // Updating the informations
-        community.TeacherId = request.TeacherId;
-        community.Name = request.Name?.Trim();
-        community.Description = request.Description?.Trim();
-        await _db.SaveChangesAsync();
+        Comunity updatedCom = await _repository.UpdateComunity(community);
 
-        // Map users and posts from the community and return it as a response
-        return await MapCommunity(community);
+        return updatedCom.ToComunityResponse();
     }
 
     public async Task<bool> DeleteComunityByComId(Guid ComId)
     {
         // Search the community
-        Comunity? community = await _db.Comunities.FirstOrDefaultAsync(c => c.Id == ComId);
+        Comunity? community = await _repository.GetComunityById(ComId);
 
         // Checking if we found the community
-        if (community is null)
+        if (community == null)
             return false;
 
         // Delete the targeted community
-        _db.Comunities.Remove(community);
-        await _db.SaveChangesAsync();
-        return true;
+        return await _repository.DeleteComunity(ComId);
     }
 
     public async Task<List<ComunityResponse>> GetFilteredComunities(string searchBy, string searchString)
     {
         // Get all communities first
-        List<ComunityResponse> communities = await GetAllComunities();
+        List<Comunity> communities = await _repository.GetAllComunities();
 
         // Check if the searchBy and searchString is null or empty
         if (string.IsNullOrEmpty(searchBy) || string.IsNullOrEmpty(searchString)) 
-            return communities;
+            return communities.Select(c => c.ToComunityResponse()).ToList();
 
-        // Filtering the communities based on their searchBy and searchString
-        return searchBy switch
+        List<Comunity> filteredComunities =  searchBy switch
         {
-            nameof(ComunityResponse.Id) => communities.Where(c => c.Id.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList(),
-            nameof(ComunityResponse.Name) => communities.Where(c => c.Name?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true).ToList(),
-            nameof(ComunityResponse.Description) => communities.Where(c => c.Description?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true).ToList(),
-            nameof(ComunityResponse.TeacherId) => communities.Where(c => c.TeacherId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList(),
-            nameof(ComunityResponse.UsersCount) => communities.Where(c => c.UsersCount.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList(),
-            nameof(ComunityResponse.PostsCount) => communities.Where(c => c.PostsCount.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList(),
+            nameof(ComunityResponse.Id) => await _repository.GetFilteredComunities(temp => (!string.IsNullOrEmpty(temp.Id.ToString()) ? temp.Id.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase) : true)),
+            nameof(ComunityResponse.Name) => await _repository.GetFilteredComunities(temp => (!string.IsNullOrEmpty(temp.Name) ? temp.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) : true)),
+            nameof(ComunityResponse.Description) => await _repository.GetFilteredComunities(temp => (!string.IsNullOrEmpty(temp.Description) ? temp.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase) : true)),
+            nameof(ComunityResponse.TeacherId) => await _repository.GetFilteredComunities(temp => temp.TeacherId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)),
+            nameof(ComunityResponse.UsersCount) => await _repository.GetFilteredComunities(temp => temp.Users.Count().ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)),
+            nameof(ComunityResponse.PostsCount) => await _repository.GetFilteredComunities(temp => temp.PostsList.Count().ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)),
             _ => communities
         };
+
+        return filteredComunities.Select(c => c.ToComunityResponse()).ToList();
     }
 
     public Task<List<ComunityResponse>> GetSortedComunities(List<ComunityResponse> communities, string sortBy, SortOption sortOrder)
@@ -157,23 +219,4 @@ public class ComunitiesService : IComunitiesService
         return Task.FromResult(sortedCommunities);
     }
 
-    private async Task<ComunityResponse> MapCommunity(Comunity community)
-    {
-        // Getting the users from the community
-        List<User>     members = await (from member in _db.ComunityMembers.AsNoTracking().Where(m => m.ComunityId == community.Id)
-                       join user in _db.Users.AsNoTracking() on member.UserId equals user.UserId
-                       select user).ToListAsync();
-
-        // Getting the posts from the community
-        List<Post> posts = await _db.Posts.AsNoTracking().Where(p => p.CommunityId == community.Id).ToListAsync();
-
-        // Return it as a DTO object
-        return new ComunityResponse
-        {
-            Id = community.Id, TeacherId = community.TeacherId, Name = community.Name, Description = community.Description,
-            UsersCount = members.Count, PostsCount = posts.Count,
-            Users = members.Select(u => u.ToUserResponse()).ToList(),
-            Posts = posts.Select(p => p.ToPostResponse()).ToList()
-        };
-    }
 }
