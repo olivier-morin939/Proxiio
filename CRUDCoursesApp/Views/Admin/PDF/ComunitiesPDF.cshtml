@@ -1,0 +1,87 @@
+﻿@model IEnumerable<ComunityResponse>
+@{
+    Layout = null;
+}
+
+@if (Model != null && Model.Any())
+    {
+
+    <link href="@("http://" + Context.Request.Host.ToString() + "/css/Tabs.css")" rel="stylesheet" />
+    <link href="@("http://" + Context.Request.Host.ToString() + "/css/admin.css")" rel="stylesheet" />
+
+        <div class="app-tabs-table-card">
+            <div class="app-tabs-table-responsive">
+                <table class="app-tabs-table">
+
+                    <thead class="app-tabs-thead">
+                        <tr class="app-tabs-tr">
+                            <th>Community Name</th>
+                            <th>Description</th>
+                            <th>Owner ID</th>
+                            <th>User counts</th>
+                            <th>Post counts</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="app-tabs-tbody">
+                        @foreach (ComunityResponse comResponse in Model)
+                        {
+                            <tr class="app-tabs-tr">
+                                <!-- Community Name -->
+                                <td class="app-tabs-td">
+                                    <span class="app-tabs-user-name">@comResponse.Name</span>
+                                </td>
+
+                                <!-- Community Description -->
+                                <td class="app-tabs-td app-tabs-text-muted">
+                                    @comResponse.Description
+                                </td>
+
+                                <!-- Owner Id -->
+                                <td class="app-tabs-td">
+                                    <span class="app-tab-badge app-tab-badge-role">
+                                        @comResponse.TeacherId.ToString()
+                                    </span>
+                                </td>
+
+                                <!-- Users Count -->
+                                <td class="app-tabs-td">
+                                    <span class="app-tab-badge app-tab-badge-count">
+                                        <i class="fa-solid fa-users text-xs"></i> @comResponse.UsersCount
+                                    </span>
+                                </td>
+
+                                <!-- Posts Count -->
+                                <td class="app-tabs-td">
+                                    <span class="app-tab-badge app-tab-badge-count">
+                                        <i class="fa-solid fa-file-lines text-xs"></i> @comResponse.PostsCount
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Empty State Component -->
+        <div class="app-tabs-empty-card">
+            <div class="app-tabs-empty-icon-wrapper">
+                <i class="fa-solid fa-users-slash text-xl"></i>
+            </div>
+            <h3 class="app-tabs-empty-title">No communities found</h3>
+            <p class="app-tabs-empty-desc">
+                We couldn't find any communities matching your criteria. Try adjusting your search term or filter.
+            </p>
+            @if (!string.IsNullOrEmpty(ViewBag.CurrentSearchString))
+            {
+                <a href="/admin/comunities/view" class="app-tab-btn app-tab-btn-icon" style="display: inline-flex;">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                    Clear Search
+                </a>
+            }
+        </div>
+    }
+</div>

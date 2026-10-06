@@ -1,0 +1,56 @@
+﻿@model IEnumerable<SignalResponse>
+@{
+    Layout = null;
+}
+
+ @if (Model != null && Model.Any())
+    {
+    <link href="@("http://" + Context.Request.Host.ToString() + "/css/Tabs.css")" rel="stylesheet"/>
+    <link href="@("http://" + Context.Request.Host.ToString() + "/css/admin.css")" rel="stylesheet" />
+
+        <div class="app-tabs-table-card">
+            <div class="app-tabs-table-responsive">
+                <table class="app-tabs-table">
+                    <thead>
+                        <tr>
+                            <th>Problème</th>
+                            <th>Niveau</th>
+                            <th>Statut</th>
+                            <th>Confirmé</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var signal in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <b class="app-tabs-user-name">@signal.ProblemName</b>
+                                    <div class="post-body-preview">@signal.ProblemDescription</div>
+                                </td>
+                                <td>
+                                    <span class="admin-severity @signal.Level.ToString().ToLowerInvariant()">@signal.Level</span>
+                                </td>
+                                <td>
+                                    <span class="admin-id-badge">@signal.Status</span>
+                                </td>
+                                <td>
+                                    @(signal.IsConfirmed ? "Oui" : "Non")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="app-tabs-empty-card">
+            <span class="admin-empty-icon">
+                <i class="fa-solid fa-bug"></i>
+            </span>
+            <h3 class="app-tabs-empty-title">Aucun signal technique</h3>
+            <p class="app-tabs-empty-desc">Les problèmes techniques signalés s’afficheront ici.</p>
+        </div>
+    }
+</div>

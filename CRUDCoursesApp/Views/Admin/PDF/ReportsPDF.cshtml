@@ -1,0 +1,63 @@
+﻿@model IEnumerable<ReportResponse>
+@{
+    Layout = null;
+}
+
+@if (Model != null && Model.Any())
+{
+    <link href="@("http://" + Context.Request.Host.ToString() + "/css/Tabs.css")" rel="stylesheet" />
+    <link href="@("http://" + Context.Request.Host.ToString() + "/css/admin.css")" rel="stylesheet" />
+
+    <div class="app-tabs-table-card">
+        <div class="app-tabs-table-responsive">
+            <table class="app-tabs-table">
+                <thead>
+                    <tr>
+                        <th>Publication</th>
+                        <th>Motif</th>
+                        <th>Message</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var report in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="post-body-preview">ID @report.PostId.ToString()[..8]</div>
+                            </td>
+                            <td>
+                                <span class="admin-report-type">@report.TypeOfReport.ToString().Replace('_', ' ')</span>
+                            </td>
+                            <td class="report-message">
+                                @report.MessageOfReport
+                            </td>
+                            <td>
+                                <form asp-action="UpdateReportStatus" asp-route-id="@report.Id" method="post" class="admin-status-form">
+                                    <select name="status" class="admin-status-select" onchange="this.form.submit()">
+                                        @foreach (var status in Enum.GetValues<ReportStatus>())
+                                        {
+                                            <option value="@status" selected="@(status == report.StatusOfReport)">
+                                                @status
+                                            </option>
+                                        }
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="app-tabs-empty-card">
+        <span class="admin-empty-icon">
+            <i class="fa-solid fa-flag"></i>
+        </span>
+        <h3 class="app-tabs-empty-title">Aucun signalement</h3>
+        <p class="app-tabs-empty-desc">Aucun contenu n’a été signalé pour le moment.</p>
+    </div>
+}

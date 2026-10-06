@@ -192,45 +192,476 @@ namespace CRUDCoursesAppTest
         public async Task AddComunity_CommunityIsNull_ToBeRejected()
         {
 
+            // Arrange
+            Guid Com1Id = Guid.NewGuid();
+            Guid Com2Id = Guid.NewGuid();
+            Guid CreatorId = Guid.NewGuid();
+            Comunity existing_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com1Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity1")
+            .With(c => c.Description, "desc1")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com1Id }
+                })
+                .Create();
+
+            Comunity newly_added_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com2Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity2")
+            .With(c => c.Description, "desc2")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com2Id }
+                })
+                .Create();
+
+            ComunityResponse expected_com_response = newly_added_com.ToComunityResponse();
+
+            AddComunityRequest? add_com_request = null; // Simulating a null request
+            _outputHelper.WriteLine("AddComunityRequest is null, simulating invalid input.");
+
+            _comunitiesRepositoryMock
+            .Setup(r => r.GetAllComunities())
+            .ReturnsAsync(new List<Comunity> { existing_com });
+
+            _comunitiesRepositoryMock
+            .Setup(r => r.AddComunity(It.IsAny<Comunity>(), It.IsAny<Guid>()))
+            .ReturnsAsync(newly_added_com);
+
+
+            // Prepared Act
+            var Action = async () =>
+            {
+                ComunityResponse actual_com_response = await _comunitiesService.AddComunity(add_com_request);
+            };
+
+            // Assert
+            await Action.Should().ThrowAsync<ArgumentNullException>();
+            _outputHelper.WriteLine("AddComunity threw ArgumentNullException as expected for null input.");
+
         }
 
         [Fact]
         public async Task AddComunity_NamePropIsEmpty_ToBeRejected()
         {
+            // Arrange
+            Guid Com1Id = Guid.NewGuid();
+            Guid Com2Id = Guid.NewGuid();
+            Guid CreatorId = Guid.NewGuid();
+            Comunity existing_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com1Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity1")
+            .With(c => c.Description, "desc1")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com1Id }
+                })
+                .Create();
 
+            Comunity newly_added_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com2Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity2")
+            .With(c => c.Description, "desc2")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com2Id }
+                })
+                .Create();
+
+            ComunityResponse expected_com_response = newly_added_com.ToComunityResponse();
+
+            AddComunityRequest add_com_request = _fixture.Build<AddComunityRequest>()
+                .With(r => r.TeacherId, CreatorId)
+                .With(r => r.Name, null as string)
+                .With(r => r.Description, "desc2")
+                .Create();
+
+            _outputHelper.WriteLine("AddComunityRequest has empty Name property, simulating invalid input.");
+            _comunitiesRepositoryMock
+            .Setup(r => r.GetAllComunities())
+            .ReturnsAsync(new List<Comunity> { existing_com });
+
+            _comunitiesRepositoryMock
+            .Setup(r => r.AddComunity(It.IsAny<Comunity>(), It.IsAny<Guid>()))
+            .ReturnsAsync(newly_added_com);
+
+
+            // Prepared Act
+            var Action = async () =>
+            {
+                ComunityResponse actual_com_response = await _comunitiesService.AddComunity(add_com_request);
+            };
+
+
+            // Assert
+            await Action.Should().ThrowAsync<ArgumentException>();
+            _outputHelper.WriteLine("AddComunity threw ArgumentException as expected for empty Name property.");
         }
 
         [Fact]
         public async Task AddComunity_TeacherIdIsEmpty_ToBeRejected()
         {
+            // Arrange
+            Guid Com1Id = Guid.NewGuid();
+            Guid Com2Id = Guid.NewGuid();
+            Guid CreatorId = Guid.NewGuid();
+            Comunity existing_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com1Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity1")
+            .With(c => c.Description, "desc1")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com1Id }
+                })
+                .Create();
 
+            Comunity newly_added_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com2Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity2")
+            .With(c => c.Description, "desc2")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com2Id }
+                })
+                .Create();
+
+            ComunityResponse expected_com_response = newly_added_com.ToComunityResponse();
+
+            AddComunityRequest add_com_request = _fixture.Build<AddComunityRequest>()
+                .With(r => r.TeacherId, Guid.Empty)
+                .With(r => r.Name, "TestCommunity2")
+                .With(r => r.Description, "desc2")
+                .Create();
+
+            _outputHelper.WriteLine("AddComunityRequest has empty TeacherId property, simulating invalid input.");
+            _comunitiesRepositoryMock
+            .Setup(r => r.GetAllComunities())
+            .ReturnsAsync(new List<Comunity> { existing_com });
+
+            _comunitiesRepositoryMock
+            .Setup(r => r.AddComunity(It.IsAny<Comunity>(), It.IsAny<Guid>()))
+            .ReturnsAsync(newly_added_com);
+
+
+            // Prepared Act
+            var Action = async () =>
+            {
+                ComunityResponse actual_com_response = await _comunitiesService.AddComunity(add_com_request);
+            };
+
+
+            // Assert
+            await Action.Should().ThrowAsync<ArgumentException>();
+            _outputHelper.WriteLine("AddComunity threw ArgumentException as expected for empty TeacherId property.");
         }
 
         [Fact]
         public async Task AddComunity_InvalidName_ToBeRejected()
         {
+            // Arrange
+            Guid Com1Id = Guid.NewGuid();
+            Guid Com2Id = Guid.NewGuid();
+            Guid CreatorId = Guid.NewGuid();
+            Comunity existing_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com1Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity1")
+            .With(c => c.Description, "desc1")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com1Id }
+                })
+                .Create();
 
+            Comunity newly_added_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com2Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity2")
+            .With(c => c.Description, "desc2")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com2Id }
+                })
+                .Create();
+
+            ComunityResponse expected_com_response = newly_added_com.ToComunityResponse();
+
+            AddComunityRequest add_com_request = _fixture.Build<AddComunityRequest>()
+                .With(r => r.TeacherId, CreatorId)
+                .With(r => r.Name, @"LONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONG
+                                     LONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONG
+                                     LONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONG")
+                .With(r => r.Description, "desc2")
+                .Create();
+
+            _outputHelper.WriteLine("AddComunityRequest has invalid Name property, simulating invalid input.");
+            _comunitiesRepositoryMock
+            .Setup(r => r.GetAllComunities())
+            .ReturnsAsync(new List<Comunity> { existing_com });
+
+            _comunitiesRepositoryMock
+            .Setup(r => r.AddComunity(It.IsAny<Comunity>(), It.IsAny<Guid>()))
+            .ReturnsAsync(newly_added_com);
+
+
+            // Prepared Act
+            var Action = async () =>
+            {
+                ComunityResponse actual_com_response = await _comunitiesService.AddComunity(add_com_request);
+            };
+
+
+            // Assert
+            await Action.Should().ThrowAsync<ArgumentException>();
+            _outputHelper.WriteLine("AddComunity threw ArgumentException as expected for invalid Name property.");
         }
 
 
         [Fact]
         public async Task AddComunity_InvalidDesc_ToBeRejected()
         {
+            // Arrange
+            Guid Com1Id = Guid.NewGuid();
+            Guid Com2Id = Guid.NewGuid();
+            Guid CreatorId = Guid.NewGuid();
+            Comunity existing_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com1Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity1")
+            .With(c => c.Description, "desc1")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com1Id }
+                })
+                .Create();
 
+            Comunity newly_added_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com2Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity2")
+            .With(c => c.Description, "desc2")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com2Id }
+                })
+                .Create();
+
+            ComunityResponse expected_com_response = newly_added_com.ToComunityResponse();
+
+            AddComunityRequest add_com_request = _fixture.Build<AddComunityRequest>()
+                .With(r => r.TeacherId, CreatorId)
+                .With(r => r.Name, "TestCommunity2")
+                .With(r => r.Description, @"LONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONG
+                                            LONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONG
+                                            LONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONG
+                                            LONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONG
+                                            LONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONGLONG")
+                .Create();
+
+            _outputHelper.WriteLine("AddComunityRequest has invalid Desc property, simulating invalid input.");
+            _comunitiesRepositoryMock
+            .Setup(r => r.GetAllComunities())
+            .ReturnsAsync(new List<Comunity> { existing_com });
+
+            _comunitiesRepositoryMock
+            .Setup(r => r.AddComunity(It.IsAny<Comunity>(), It.IsAny<Guid>()))
+            .ReturnsAsync(newly_added_com);
+
+
+            // Prepared Act
+            var Action = async () =>
+            {
+                ComunityResponse actual_com_response = await _comunitiesService.AddComunity(add_com_request);
+            };
+
+
+            // Assert
+            await Action.Should().ThrowAsync<ArgumentException>();
+            _outputHelper.WriteLine("AddComunity threw ArgumentException as expected for invalid Desc property.");
         }
 
 
         [Fact]
         public async Task AddComunity_ValidObjet_ToBeSuccessful()
         {
+            // Arrange
+            Guid Com1Id = Guid.NewGuid();
+            Guid Com2Id = Guid.NewGuid();
+            Guid CreatorId = Guid.NewGuid();
+            Comunity existing_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com1Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity1")
+            .With(c => c.Description, "desc1")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com1Id }
+                })
+                .Create();
 
+            Comunity newly_added_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com2Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity2")
+            .With(c => c.Description, "desc2")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com2Id }
+                })
+                .Create();
+
+            ComunityResponse expected_com_response = newly_added_com.ToComunityResponse();
+
+            AddComunityRequest add_com_request = _fixture.Build<AddComunityRequest>()
+                .With(r => r.TeacherId, CreatorId)
+                .With(r => r.Name, "TestCommunity2")
+                .With(r => r.Description, "desc2")
+                .Create();
+
+            _comunitiesRepositoryMock
+            .Setup(r => r.GetAllComunities())
+            .ReturnsAsync(new List<Comunity> { existing_com });
+
+            _comunitiesRepositoryMock
+            .Setup(r => r.AddComunity(It.IsAny<Comunity>(), It.IsAny<Guid>()))
+            .ReturnsAsync(newly_added_com);
+
+
+            _outputHelper.WriteLine("Expected:");
+            _outputHelper.WriteLine($"{expected_com_response.ToString()}");
+
+
+
+            // Act
+            ComunityResponse actual_com_response = await _comunitiesService.AddComunity(add_com_request);
+            actual_com_response.Id = newly_added_com.Id;
+
+
+            _outputHelper.WriteLine("Actual:");
+            _outputHelper.WriteLine($"{actual_com_response.ToString()}");
+
+            // Assert
+            expected_com_response.Should().BeEquivalentTo(actual_com_response);
         }
 
 
         [Fact]
         public async Task AddComunity_DuplicateObject_ToBeRejected()
         {
+            // Arrange
+            Guid Com1Id = Guid.NewGuid();
+            Guid Com2Id = Guid.NewGuid();
+            Guid CreatorId = Guid.NewGuid();
+            Comunity existing_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com1Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity1")
+            .With(c => c.Description, "desc1")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com1Id }
+                })
+                .Create();
 
+            Comunity newly_added_com = _fixture.Build<Comunity>()
+            .With(c => c.Id, Com1Id)
+            .With(c => c.TeacherId, CreatorId)
+            .With(c => c.Name, "TestCommunity1")
+            .With(c => c.Description, "desc1")
+            .With(c => c.Users, new List<User>
+                {
+                    new User { UserId = CreatorId, Name = "Alice", Email = "a@b.c", DateOfBirth = DateTime.UtcNow.AddYears(-25), ReceiveNewsLetter = true }
+                })
+                .With(c => c.PostsList, new List<Post>
+                {
+                    new Post { Id = Guid.NewGuid(), Title = "Post1", Body = "Body", CreatedAt = DateTime.UtcNow, ModifiedAt = DateTime.UtcNow, UserId = CreatorId, CommunityId = Com1Id }
+                })
+                .Create();
+
+            ComunityResponse expected_com_response = newly_added_com.ToComunityResponse();
+
+            AddComunityRequest add_com_request = _fixture.Build<AddComunityRequest>()
+                .With(r => r.TeacherId, CreatorId)
+                .With(r => r.Name, "TestCommunity1")
+                .With(r => r.Description, "desc1")
+                .Create();
+            _outputHelper.WriteLine("AddComunityRequest is a duplicate of an existing community, simulating invalid input.");
+            _comunitiesRepositoryMock
+            .Setup(r => r.GetAllComunities())
+            .ReturnsAsync(new List<Comunity> { existing_com });
+
+            _comunitiesRepositoryMock
+            .Setup(r => r.AddComunity(It.IsAny<Comunity>(), It.IsAny<Guid>()))
+            .ReturnsAsync(newly_added_com);
+
+            // Act
+            var Action = async () =>
+            {
+                ComunityResponse actual_com_response = await _comunitiesService.AddComunity(add_com_request);
+            };
+
+            // Assert
+            await Action.Should().ThrowAsync<DuplicateNameException>();
+            _outputHelper.WriteLine("AddComunity threw DuplicateNameException as expected for duplicate input.");
         }
 
 

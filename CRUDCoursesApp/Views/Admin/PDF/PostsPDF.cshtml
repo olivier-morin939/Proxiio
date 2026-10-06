@@ -1,0 +1,62 @@
+﻿@model IEnumerable<PostResponse>
+@{
+    Layout = null;
+}
+@if (Model != null && Model.Any())
+    {
+
+    <link href="@("http://" + Context.Request.Host.ToString() + "/css/Tabs.css")" rel="stylesheet" />
+    <link href="@("http://" + Context.Request.Host.ToString() + "/css/admin.css")" rel="stylesheet" />
+
+        <div class="app-tabs-table-card">
+            <div class="app-tabs-table-responsive">
+                <table class="app-tabs-table">
+                    <thead>
+                        <tr>
+                            <th>Publication</th>
+                            <th>Auteur</th>
+                            <th>Communauté</th>
+                            <th>Date</th>
+                            <th>Signalements</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var post in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <b class="app-tabs-user-name">@post.Title</b>
+                                    <div class="post-body-preview">@post.Body</div>
+                                </td>
+                                <td>
+                                    <span class="admin-id-badge">@post.UserId.ToString()[..8]</span>
+                                </td>
+                                <td>
+                                    <span class="admin-id-badge">@post.CommunityId.ToString()[..8]</span>
+                                </td>
+                                <td>
+                                    @post.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")
+                                </td>
+                                <td>
+                                    <a asp-controller="Admin" asp-action="DisplayReports" asp-route-postId="@post.Id" class="admin-post-report @(post.ReportsCount == 0 ? "clear" : "")">
+                                        <i class="fa-solid fa-flag"></i> @post.ReportsCount rapport(s)
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="app-tabs-empty-card">
+            <span class="admin-empty-icon">
+                <i class="fa-regular fa-file-lines"></i>
+            </span>
+            <h3 class="app-tabs-empty-title">Aucune publication</h3>
+            <p class="app-tabs-empty-desc">Les publications apparaîtront ici dès qu’un membre en créera une.</p>
+        </div>
+    }
+</div>

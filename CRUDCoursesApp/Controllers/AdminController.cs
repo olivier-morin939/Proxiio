@@ -13,6 +13,7 @@ using System.Collections.Immutable;
 using System.Data;
 using System.Globalization;
 using System.Net;
+using Rotativa.AspNetCore;
 
 namespace CRUDCoursesApp.Controllers
 {
@@ -800,5 +801,47 @@ namespace CRUDCoursesApp.Controllers
             return RedirectToAction(nameof(DisplayReports));
         }
         #endregion;
+
+        #region ExportingData
+
+        [HttpGet]
+        [Route("admin/export/pdf")]
+        public async Task<IActionResult> ExportToPDF([FromQuery] string ModelToExport)
+        {
+            if(string.IsNullOrWhiteSpace(ModelToExport))
+                return BadRequest("ModelToExport query parameter is required.");
+
+            string? viewName = ModelToExport switch
+            {
+                "UserResponse" => "UsersPDF",
+                "ComunityResponse" => "ComunitiesPDF",
+                "PostResponse" => "PostsPDF",
+                "ReportResponse" => "ReportsPDF",
+                "SignalResponse" => "SignalsPDF",
+                _ => null
+            };
+
+            if (viewName == null)
+                return BadRequest($"Model unknown : {ModelToExport}");
+
+            object? models = ModelToExport switch
+            {
+                "UserResponse" => await _usersService.GetAllUsers(),
+                "ComunityResponse" => await _comunitiesService.GetAllComunities(),
+                "PostResponse" => await _postsService.GetAllPosts(),
+                "ReportResponse" => await _reportsService.GetAllReports(),
+                "SignalResponse" => await _signalsService.GetAllSignals(),
+                _ => null
+            };
+
+            return new ViewAsPdf($"PDF/{viewName}", models, ViewData)
+            {
+                PageMargins = new Rotativa.AspNetCore.Options.Margins() { Top = 20, Right = 20, Bottom = 20, Left = 20},
+                PageSize = Rotativa.AspNetCore.Options.Size.A4,
+                PageOrientation = Rotativa.AspNetCore.Options.Orientation.Landscape
+            };
+        }
+        #endregion
+
     }
 }

@@ -3,20 +3,94 @@
     ViewData["Title"] = ViewBag.PageTitle ?? "Publications";
     var communityId = ViewBag.ComId is Guid id ? id : Guid.Empty;
 }
+
 <div class="app-tabs-container">
-    <div class="app-tabs-header"><div><span class="admin-kicker">MODÉRATION DU CONTENU</span><h1 class="app-tabs-title">@ViewData["Title"]</h1><p class="app-tabs-subtitle">Consulte les publications et repère celles qui ont été signalées.</p></div><div class="admin-header-actions"><a asp-controller="Admin" asp-action="Index" class="app-tab-btn app-tab-btn-secondary">← Tableau de bord</a>@if (communityId != Guid.Empty) { <a asp-controller="Admin" asp-action="AddPostByComunity" asp-route-ComId="@communityId" class="app-tab-btn app-tab-btn-primary"><i class="fa-solid fa-plus"></i> Nouvelle publication</a> }</div></div>
+    <div class="app-tabs-header">
+        <div>
+            <span class="admin-kicker">MODÉRATION DU CONTENU</span>
+            <h1 class="app-tabs-title">@ViewData["Title"]</h1>
+            <p class="app-tabs-subtitle">Consulte les publications et repère celles qui ont été signalées.</p>
+        </div>
+        <div class="admin-header-actions">
+            <a asp-controller="Admin" asp-action="Index" class="app-tab-btn app-tab-btn-secondary">← Tableau de bord</a>
+            @if (communityId != Guid.Empty)
+            {
+                <a asp-controller="Admin" asp-action="AddPostByComunity" asp-route-ComId="@communityId" class="app-tab-btn app-tab-btn-primary">
+                    <i class="fa-solid fa-plus"></i> Nouvelle publication
+                </a>
+            }
+            <a asp-controller="Admin" asp-action="ExportToPDF" asp-route-ModelToExport="PostResponse" class="app-tab-btn app-tab-btn-secondary">
+                <i class="fa-solid fa-file-pdf"></i> Export posts in PDF
+            </a>
+        </div>
+    </div>
+
     @await Html.PartialAsync("_FlashMessagesComponent")
-    @if (Model?.Any() == true)
+
+    @if (Model != null && Model.Any())
     {
-        <div class="app-tabs-table-card"><div class="app-tabs-table-responsive"><table class="app-tabs-table"><thead><tr><th>Publication</th><th>Auteur</th><th>Communauté</th><th>Date</th><th>Signalements</th><th>Actions</th></tr></thead><tbody>
-        @foreach (var post in Model)
-        {
-            <tr><td><b class="app-tabs-user-name">@post.Title</b><div class="post-body-preview">@post.Body</div></td><td><span class="admin-id-badge">@post.UserId.ToString()[..8]</span></td><td><span class="admin-id-badge">@post.CommunityId.ToString()[..8]</span></td><td>@post.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</td><td><a asp-controller="Admin" asp-action="DisplayReports" asp-route-postId="@post.Id" class="admin-post-report @(post.ReportsCount == 0 ? "clear" : "")"><i class="fa-solid fa-flag"></i> @post.ReportsCount rapport(s)</a></td><td><div class="app-tab-actions-cell"><a asp-controller="Admin" asp-action="UpdatePostByComunity" asp-route-ComId="@post.CommunityId" asp-route-UserId="@post.Id" class="app-tab-action-btn app-tab-action-update">Modifier</a><form asp-controller="Admin" asp-action="DeletePostsByComunity" asp-route-ComId="@post.CommunityId" asp-route-UserId="@post.Id" method="post" class="admin-inline-form"><button class="app-tab-action-btn app-tab-action-delete" type="submit">Supprimer</button></form></div></td></tr>
-        }
-        </tbody></table></div></div>
+        <div class="app-tabs-table-card">
+            <div class="app-tabs-table-responsive">
+                <table class="app-tabs-table">
+                    <thead>
+                        <tr>
+                            <th>Publication</th>
+                            <th>Auteur</th>
+                            <th>Communauté</th>
+                            <th>Date</th>
+                            <th>Signalements</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var post in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <b class="app-tabs-user-name">@post.Title</b>
+                                    <div class="post-body-preview">@post.Body</div>
+                                </td>
+                                <td>
+                                    <span class="admin-id-badge">@post.UserId.ToString()[..8]</span>
+                                </td>
+                                <td>
+                                    <span class="admin-id-badge">@post.CommunityId.ToString()[..8]</span>
+                                </td>
+                                <td>
+                                    @post.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")
+                                </td>
+                                <td>
+                                    <a asp-controller="Admin" asp-action="DisplayReports" asp-route-postId="@post.Id" class="admin-post-report @(post.ReportsCount == 0 ? "clear" : "")">
+                                        <i class="fa-solid fa-flag"></i> @post.ReportsCount rapport(s)
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="app-tab-actions-cell">
+                                        <a asp-controller="Admin" asp-action="UpdatePostByComunity" asp-route-ComId="@post.CommunityId" asp-route-UserId="@post.Id" class="app-tab-action-btn app-tab-action-update">
+                                            Modifier
+                                        </a>
+                                        <form asp-controller="Admin" asp-action="DeletePostsByComunity" asp-route-ComId="@post.CommunityId" asp-route-UserId="@post.Id" method="post" class="admin-inline-form">
+                                            <button class="app-tab-action-btn app-tab-action-delete" type="submit">
+                                                Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     }
     else
     {
-        <div class="app-tabs-empty-card"><span class="admin-empty-icon"><i class="fa-regular fa-file-lines"></i></span><h3 class="app-tabs-empty-title">Aucune publication</h3><p class="app-tabs-empty-desc">Les publications apparaîtront ici dès qu’un membre en créera une.</p></div>
+        <div class="app-tabs-empty-card">
+            <span class="admin-empty-icon">
+                <i class="fa-regular fa-file-lines"></i>
+            </span>
+            <h3 class="app-tabs-empty-title">Aucune publication</h3>
+            <p class="app-tabs-empty-desc">Les publications apparaîtront ici dès qu’un membre en créera une.</p>
+        </div>
     }
 </div>

@@ -29,6 +29,12 @@ namespace CRUDCoursesApp
             builder.Services.AddScoped<IUsersRepository, UsersRepository>();
             builder.Services.AddScoped<IComunitiesRepository, ComunitiesRepository>();
 
+
+            // Add rotativa exe file
+            Rotativa.AspNetCore.RotativaConfiguration.Setup("wwwroot", wkhtmltopdfRelativePath: "Rotativa");
+
+
+            // Add the context to use EF Core
             builder.Services.AddDbContext<ApplicationDbContext>(
                 options => options.UseSqlServer(
                     builder.Configuration.GetConnectionString("DefaultConnection"),

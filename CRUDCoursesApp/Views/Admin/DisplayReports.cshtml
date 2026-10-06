@@ -1,17 +1,98 @@
-@model IEnumerable<ServiceContracts.DTO.Reports.ReportResponse>
-@{ ViewData["Title"] = "Signalements"; var postTitles = (Dictionary<Guid, string>)ViewBag.PostTitles; }
+@model IEnumerable<ReportResponse>
+@{
+    ViewData["Title"] = "Signalements";
+    var postTitles = ViewBag.PostTitles as Dictionary<Guid, string> ?? new Dictionary<Guid, string>();
+}
+
 <div class="app-tabs-container">
-    <div class="app-tabs-header"><div><span class="admin-kicker">MODÉRATION DE LA COMMUNAUTÉ</span><h1 class="app-tabs-title">Signalements</h1><p class="app-tabs-subtitle">Examine les publications rapportées et mets à jour leur statut.</p></div><div class="admin-header-actions"><a asp-action="Index" class="app-tab-btn app-tab-btn-secondary">← Tableau de bord</a><a asp-action="AddReport" class="app-tab-btn app-tab-btn-primary"><i class="fa-solid fa-plus"></i> Nouveau signalement</a></div></div>
+    <div class="app-tabs-header">
+        <div>
+            <span class="admin-kicker">MODÉRATION DE LA COMMUNAUTÉ</span>
+            <h1 class="app-tabs-title">Signalements</h1>
+            <p class="app-tabs-subtitle">Examine les publications rapportées et mets à jour leur statut.</p>
+        </div>
+        <div class="admin-header-actions">
+            <a asp-action="Index" class="app-tab-btn app-tab-btn-secondary">← Tableau de bord</a>
+            <a asp-action="AddReport" class="app-tab-btn app-tab-btn-primary">
+                <i class="fa-solid fa-plus"></i> Nouveau signalement
+            </a>
+            <a asp-controller="Admin" asp-action="ExportToPDF" asp-route-ModelToExport="ReportResponse" class="app-tab-btn app-tab-btn-secondary">
+                <i class="fa-solid fa-file-pdf"></i> Export reports in PDF
+            </a>
+        </div>
+    </div>
+
     @await Html.PartialAsync("_FlashMessagesComponent")
-    @if (ViewBag.PostId is Guid filteredPostId) { <div class="admin-filter-notice">Filtré sur une publication <a asp-action="DisplayReports">Effacer le filtre</a></div> }
-    @if (Model.Any())
-    {
-        <div class="app-tabs-table-card"><div class="app-tabs-table-responsive"><table class="app-tabs-table"><thead><tr><th>Publication</th><th>Motif</th><th>Message</th><th>Statut</th><th>Actions</th></tr></thead><tbody>
-        @foreach (var report in Model)
-        {
-            <tr><td><b class="app-tabs-user-name">@(postTitles.GetValueOrDefault(report.PostId, "Publication supprimée"))</b><div class="post-body-preview">ID @report.PostId.ToString()[..8]</div></td><td><span class="admin-report-type">@report.TypeOfReport.ToString().Replace('_', ' ')</span></td><td class="report-message">@report.MessageOfReport</td><td><form asp-action="UpdateReportStatus" asp-route-id="@report.Id" method="post" class="admin-status-form"><select name="status" class="admin-status-select" onchange="this.form.submit()">@foreach (var status in Enum.GetValues<ReportStatus>()) { <option value="@status" selected="@(status == report.StatusOfReport)">@status</option> }</select></form></td><td><form asp-action="DeleteReport" asp-route-id="@report.Id" method="post"><button type="submit" class="app-tab-action-btn app-tab-action-delete">Supprimer</button></form></td></tr>
-        }
-        </tbody></table></div></div>
+
+    @if (ViewBag.PostId is Guid filteredPostId) 
+    { 
+        <div class="admin-filter-notice">
+            Filtré sur une publication <a asp-action="DisplayReports">Effacer le filtre</a>
+        </div> 
     }
-    else { <div class="app-tabs-empty-card"><span class="admin-empty-icon"><i class="fa-solid fa-flag"></i></span><h3 class="app-tabs-empty-title">Aucun signalement</h3><p class="app-tabs-empty-desc">Aucun contenu n’a été signalé pour le moment.</p></div> }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="app-tabs-table-card">
+            <div class="app-tabs-table-responsive">
+                <table class="app-tabs-table">
+                    <thead>
+                        <tr>
+                            <th>Publication</th>
+                            <th>Motif</th>
+                            <th>Message</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var report in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <b class="app-tabs-user-name">@(postTitles.GetValueOrDefault(report.PostId, "Publication supprimée"))</b>
+                                    <div class="post-body-preview">ID @report.PostId.ToString()[..8]</div>
+                                </td>
+                                <td>
+                                    <span class="admin-report-type">@report.TypeOfReport.ToString().Replace('_', ' ')</span>
+                                </td>
+                                <td class="report-message">
+                                    @report.MessageOfReport
+                                </td>
+                                <td>
+                                    <form asp-action="UpdateReportStatus" asp-route-id="@report.Id" method="post" class="admin-status-form">
+                                        <select name="status" class="admin-status-select" onchange="this.form.submit()">
+                                            @foreach (var status in Enum.GetValues<ReportStatus>()) 
+                                            {
+                                                <option value="@status" selected="@(status == report.StatusOfReport)">
+                                                    @status
+                                                </option> 
+                                            }
+                                        </select>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form asp-action="DeleteReport" asp-route-id="@report.Id" method="post">
+                                        <button type="submit" class="app-tab-action-btn app-tab-action-delete">
+                                            Supprimer
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else 
+    { 
+        <div class="app-tabs-empty-card">
+            <span class="admin-empty-icon">
+                <i class="fa-solid fa-flag"></i>
+            </span>
+            <h3 class="app-tabs-empty-title">Aucun signalement</h3>
+            <p class="app-tabs-empty-desc">Aucun contenu n’a été signalé pour le moment.</p>
+        </div>
+    }
 </div>

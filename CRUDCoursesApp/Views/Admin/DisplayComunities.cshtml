@@ -15,11 +15,18 @@
             <h1 class="app-tabs-title">Communities</h1>
             <p class="app-tabs-subtitle">Manage and filter your system communities.</p>
         </div>
-        <!-- Bouton Ajouter une Communauté -->
-        <a href="/admin/comunities/add" class="app-tab-btn app-tab-btn-primary">
-            <i class="fa-solid fa-plus text-xs"></i>
-            Add Community
-        </a>
+        <div class="admin-header-actions">
+            <!-- Bouton Ajouter une Communauté -->
+            <a href="/admin/comunities/add" class="app-tab-btn app-tab-btn-primary">
+                <i class="fa-solid fa-plus text-xs"></i>
+                Add Community
+            </a>
+            <!-- Bouton Export PDF -->
+            <a asp-controller="Admin" asp-action="ExportToPDF" asp-route-ModelToExport="ComunityResponse" class="app-tab-btn app-tab-btn-secondary">
+                <i class="fa-solid fa-file-pdf"></i>
+                Export communities in PDF
+            </a>
+        </div>
     </div>
 
     <!-- Flash Messages -->
@@ -34,15 +41,13 @@
             <!-- Select Field -->
             <div class="app-tabs-select-wrapper">
                 <select name="searchBy" class="app-tabs-select">
-                    @foreach (var field in ViewBag.SearchFields)
+                    @if (ViewBag.SearchFields != null)
                     {
-                        if (ViewBag.CurrentSearchBy == field.Key)
+                        foreach (var field in ViewBag.SearchFields)
                         {
-                            <option value="@field.Key" selected="selected">@field.Value</option>
-                        }
-                        else
-                        {
-                            <option value="@field.Key">@field.Value</option>
+                            <option value="@field.Key" selected="@(ViewBag.CurrentSearchBy == field.Key ? "selected" : null)">
+                                @field.Value
+                            </option>
                         }
                     }
                 </select>
