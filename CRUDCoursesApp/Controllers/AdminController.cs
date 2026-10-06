@@ -866,6 +866,9 @@ namespace CRUDCoursesApp.Controllers
                 _ => null
             };
 
+            if (csvMemoryStream == null)
+                return BadRequest($"CSV File can't be null");
+
             return File(csvMemoryStream, "application/octet-stream", fileName);
         }
 

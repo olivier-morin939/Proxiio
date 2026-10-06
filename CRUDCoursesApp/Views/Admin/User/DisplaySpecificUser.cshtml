@@ -23,7 +23,7 @@
     <!-- User Details Card -->
     <div class="app-form-card">
 
-n        <!-- Banner Avatar Section -->
+        <!-- Banner Avatar Section -->
         <div class="app-user-banner">
             <div class="app-avatar app-avatar-indigo">
                 @(string.IsNullOrEmpty(Model.Name) ? "U" : Model.Name.Substring(0, 1))
@@ -67,7 +67,7 @@ n        <!-- Banner Avatar Section -->
                     </div>
                 </div>
 
-n                <!-- Role -->
+                <!-- Role -->
                 <div class="app-form-group">
                     <label class="app-form-label">Role</label>
                     <div class="app-form-input-wrapper">
@@ -85,7 +85,7 @@ n                <!-- Role -->
                     </div>
                 </div>
 
-n                <!-- Date of Birth -->
+                <!-- Date of Birth -->
                 <div class="app-form-group" style="grid-column: 1 / -1;">
                     <label class="app-form-label">Date of Birth</label>
                     <div class="app-form-input-wrapper">
@@ -94,7 +94,7 @@ n                <!-- Date of Birth -->
                     </div>
                 </div>
 
-n                <!-- Newsletter Preference -->
+                <!-- Newsletter Preference -->
                 <div style="grid-column: 1 / -1;" class="app-form-option-card">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -123,15 +123,15 @@ n                <!-- Newsletter Preference -->
                     </div>
                 </div>
 
-n            </div>
+            </div>
         </div>
 
-n        <!-- Footer Actions -->
+        <!-- Footer Actions -->
         <div class="app-form-actions" style="padding: 1rem 1.5rem; background-color: var(--app-slate-50); border-top: 1px solid var(--app-slate-200); display: flex; justify-content: flex-end; gap: 0.75rem;">
             <a asp-controller="Admin" asp-action="DisplayUsers" class="app-btn app-btn-secondary">
                 Close
             </a>
         </div>
 
-n    </div>
+    </div>
 </div>

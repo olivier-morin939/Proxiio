@@ -23,7 +23,9 @@
 
     <!-- Flash Messages -->
     <div class="app-form-flash-messages">
-        @{ await Html.RenderPartialAsync("_FlashMessagesComponent"); }
+        @{
+            await Html.RenderPartialAsync("_FlashMessagesComponent");
+        }
     </div>
 
     <!-- Edit Form Card -->
@@ -144,9 +146,9 @@
                     <i class="fa-solid fa-rotate-left text-xs"></i>
                     Reset
                 </button>
-                <button type="submit" class="app-btn">
-                    <i class="fa-solid fa-save text-xs"></i>
-                    Save
+                <button type="submit" class="app-btn app-btn-primary">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    Update User
                 </button>
             </div>
 

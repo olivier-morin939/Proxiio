@@ -17,7 +17,7 @@
         </div>
         <div class="admin-header-actions">
             <!-- Bouton Ajouter une Communauté -->
-            <a asp-controller="Admin" asp-action="AddComunity" class="app-tab-btn app-tab-btn-primary">
+            <a href="/admin/comunities/add" class="app-tab-btn app-tab-btn-primary">
                 <i class="fa-solid fa-plus text-xs"></i>
                 Add Community
             </a>
@@ -30,11 +30,13 @@
     </div>
 
     <!-- Flash Messages -->
-    <partial name="_FlashMessagesComponent" />
+    @{
+        await Html.RenderPartialAsync("_FlashMessagesComponent");
+    }
 
     <!-- Filter & Search Bar -->
     <div class="app-tabs-filter-card">
-        <form asp-controller="Admin" asp-action="DisplayComunities" method="get" class="app-tabs-filter-form">
+        <form action="/admin/comunities/view" method="get" class="app-tabs-filter-form">
 
             <!-- Select Field -->
             <div class="app-tabs-select-wrapper">
@@ -43,7 +45,7 @@
                     {
                         foreach (var field in ViewBag.SearchFields)
                         {
-                            <option value="@field.Key" selected="@(ViewBag.CurrentSearchBy == field.Key)">
+                            <option value="@field.Key" selected="@(ViewBag.CurrentSearchBy == field.Key ? "selected" : null)">
                                 @field.Value
                             </option>
                         }
@@ -66,7 +68,7 @@
                     Search
                 </button>
 
-                <a asp-controller="Admin" asp-action="DisplayComunities" class="app-tab-btn app-tab-btn-icon" title="Reset Filters">
+                <a href="/admin/comunities/view" class="app-tab-btn app-tab-btn-icon" title="Reset Filters">
                     <i class="fa-solid fa-rotate-right"></i>
                 </a>
             </div>
@@ -80,7 +82,9 @@
             <div class="app-tabs-table-responsive">
                 <table class="app-tabs-table">
 
-                    <partial name="_ComunityHeaderTab" view-data="ViewData" />
+                    @{
+                        await Html.RenderPartialAsync("_ComunityHeaderTab", viewData: ViewData);
+                    }
 
                     <tbody class="app-tabs-tbody">
                         @foreach (ComunityResponse comResponse in Model)
@@ -99,7 +103,7 @@
                                 <!-- Owner Id -->
                                 <td class="app-tabs-td">
                                     <span class="app-tab-badge app-tab-badge-role">
-                                        @comResponse.TeacherId
+                                        @comResponse.TeacherId.ToString()
                                     </span>
                                 </td>
 
@@ -120,15 +124,15 @@
                                 <!-- Actions -->
                                 <td class="app-tabs-td" style="text-align: right;">
                                     <div class="app-tab-actions-cell">
-                                        <a asp-controller="Admin" asp-action="GetComunity" asp-route-id="@comResponse.Id"
+                                        <a href="/admin/comunities/view/@comResponse.Id"
                                            class="app-tab-action-btn app-tab-action-details">
                                             Details
                                         </a>
-                                        <a asp-controller="Admin" asp-action="UpdateComunity" asp-route-id="@comResponse.Id"
+                                        <a href="/admin/comunities/update/@comResponse.Id"
                                            class="app-tab-action-btn app-tab-action-update">
                                             Update
                                         </a>
-                                        <a asp-controller="Admin" asp-action="DeleteComunity" asp-route-id="@comResponse.Id"
+                                        <a href="/admin/comunities/delete/@comResponse.Id"
                                            class="app-tab-action-btn app-tab-action-delete">
                                             Delete
                                         </a>
@@ -152,14 +156,12 @@
             <p class="app-tabs-empty-desc">
                 We couldn't find any communities matching your criteria. Try adjusting your search term or filter.
             </p>
-            @if (!string.IsNullOrEmpty(ViewBag.CurrentSearchString as string))
+            @if (!string.IsNullOrEmpty(ViewBag.CurrentSearchString))
             {
-                <div style="margin-top: 1rem;">
-                    <a asp-controller="Admin" asp-action="AddComunity" class="app-tab-btn app-tab-btn-primary">Create new community</a>
-                </div>
-                <div class="admin-empty-footer" style="margin-top: 0.5rem;">
-                    <a asp-controller="Admin" asp-action="DisplayComunities">Reset filter</a>
-                </div>
+                <a href="/admin/comunities/view" class="app-tab-btn app-tab-btn-icon" style="display: inline-flex;">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                    Clear Search
+                </a>
             }
         </div>
     }

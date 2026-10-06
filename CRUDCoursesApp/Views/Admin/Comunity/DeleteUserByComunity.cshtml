@@ -10,14 +10,14 @@
           asp-route-UserId="@Model.UserId" 
           method="post" 
           class="admin-form-card">
-
+          
         <span class="admin-kicker">GESTION DE COMMUNAUTÉ</span>
         <h1>Retirer ce membre ?</h1>
         <p>
             <b>@Model.Name</b> ne fera plus partie de cette communauté. Son compte restera actif sur la plateforme.
         </p>
 
-n        <div class="admin-form-actions">
+        <div class="admin-form-actions">
             <a asp-action="DisplayUserByComunity" asp-route-ComId="@communityId" class="admin-btn secondary">Annuler</a>
             <button type="submit" class="admin-btn danger">Retirer le membre</button>
         </div>
