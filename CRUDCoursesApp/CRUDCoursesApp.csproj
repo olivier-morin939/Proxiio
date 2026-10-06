@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
+    <Folder Include="Views\Admin\CSV\" />
     <Folder Include="wwwroot\Rotativa\" />
   </ItemGroup>
 

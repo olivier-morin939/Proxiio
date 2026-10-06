@@ -6,7 +6,9 @@ using RepositoryContracts;
 using ServiceContracts;
 using ServiceContracts.DTO.Users;
 using System.Data;
-
+using CsvHelper;
+using System.Globalization;
+using System.IO;
 namespace Services;
 
 public class UsersService : IUsersService
@@ -169,5 +171,34 @@ public class UsersService : IUsersService
             _ => users
         };
         return Task.FromResult(sortedUsers);
+    }
+
+    public async Task<MemoryStream> GetUsersCSV()
+    {
+        // Get all the users
+        List<UserResponse> users = await GetAllUsers();
+
+        // Create a new memory stream
+        MemoryStream memoryStream = new MemoryStream();
+
+        // Create a new stream writer 
+        StreamWriter streamWriter = new StreamWriter(memoryStream);
+
+        // Create a new csv writer
+        CsvWriter csvWriter = new CsvWriter(streamWriter, culture: CultureInfo.InvariantCulture, leaveOpen: true);
+
+        // Write all the headers automatically
+        csvWriter.WriteHeader<UserResponse>();
+
+        csvWriter.NextRecord();
+
+        // Write the informations
+        await csvWriter.WriteRecordsAsync(users);
+
+        // Reset the position to the beginning of the stream
+        memoryStream.Position = 0;
+
+        return memoryStream;
+
     }
 }

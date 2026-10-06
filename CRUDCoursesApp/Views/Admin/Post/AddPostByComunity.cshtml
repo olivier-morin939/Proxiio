@@ -8,14 +8,14 @@
 <div class="admin-form-page">
     <a asp-action="DisplayPostsByComunity" asp-route-ComId="@communityId" class="admin-back-link">← Retour aux publications</a>
 
-    <form asp-action="AddPostByComunity" asp-route-ComId="@communityId" method="post" class="admin-form-card">
+n    <form asp-action="AddPostByComunity" asp-route-ComId="@communityId" method="post" class="admin-form-card">
         <span class="admin-kicker">PUBLICATION COMMUNAUTAIRE</span>
         <h1>Nouvelle publication</h1>
         <p>Rédige une publication au nom d’un membre de cette communauté.</p>
 
-        <div asp-validation-summary="All" class="admin-validation"></div>
+n        <div asp-validation-summary="All" class="admin-validation"></div>
 
-        <div class="admin-form-grid">
+n        <div class="admin-form-grid">
             <label class="admin-field full">
                 Auteur
                 <select asp-for="UserId" class="admin-select" required>
@@ -27,18 +27,18 @@
                 </select>
             </label>
 
-            <label class="admin-field full">
+n            <label class="admin-field full">
                 Titre
                 <input asp-for="Title" class="admin-input" maxlength="120" required />
             </label>
 
-            <label class="admin-field full">
+n            <label class="admin-field full">
                 Message
                 <textarea asp-for="Body" class="admin-textarea" rows="5" maxlength="250" required></textarea>
             </label>
         </div>
 
-        <div class="admin-form-actions">
+n        <div class="admin-form-actions">
             <a asp-action="DisplayPostsByComunity" asp-route-ComId="@communityId" class="admin-btn secondary">Annuler</a>
             <button class="admin-btn" type="submit">Publier</button>
         </div>

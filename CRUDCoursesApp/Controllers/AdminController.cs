@@ -100,7 +100,7 @@ namespace CRUDCoursesApp.Controllers
             ViewBag.CurrentSortOrder = sortOption.ToString();
 
 
-            return View(sortedUserResponses);
+            return View("User/DisplayUsers", sortedUserResponses);
         }
 
 
@@ -111,14 +111,14 @@ namespace CRUDCoursesApp.Controllers
             try
             {
                 UserResponse matchingUserResponse = await _usersService.GetUserById(UserId);
-                return View(matchingUserResponse);
+                return View("User/DisplaySpecificUser", matchingUserResponse);
             }
             catch (ArgumentNullException ex) { 
                 
                 ViewBag.ErrorMessage = ex.Message;
             }
 
-            return View();
+            return View("User/DisplaySpecificUser");
         }
 
 
@@ -127,7 +127,7 @@ namespace CRUDCoursesApp.Controllers
         public async Task<IActionResult> AddUser()
         {
 
-            return View();
+            return View("User/AddUser");
         }
 
 
@@ -171,7 +171,7 @@ namespace CRUDCoursesApp.Controllers
             {
                 UserResponse userResponse = await _usersService.GetUserById(UserId);
                 UpdateUserRequest updateRequest = userResponse.ToUpdateUserRequest();
-                return View(updateRequest);
+                return View("User/UpdateSpecificUser", updateRequest);
             }
             catch (Exception)
             {
@@ -220,7 +220,7 @@ namespace CRUDCoursesApp.Controllers
             try
             {
                 UserResponse userResponse = await _usersService.GetUserById(UserId);
-                return View(userResponse);
+                return View("User/DeleteSpecificUser", userResponse);
             }
             catch (Exception)
             {
@@ -284,7 +284,7 @@ namespace CRUDCoursesApp.Controllers
             ViewBag.CurrentSortBy = sortBy;
             ViewBag.CurrentSortOrder = sortOption.ToString();
 
-            return View(sortedComunityResponses);
+            return View("Comunity/DisplayComunities", sortedComunityResponses);
         }
 
         [HttpGet]
@@ -322,7 +322,7 @@ namespace CRUDCoursesApp.Controllers
                     MembersTotal = membersTotal
                 };
 
-                return View(vm);
+                return View("Comunity/DisplaySpecificComunity", vm);
             }
             catch (Exception)
             {
@@ -334,7 +334,7 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/add")]
         public async Task<IActionResult> AddComunity()
         {
-            return View();
+            return View("Comunity/AddComunity");
         }
 
         [HttpPost]
@@ -376,7 +376,7 @@ namespace CRUDCoursesApp.Controllers
             try
             {
                 ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
-                return View(comResponse);
+                return View("Comunity/UpdateComunity", comResponse);
             }
             catch (Exception)
             {
@@ -430,7 +430,7 @@ namespace CRUDCoursesApp.Controllers
             try
             {
                 ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
-                return View(comResponse);
+                return View("Comunity/DeleteSpecificComunity", comResponse);
             }
             catch (Exception)
             {
@@ -474,7 +474,7 @@ namespace CRUDCoursesApp.Controllers
             {
                 ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
                 ViewBag.ComId = ComId;
-                return View(comResponse.Users ?? new List<UserResponse>());
+                return View("Comunity/DisplayUserByComunity", comResponse.Users ?? new List<UserResponse>());
             }
             catch (ArgumentNullException) { 
                 return NotFound();
@@ -490,7 +490,7 @@ namespace CRUDCoursesApp.Controllers
                 return NotFound();
 
             ViewBag.ComId = ComId;
-            return View();
+            return View("Comunity/AddUserByComunity");
         }
 
         [HttpPost]
@@ -524,7 +524,7 @@ namespace CRUDCoursesApp.Controllers
         {
             try { 
                 ViewBag.ComId = ComId;
-                return View(await _usersService.GetUserById(UserId));
+                return View("Comunity/DeleteUserByComunity", await _usersService.GetUserById(UserId));
             }
             catch (ArgumentNullException) { 
                 return NotFound();
@@ -576,7 +576,7 @@ namespace CRUDCoursesApp.Controllers
                 ViewBag.ComId = ComId;
                 ViewBag.PageTitle = $"Publications · {comResponse.Name}";
 
-                return View(comunitySortedPosts);
+                return View("Post/DisplayPostsByComunity", comunitySortedPosts);
             }
             catch (ArgumentNullException)
             {
@@ -593,7 +593,7 @@ namespace CRUDCoursesApp.Controllers
             catch (ArgumentNullException) { return NotFound(); }
             ViewBag.ComId = ComId;
             ViewBag.Users = (await _comunitiesService.GetComunityByComId(ComId)).Users ?? new List<UserResponse>();
-            return View();
+            return View("Post/AddPostByComunity");
         }
 
         [HttpPost]
@@ -641,7 +641,7 @@ namespace CRUDCoursesApp.Controllers
             {
                 PostResponse post = await _postsService.GetPostByPostId(UserId);
                 ViewBag.ComId = ComId;
-                return View(new UpdatePostRequest { Id = post.Id, ComunityId = ComId, UserId = post.UserId, Title = post.Title ?? "", Body = post.Body ?? "", ImagesPath = post.ImagesPath ?? new(), AdditionalsPath = post.AdditionalsPath ?? new() });
+                return View("Post/UpdatePostByComunity", new UpdatePostRequest { Id = post.Id, ComunityId = ComId, UserId = post.UserId, Title = post.Title ?? "", Body = post.Body ?? "", ImagesPath = post.ImagesPath ?? new(), AdditionalsPath = post.AdditionalsPath ?? new() });
             }
             catch (KeyNotFoundException) { 
                 return NotFound();
@@ -674,23 +674,23 @@ namespace CRUDCoursesApp.Controllers
         {
             ViewBag.PageTitle = "Toutes les publications";
             ViewBag.ComId = Guid.Empty;
-            return View("DisplayPostsByComunity", await _postsService.GetAllPosts());
+            return View("Post/DisplayPostsByComunity", await _postsService.GetAllPosts());
         }
         #endregion
 
         #region SignalActionsMethod
         [HttpGet("/admin/signals")]
-        public async Task<IActionResult> DisplaySignals() => View(await _signalsService.GetAllSignals());
+        public async Task<IActionResult> DisplaySignals() => View("Signal/DisplaySignals", await _signalsService.GetAllSignals());
 
         [HttpGet("/admin/signals/add")]
-        public async Task<IActionResult> AddSignal() => View(new AddSignalRequest());
+        public async Task<IActionResult> AddSignal() => View("Signal/AddSignal", new AddSignalRequest());
 
         [HttpPost("/admin/signals/add")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddSignal([Bind][FromForm]AddSignalRequest request)
         {
             if (!ModelState.IsValid) 
-                return View(request);
+                return View("Signal/AddSignal", request);
 
             await _signalsService.AddSignal(request);
             TempData["SuccessMessage"] = "Le signalement technique a été créé.";
@@ -704,7 +704,7 @@ namespace CRUDCoursesApp.Controllers
             try
             {
                 var signal = await _signalsService.GetSignalById(id);
-                return View(new UpdateSignalRequest { Id = signal.Id, ProblemName = signal.ProblemName, ProblemDescription = signal.ProblemDescription, Level = signal.Level, Status = signal.Status, IsConfirmed = signal.IsConfirmed });
+                return View("Signal/UpdateSignal", new UpdateSignalRequest { Id = signal.Id, ProblemName = signal.ProblemName, ProblemDescription = signal.ProblemDescription, Level = signal.Level, Status = signal.Status, IsConfirmed = signal.IsConfirmed });
             }
             catch (KeyNotFoundException) { 
                 return NotFound();
@@ -716,7 +716,7 @@ namespace CRUDCoursesApp.Controllers
         public async Task<IActionResult> UpdateSignal([FromRoute]Guid id, [Bind][FromForm] UpdateSignalRequest request)
         {
             if (!ModelState.IsValid)
-                return View(request);
+                return View("Signal/UpdateSignal", request);
 
             request.Id = id;
             await _signalsService.UpdateSignal(request);
@@ -743,14 +743,14 @@ namespace CRUDCoursesApp.Controllers
 
             ViewBag.PostId = postId;
             ViewBag.PostTitles = (await _postsService.GetAllPosts()).ToDictionary(p => p.Id, p => p.Title ?? "Publication");
-            return View(reports);
+            return View("Report/DisplayReports", reports);
         }
 
         [HttpGet("/admin/reports/add")]
         public async Task<IActionResult> AddReport()
         {
             ViewBag.Posts = await _postsService.GetAllPosts();
-            return View(new AddReportRequest());
+            return View("Report/AddReport", new AddReportRequest());
         }
 
         [HttpPost("/admin/reports/add")]
@@ -760,7 +760,7 @@ namespace CRUDCoursesApp.Controllers
             if (!ModelState.IsValid) 
             { 
                 ViewBag.Posts = await _postsService.GetAllPosts();
-                return View(request);
+                return View("Report/AddReport", request);
             }
             try
             {
@@ -772,7 +772,7 @@ namespace CRUDCoursesApp.Controllers
             catch (Exception ex) { 
                 ModelState.AddModelError(string.Empty, ex.Message);
                 ViewBag.Posts = await _postsService.GetAllPosts();
-                return View(request);
+                return View("Report/AddReport", request);
             }
         }
 
@@ -841,6 +841,34 @@ namespace CRUDCoursesApp.Controllers
                 PageOrientation = Rotativa.AspNetCore.Options.Orientation.Landscape
             };
         }
+
+
+        [HttpGet]
+        [Route("admin/export/csv")]
+        public async Task<IActionResult> ExportToCSV([FromQuery] string ModelToExport)
+        {
+
+            if (string.IsNullOrWhiteSpace(ModelToExport))
+                return BadRequest("ModelToExport query parameter is required.");
+
+            string? fileName = ModelToExport switch
+            {
+                "UserResponse" => "Users.csv",
+                _ => null
+            };
+
+            if (fileName == null)
+                return BadRequest($"Model unknown : {ModelToExport}");
+
+            MemoryStream? csvMemoryStream = ModelToExport switch
+            {
+                "UserResponse" => await _usersService.GetUsersCSV(),
+                _ => null
+            };
+
+            return File(csvMemoryStream, "application/octet-stream", fileName);
+        }
+
         #endregion
 
     }

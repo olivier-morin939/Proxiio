@@ -70,5 +70,12 @@ namespace ServiceContracts
         /// <returns>True if the operation is a success, otherwise False</returns>
         Task<bool> DeleteUser(Guid userId);
 
+
+        /// <summary>
+        /// Get all the users contained inside the UsersService into a CSV format
+        /// </summary>
+        /// <returns>Returns a list of DTO object of type UserRespose in a memory stream format</returns>
+        Task<MemoryStream> GetUsersCSV();
+
     }
 }

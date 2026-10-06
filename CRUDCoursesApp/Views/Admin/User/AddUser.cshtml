@@ -1,0 +1,118 @@
+@model AddUserRequest
+@{
+    ViewData["Title"] = "Admin - Add User";
+}
+
+@section HeadContent
+{
+    <link rel="stylesheet" href="~/css/Forms.css" />
+}
+
+<div class="app-form-container">
+    <div class="app-form-header">
+        <div>
+            <h1 class="app-form-title">Add New User</h1>
+            <p class="app-form-subtitle">Create a new user account in the system.</p>
+        </div>
+        <a asp-controller="Admin" asp-action="DisplayUsers" class="app-btn app-btn-secondary">
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            Back to List
+        </a>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="app-form-card">
+        <form asp-controller="Admin" asp-action="AddUser" method="post" class="app-form-body">
+            <div class="app-form-grid">
+                <div class="app-form-group">
+                    <label asp-for="Name" class="app-form-label">Full Name</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon"><i class="fa-solid fa-user text-sm"></i></div>
+                        <input asp-for="Name" placeholder="John Doe" class="app-form-input" />
+                    </div>
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="app-form-group">
+                    <label asp-for="Email" class="app-form-label">Email Address</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon"><i class="fa-solid fa-envelope text-sm"></i></div>
+                        <input asp-for="Email" type="email" placeholder="user@example.com" class="app-form-input" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="app-form-group">
+                    <label asp-for="Password" class="app-form-label">Password</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon"><i class="fa-solid fa-lock text-sm"></i></div>
+                        <input asp-for="Password" type="password" placeholder="••••••••" class="app-form-input" />
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="app-form-group">
+                    <label asp-for="ConfirmPassword" class="app-form-label">Confirm Password</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon"><i class="fa-solid fa-shield-halved text-sm"></i></div>
+                        <input asp-for="ConfirmPassword" type="password" placeholder="••••••••" class="app-form-input" />
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <div class="app-form-group">
+                    <label asp-for="Role" class="app-form-label">User Role</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon"><i class="fa-solid fa-user-shield text-sm"></i></div>
+                        <select asp-for="Role" class="app-form-select">
+                            <option value="User">User</option>
+                            <option value="Moderator">Moderator</option>
+                            <option value="Administrator">Administrator</option>
+                        </select>
+                    </div>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+
+                <div class="app-form-group">
+                    <label asp-for="UserState" class="app-form-label">User State</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon"><i class="fa-solid fa-user-gear text-sm"></i></div>
+                        <select asp-for="UserState" class="app-form-select">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Banned">Banned</option>
+                        </select>
+                    </div>
+                    <span asp-validation-for="UserState" class="text-danger"></span>
+                </div>
+
+                <div class="app-form-group">
+                    <label asp-for="DateOfBirth" class="app-form-label">Date of Birth</label>
+                    <div class="app-form-input-wrapper">
+                        <div class="app-form-icon"><i class="fa-solid fa-calendar text-sm"></i></div>
+                        <input asp-for="DateOfBirth" type="date" class="app-form-input" />
+                    </div>
+                    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="app-form-option-card">
+                <label class="app-form-checkbox-label">
+                    <input asp-for="ReceiveNewsLetter" class="app-form-checkbox" />
+                    <span class="app-form-option-text">
+                        <span class="app-form-option-title">Subscribe to Newsletter</span>
+                        <span class="app-form-option-desc">Receive marketing updates and periodic user bulletins.</span>
+                    </span>
+                </label>
+            </div>
+
+            <div class="app-form-actions">
+                <button type="reset" class="app-btn app-btn-secondary">
+                    <i class="fa-solid fa-rotate-left text-xs"></i> Reset
+                </button>
+                <button type="submit" class="app-btn app-btn-primary">Create</button>
+            </div>
+        </form>
+    </div>
+</div>

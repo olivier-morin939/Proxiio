@@ -1,9 +1,8 @@
-﻿@model AddUserRequest
+@model UpdateUserRequest
 @{
-    ViewData["Title"] = "Admin - Add User";
+    ViewData["Title"] = "Admin Dashboard - Proxiio";
 }
 
-@* Styling files needed for this page *@
 @section HeadContent
 {
     <link rel="stylesheet" href="~/css/Forms.css" />
@@ -13,8 +12,8 @@
     <!-- Header -->
     <div class="app-form-header">
         <div>
-            <h1 class="app-form-title">Add New User</h1>
-            <p class="app-form-subtitle">Create a new user account in the system.</p>
+            <h1 class="app-form-title">Edit User</h1>
+            <p class="app-form-subtitle">Update the account details for this user.</p>
         </div>
         <a asp-controller="Admin" asp-action="DisplayUsers" class="app-btn app-btn-secondary">
             <i class="fa-solid fa-arrow-left text-xs"></i>
@@ -23,11 +22,13 @@
     </div>
 
     <!-- Flash Messages -->
-    <div asp-validation-summary="All"></div>
+    <div class="app-form-flash-messages">
+        @{ await Html.RenderPartialAsync("_FlashMessagesComponent"); }
+    </div>
 
-    <!-- Add Form Card -->
+    <!-- Edit Form Card -->
     <div class="app-form-card">
-        <form asp-controller="Admin" asp-action="AddUser" method="POST" class="app-form-body">
+        <form asp-controller="Admin" asp-action="UpdateSpecificUser" asp-route-UserId="@Model.UserId" method="post" class="app-form-body">
 
             <!-- Grid Fields -->
             <div class="app-form-grid">
@@ -88,9 +89,9 @@
                             <i class="fa-solid fa-user-shield text-sm"></i>
                         </div>
                         <select asp-for="Role" class="app-form-select">
-                            <option value="@Role.User" selected="@(Model?.Role == Role.User ? "selected" : null)">@Role.User.ToString()</option>
-                            <option value="@Role.Moderator" selected="@(Model?.Role == Role.Moderator ? "selected" : null)">@Role.Moderator.ToString()</option>
-                            <option value="@Role.Administrator" selected="@(Model?.Role == Role.Administrator ? "selected" : null)">@Role.Administrator.ToString()</option>
+                            <option value="@Role.User">@Role.User.ToString()</option>
+                            <option value="@Role.Moderator">@Role.Moderator.ToString()</option>
+                            <option value="@Role.Administrator">@Role.Administrator.ToString()</option>
                         </select>
                         <span asp-validation-for="Role"></span>
                     </div>
@@ -104,9 +105,9 @@
                             <i class="fa-solid fa-user-shield text-sm"></i>
                         </div>
                         <select asp-for="UserState" class="app-form-select">
-                            <option value="@UserState.Active" selected="@(Model?.UserState == UserState.Active ? "selected" : null)">@UserState.Active.ToString()</option>
-                            <option value="@UserState.Inactive" selected="@(Model?.UserState == UserState.Inactive ? "selected" : null)">@UserState.Inactive.ToString()</option>
-                            <option value="@UserState.Banned" selected="@(Model?.UserState == UserState.Banned ? "selected" : null)">@UserState.Banned.ToString()</option>
+                            <option value="@UserState.Active">@UserState.Active.ToString()</option>
+                            <option value="@UserState.Inactive">@UserState.Inactive.ToString()</option>
+                            <option value="@UserState.Banned">@UserState.Banned.ToString()</option>
                         </select>
                         <span asp-validation-for="UserState"></span>
                     </div>
@@ -114,12 +115,12 @@
 
                 <!-- Date of Birth -->
                 <div class="app-form-group">
-                    <label asp-for="DateOfBirth" class="app-form-label">Date of Birth</label>
+                    <label for="DateOfBirth" class="app-form-label">Date of Birth</label>
                     <div class="app-form-input-wrapper">
                         <div class="app-form-icon">
                             <i class="fa-solid fa-calendar text-sm"></i>
                         </div>
-                        <input asp-for="DateOfBirth" class="app-form-input" />
+                        <input type="date" id="DateOfBirth" name="DateOfBirth" value="@(Model.DateOfBirth.ToString("yyyy-MM-dd"))" class="app-form-input" />
                         <span asp-validation-for="DateOfBirth"></span>
                     </div>
                 </div>
@@ -129,7 +130,7 @@
             <!-- Newsletter Checkbox Card -->
             <div class="app-form-option-card">
                 <label class="app-form-checkbox-label">
-                    <input type="checkbox" for="ReceiveNewsLetter" value="false" class="app-form-checkbox" />
+                    <input type="checkbox" name="ReceivesNewsLetter" value="true" checked="@(Model.ReceiveNewsLetter == true ? "checked" : null)" class="app-form-checkbox" />
                     <span class="app-form-option-text">
                         <span class="app-form-option-title">Subscribe to Newsletter</span>
                         <span class="app-form-option-desc">Receive marketing updates and periodic user bulletins.</span>
@@ -143,28 +144,12 @@
                     <i class="fa-solid fa-rotate-left text-xs"></i>
                     Reset
                 </button>
-                <button type="submit" class="app-btn app-btn-primary">
-                    <i class="fa-solid fa-user-plus text-xs"></i>
-                    Create User
+                <button type="submit" class="app-btn">
+                    <i class="fa-solid fa-save text-xs"></i>
+                    Save
                 </button>
             </div>
 
         </form>
     </div>
 </div>
-
-@* Scripting files needed for this page *@
-@section Scripts
-{
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" 
-            asp-fallback-src="~/Scripts/jquery.min.js" 
-            asp-fallback-test="window.jQuery"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js" 
-            asp-fallback-src="~/Scripts/jquery.validate.min.js" 
-            asp-fallback-test="window.jQuery && window.jQuery.validator"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js" 
-            asp-fallback-src="~/Scripts/jquery.validate.unobtrusive.min.js" 
-            asp-fallback-test="window.jQuery && window.jQuery.validator && window.jQuery.validator.unobtrusive"></script>
-}   

@@ -1,4 +1,4 @@
-﻿@model UserResponse
+@model UserResponse
 @{
     ViewData["Title"] = "Admin - Delete User";
 }
@@ -22,9 +22,9 @@
     </div>
 
     <!-- Flash Messages -->
-    @{
+    {@{
         await Html.RenderPartialAsync("_FlashMessagesComponent");
-    }
+    }}
 
 
     <!-- Danger Alert Message -->
@@ -149,17 +149,4 @@
         <!-- Danger Zone Footer Actions -->
         <div class="app-form-actions" style="padding: 1rem 1.5rem; background-color: #fff1f2; border-top: 1px solid var(--app-rose-200); display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 0.75rem; font-weight: 500; color: var(--app-rose-700);">
-                Confirming will permanently delete this account.
-            </span>
-            <form asp-controller="Admin" asp-action="DeleteSpecificUserConfirm" asp-route-UserId="@Model.UserId" method="post" style="display: flex; align-items: center; gap: 0.75rem; margin: 0;">
-                <a asp-controller="Admin" asp-action="DisplayUsers" class="app-btn app-btn-secondary">
-                    Cancel
-                </a>
-                <button type="submit" class="app-btn app-btn-danger">
-                    <i class="fa-solid fa-trash-can text-xs"></i> Confirm Delete
-                </button>
-            </form>
-        </div>
-
-    </div>
-</div>
+                Confirming w

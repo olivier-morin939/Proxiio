@@ -1,0 +1,27 @@
+@model AddComunityRequest
+@{
+    ViewData["Title"] = "Ajouter une communauté";
+}
+
+<div class="admin-form-page">
+    <a asp-action="DisplayComunities" class="admin-back-link">← Retour aux communautés</a>
+
+    <form asp-action="AddComunity" method="post" class="admin-form-card">
+        <span class="admin-kicker">GESTION DES COMMUNAUTÉS</span>
+        <h1>Nouvelle communauté</h1>
+        <p>Crée un nouvel espace de cours.</p>
+
+        <div asp-validation-summary="All" class="admin-validation"></div>
+
+        <div class="admin-form-grid">
+            <label class="admin-field">Nom<input asp-for="Name" class="admin-input" maxlength="120" required /></label>
+            <label class="admin-field full">Description<textarea asp-for="Description" class="admin-textarea" rows="4" maxlength="254"></textarea></label>
+            <input type="hidden" asp-for="TeacherId" />
+        </div>
+
+        <div class="admin-form-actions">
+            <a asp-action="DisplayComunities" class="admin-btn secondary">Annuler</a>
+            <button class="admin-btn" type="submit">Créer la communauté</button>
+        </div>
+    </form>
+</div>

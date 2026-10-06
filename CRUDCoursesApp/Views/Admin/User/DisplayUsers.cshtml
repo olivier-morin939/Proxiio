@@ -1,4 +1,4 @@
-﻿@model IEnumerable<UserResponse>
+@model IEnumerable<UserResponse>
 @{
     ViewData["Title"] = "Admin - View Users";
 }
@@ -26,13 +26,16 @@
                 <i class="fa-solid fa-file-pdf"></i>
                 Export users in PDF
             </a>
+            <!-- Bouton Export CSV -->
+            <a asp-controller="Admin" asp-action="ExportToCSV" asp-route-ModelToExport="UserResponse" class="app-tab-btn app-tab-btn-secondary">
+                <i class="fa-solid fa-file-csv"></i>
+                Export users in CSV
+            </a>
         </div>
     </div>
 
     <!-- Flash Messages -->
-    @{
-        await Html.RenderPartialAsync("_FlashMessagesComponent");
-    }
+    @{ await Html.RenderPartialAsync("_FlashMessagesComponent"); }
 
     <!-- Filter & Search Bar -->
     <div class="app-tabs-filter-card">
@@ -82,9 +85,7 @@
             <div class="app-tabs-table-responsive">
                 <table class="app-tabs-table">
 
-                    @{
-                        await Html.RenderPartialAsync("_UserHeaderTab", viewData: ViewData);
-                    }
+                    @{ await Html.RenderPartialAsync("_UserHeaderTab", viewData: ViewData); }
 
                     <tbody class="app-tabs-tbody">
                         @foreach (UserResponse userResponse in Model)
@@ -151,18 +152,11 @@
                                 <!-- Actions -->
                                 <td class="app-tabs-td" style="text-align: right;">
                                     <div class="app-tab-actions-cell">
-                                        <a asp-controller="Admin" asp-action="DisplaySpecificUser" asp-route-userId="@userResponse.UserId"
-                                           class="app-tab-action-btn app-tab-action-details">
-                                            Details
-                                        </a>
-                                        <a asp-controller="Admin" asp-action="UpdateSpecificUser" asp-route-userId="@userResponse.UserId"
-                                           class="app-tab-action-btn app-tab-action-update">
-                                            Update
-                                        </a>
-                                        <a asp-controller="Admin" asp-action="DeleteSpecificUser" asp-route-userId="@userResponse.UserId"
-                                           class="app-tab-action-btn app-tab-action-delete">
-                                            Delete
-                                        </a>
+                                        <a asp-controller="Admin" asp-action="DisplaySpecificUser" asp-route-UserId="@userResponse.UserId" class="app-tab-action-btn app-tab-action-details">Details</a>
+                                        <a asp-controller="Admin" asp-action="UpdateSpecificUser" asp-route-UserId="@userResponse.UserId" class="app-tab-action-btn app-tab-action-update">Update</a>
+                                        <form asp-controller="Admin" asp-action="DeleteSpecificUser" asp-route-UserId="@userResponse.UserId" method="post" class="admin-inline-form" style="display:inline">
+                                            <button class="app-tab-action-btn app-tab-action-delete" type="submit">Delete</button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -174,22 +168,12 @@
     }
     else
     {
-        <!-- Empty State Component -->
         <div class="app-tabs-empty-card">
             <div class="app-tabs-empty-icon-wrapper">
                 <i class="fa-solid fa-users-slash text-xl"></i>
             </div>
             <h3 class="app-tabs-empty-title">No users found</h3>
-            <p class="app-tabs-empty-desc">
-                We couldn't find any users matching your criteria. Try adjusting your search term or filter.
-            </p>
-            @if (!string.IsNullOrEmpty(ViewBag.CurrentSearchString))
-            {
-                <a href="/admin/users/view" class="app-tab-btn app-tab-btn-icon" style="display: inline-flex;">
-                    <i class="fa-solid fa-xmark text-xs"></i>
-                    Clear Search
-                </a>
-            }
+            <p class="app-tabs-empty-desc">We couldn't find any users matching your criteria. Try adjusting your search term or filter.</p>
         </div>
     }
 </div>
