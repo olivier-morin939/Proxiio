@@ -1,18 +1,12 @@
-﻿using Entities;
-using Entities.Enums;
+﻿using Entities.Enums;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using ServiceContracts;
 using ServiceContracts.DTO.Comunities;
 using ServiceContracts.DTO.Users;
 using ServiceContracts.DTO.Posts;
 using ServiceContracts.DTO.Reports;
 using ServiceContracts.DTO.Signals;
-using Services;
-using System.Collections.Immutable;
 using System.Data;
-using System.Globalization;
-using System.Net;
 using Rotativa.AspNetCore;
 
 namespace CRUDCoursesApp.Controllers

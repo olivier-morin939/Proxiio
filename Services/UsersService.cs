@@ -176,7 +176,7 @@ public class UsersService : IUsersService
     public async Task<MemoryStream> GetUsersCSV()
     {
         // Get all the users
-        List<UserResponse> users = await GetAllUsers();
+        List<UserResponse> users = (await _repository.GetAllUsers()).Select(temp => temp.ToUserResponse()).ToList();
 
         // Create a new memory stream
         MemoryStream memoryStream = new MemoryStream();
@@ -194,6 +194,9 @@ public class UsersService : IUsersService
 
         // Write the informations
         await csvWriter.WriteRecordsAsync(users);
+
+        // Send the content of the StreamWriter to the MemoryStream
+        await streamWriter.FlushAsync();
 
         // Reset the position to the beginning of the stream
         memoryStream.Position = 0;
