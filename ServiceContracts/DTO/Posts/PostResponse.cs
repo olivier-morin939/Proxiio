@@ -68,7 +68,8 @@ namespace ServiceContracts.DTO.Posts
                 Body = post.Body,
                 ImagesPath = post.ImagesPath ?? new List<string>(),
                 AdditionalsPath = post.AdditionalsPath ?? new List<string>(),
-                CreatedAt = post.CreatedAt
+                CreatedAt = post.CreatedAt,
+                ModifiedAt = post.ModifiedAt
             };
         }
     }

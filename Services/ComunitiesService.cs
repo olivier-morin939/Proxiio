@@ -1,13 +1,16 @@
-using System.Data;
+using CsvHelper;
 using Entities;
 using Entities.Contexts;
 using Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using RepositoryContracts;
 using ServiceContracts;
 using ServiceContracts.DTO.Comunities;
 using ServiceContracts.DTO.Posts;
 using ServiceContracts.DTO.Users;
+using System.Data;
+using System.Globalization;
 
 namespace Services;
 
@@ -217,6 +220,83 @@ public class ComunitiesService : IComunitiesService
             _ => communities
         };
         return Task.FromResult(sortedCommunities);
+    }
+
+    public async Task<MemoryStream> GetComCSV()
+    {
+        // Get all the users
+        List<ComunityResponse> coms = (await _repository.GetAllComunities()).Select(temp => temp.ToComunityResponse()).ToList();
+
+        // Create a new memory stream
+        MemoryStream memoryStream = new MemoryStream();
+
+        // Create a new stream writer 
+        StreamWriter streamWriter = new StreamWriter(memoryStream);
+
+        // Create a new csv writer
+        CsvWriter csvWriter = new CsvWriter(streamWriter, culture: CultureInfo.InvariantCulture, leaveOpen: true);
+
+        // Write all the headers automatically
+        csvWriter.WriteHeader<UserResponse>();
+
+        csvWriter.NextRecord();
+
+        // Write the informations
+        await csvWriter.WriteRecordsAsync(coms);
+
+        // Send the content of the StreamWriter to the MemoryStream
+        await streamWriter.FlushAsync();
+
+        // Reset the position to the beginning of the stream
+        memoryStream.Position = 0;
+
+        return memoryStream;
+    }
+
+    public async Task<MemoryStream> GetComEXCEL()
+    {
+        List<ComunityResponse> allComs = (await _repository.GetAllComunities()).Select(user => user.ToComunityResponse()).ToList();
+
+        MemoryStream memoryStream = new MemoryStream();
+
+        using (ExcelPackage excelPackage = new ExcelPackage(memoryStream))
+        {
+            // Create the page
+            ExcelWorksheet workSheet = excelPackage.Workbook.Worksheets.Add("CommunitiesSheet");
+
+            // Create the headers
+            workSheet.Cells["A1"].Value = "Community Id";
+            workSheet.Cells["B1"].Value = "Name";
+            workSheet.Cells["C1"].Value = "Description";
+            workSheet.Cells["D1"].Value = "User Counts";
+            workSheet.Cells["E1"].Value = "Post Counts";
+            workSheet.Cells["F1"].Value = "Creator Id";
+
+            int row = 2;
+            // Add the informations
+            foreach (ComunityResponse comResponse in allComs)
+            {
+                workSheet.Cells[$"A{row}"].Value = comResponse.Id.ToString();
+                workSheet.Cells[$"B{row}"].Value = comResponse.Name;
+                workSheet.Cells[$"C{row}"].Value = comResponse.Description;
+                workSheet.Cells[$"D{row}"].Value = comResponse.UsersCount.ToString();
+                workSheet.Cells[$"E{row}"].Value = comResponse.PostsCount.ToString();
+                workSheet.Cells[$"F{row}"].Value = comResponse.TeacherId.ToString();
+
+                row++;
+            }
+
+            // Add automatic spacing
+            workSheet.Cells[$"A1:F{row}"].AutoFitColumns();
+
+            // Save it
+            await excelPackage.SaveAsync();
+
+        }
+
+        // Reset the position to the top before returning it
+        memoryStream.Position = 0;
+        return memoryStream;
     }
 
 }

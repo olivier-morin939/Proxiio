@@ -77,9 +77,21 @@ namespace ServiceContracts
         /// <param name="sortBy">The property name to sort by</param>
         /// <param name="sortOrder">The sort order, ASC or DESC</param>
         /// <returns>Returns a list of sorted DTO object of type ComunityResponse that contains all the informations of the comunity</returns>
-        public Task<List<ComunityResponse>> GetSortedComunities(List<ComunityResponse> allComResponses, string sortBy, SortOption sortOrder);
+        Task<List<ComunityResponse>> GetSortedComunities(List<ComunityResponse> allComResponses, string sortBy, SortOption sortOrder);
 
 
+        /// <summary>
+        /// Get all the communities in a CSV file format
+        /// </summary>
+        /// <returns>Returns an list of communities inside a memory stream</returns>
+        Task<MemoryStream> GetComCSV();
+
+
+        /// <summary>
+        /// Get all the communities in a EXCEL file format
+        /// </summary>
+        /// <returns>Returns an list of communities inside a memory stream</returns>
+        Task<MemoryStream> GetComEXCEL();
 
 
     }

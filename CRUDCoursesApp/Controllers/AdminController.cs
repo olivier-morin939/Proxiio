@@ -82,6 +82,14 @@ namespace CRUDCoursesApp.Controllers
                 {nameof(UserResponse.DateOfBirth), "Date of Birth"}
             };
 
+
+            ViewBag.ExportingOptions = new List<string>()
+            {
+                    "ExportToPDF",
+                    "ExportToCSV",
+                    "ExportToEXCEL",
+            };
+
             // Search and filter
             List<UserResponse> allFilteredResponses = await _usersService.GetFilteredUsers(searchBy, searchString);
             ViewBag.CurrentSearchBy = searchBy;
@@ -266,6 +274,13 @@ namespace CRUDCoursesApp.Controllers
                 {nameof(ComunityResponse.PostsCount), "Posts Counts"}
             };
 
+
+            ViewBag.ExportingOptions = new List<string>()
+            {
+                    "ExportToPDF",
+                    "ExportToCSV",
+                    "ExportToEXCEL",
+            };
 
             // Search and filter
             List<ComunityResponse> allFilteredResponses = await _comunitiesService.GetFilteredComunities(searchBy, searchString);
@@ -553,7 +568,12 @@ namespace CRUDCoursesApp.Controllers
                 {nameof(PostResponse.CreatedAt), "Created At"}
             };
 
-
+            ViewBag.ExportingOptions = new List<string>()
+            {
+                    "ExportToPDF",
+                    "ExportToCSV",
+                    "ExportToEXCEL",
+            };
             try
             {
                 ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
@@ -651,9 +671,9 @@ namespace CRUDCoursesApp.Controllers
                 return RedirectToAction(nameof(UpdatePostByComunity), new { ComId, UserId });
             try
             {
-                request.Id = UserId;
+                request.UserId = UserId;
                 request.ComunityId = ComId;
-                await _postsService.UpdatePost(request);
+                PostResponse updatedPostResponse = await _postsService.UpdatePost(request);
                 TempData["SuccessMessage"] = "La publication a été mise à jour.";
             }
             catch (Exception ex) { 
@@ -668,6 +688,14 @@ namespace CRUDCoursesApp.Controllers
         {
             ViewBag.PageTitle = "Toutes les publications";
             ViewBag.ComId = Guid.Empty;
+
+            ViewBag.ExportingOptions = new List<string>()
+            {
+                    "ExportToPDF",
+                    "ExportToCSV",
+                    "ExportToEXCEL",
+            };
+
             return View("Post/DisplayPostsByComunity", await _postsService.GetAllPosts());
         }
         #endregion
@@ -799,6 +827,34 @@ namespace CRUDCoursesApp.Controllers
         #region ExportingData
 
         [HttpGet]
+        [Route("admin/export/")]
+        public async Task<IActionResult> HandleExports([FromQuery] string ModelToExport, [FromQuery] string TypeOfExport)
+        {
+            if (string.IsNullOrEmpty(TypeOfExport))
+                return BadRequest("TypeOfExport parameter is required.");
+
+            Object RouteValues = new { ModelToExport = ModelToExport };
+
+            switch (TypeOfExport)
+            {
+                case "ExportToPDF":
+                    return RedirectToAction("ExportToPDF", RouteValues);
+
+                case "ExportToCSV":
+                    return RedirectToAction("ExportToCSV", RouteValues);
+
+                case "ExportToEXCEL":
+                    return RedirectToAction("ExportToEXCEL", RouteValues);
+
+                default:
+                    return BadRequest("TypeOfExports is unknown.");
+ 
+            };
+
+        }
+
+
+        [HttpGet]
         [Route("admin/export/pdf")]
         public async Task<IActionResult> ExportToPDF([FromQuery] string ModelToExport)
         {
@@ -848,6 +904,8 @@ namespace CRUDCoursesApp.Controllers
             string? fileName = ModelToExport switch
             {
                 "UserResponse" => "Users.csv",
+                "ComunityResponse" => "Communities.csv",
+                "PostResponse" => "Posts.csv",
                 _ => null
             };
 
@@ -857,6 +915,8 @@ namespace CRUDCoursesApp.Controllers
             MemoryStream? csvMemoryStream = ModelToExport switch
             {
                 "UserResponse" => await _usersService.GetUsersCSV(),
+                "ComunityResponse" => await _comunitiesService.GetComCSV(),
+                "PostResponse" => await _postsService.GetPostsCSV(),
                 _ => null
             };
 
@@ -864,6 +924,39 @@ namespace CRUDCoursesApp.Controllers
                 return BadRequest($"CSV File can't be null");
 
             return File(csvMemoryStream, "application/octet-stream", fileName);
+        }
+
+
+        [HttpGet]
+        [Route("admin/export/excel")]
+        public async Task<IActionResult> ExportToEXCEL([FromQuery] string ModelToExport)
+        {
+            if (string.IsNullOrWhiteSpace(ModelToExport))
+                return BadRequest("ModelToExport query parameter is required.");
+
+            string? fileName = ModelToExport switch
+            {
+                "UserResponse" => "users.xlsx",
+                "ComunityResponse" => "communities.xlsx",
+                "PostResponse" => "posts.xlsx",
+                _ => null
+            };
+
+            if (fileName == null)
+                return BadRequest($"Model unknown : {ModelToExport}");
+
+            MemoryStream? excelMemoryStream = ModelToExport switch
+            {
+                "UserResponse" => await _usersService.GetUsersEXCEL(),
+                "ComunityResponse" => await _comunitiesService.GetComEXCEL(),
+                "PostResponse" => await _postsService.GetPostsEXCEL(),
+                _ => null
+            };
+
+            if (excelMemoryStream == null)
+                return BadRequest($"EXCEL File can't be null");
+
+            return File(excelMemoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
         #endregion

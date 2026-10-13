@@ -8,3 +8,10 @@ public class FeedPostResponse
     public string? CommunityDescription { get; set; }
     public Guid CommunityId { get; set; }
 }
+
+
+
+
+
+
+

@@ -77,5 +77,11 @@ namespace ServiceContracts
         /// <returns>Returns a list of DTO object of type UserRespose in a memory stream format</returns>
         Task<MemoryStream> GetUsersCSV();
 
+        /// <summary>
+        /// Get all the users contained inside the UsersService into a EXCEL format
+        /// </summary>
+        /// <returns>Returns a list of DTO object of type UserRespose in a memory stream format</returns>
+        Task<MemoryStream> GetUsersEXCEL();
+
     }
 }

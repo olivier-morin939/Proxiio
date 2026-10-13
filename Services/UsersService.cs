@@ -1,12 +1,14 @@
+using CsvHelper;
 using Entities;
 using Entities.Contexts;
 using Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using RepositoryContracts;
 using ServiceContracts;
 using ServiceContracts.DTO.Users;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
-using CsvHelper;
 using System.Globalization;
 using System.IO;
 namespace Services;
@@ -175,33 +177,82 @@ public class UsersService : IUsersService
 
     public async Task<MemoryStream> GetUsersCSV()
     {
-        // Get all the users
+
         List<UserResponse> users = (await _repository.GetAllUsers()).Select(temp => temp.ToUserResponse()).ToList();
 
-        // Create a new memory stream
+
         MemoryStream memoryStream = new MemoryStream();
 
-        // Create a new stream writer 
+ 
         StreamWriter streamWriter = new StreamWriter(memoryStream);
 
-        // Create a new csv writer
+
         CsvWriter csvWriter = new CsvWriter(streamWriter, culture: CultureInfo.InvariantCulture, leaveOpen: true);
 
-        // Write all the headers automatically
+  
         csvWriter.WriteHeader<UserResponse>();
 
         csvWriter.NextRecord();
 
-        // Write the informations
+
         await csvWriter.WriteRecordsAsync(users);
 
-        // Send the content of the StreamWriter to the MemoryStream
+   
         await streamWriter.FlushAsync();
 
-        // Reset the position to the beginning of the stream
         memoryStream.Position = 0;
 
         return memoryStream;
 
     }
+
+    public async Task<MemoryStream> GetUsersEXCEL()
+    {
+        List<UserResponse> allUsers = (await _repository.GetAllUsers()).Select(user => user.ToUserResponse()).ToList();
+
+        MemoryStream memoryStream = new MemoryStream();
+
+        using (ExcelPackage excelPackage = new ExcelPackage(memoryStream))
+        {
+
+            ExcelWorksheet workSheet = excelPackage.Workbook.Worksheets.Add("UsersSheet");
+
+
+            workSheet.Cells["A1"].Value = "User Id";
+            workSheet.Cells["B1"].Value = "Name";
+            workSheet.Cells["C1"].Value = "Email";
+            workSheet.Cells["D1"].Value = "Role";
+            workSheet.Cells["E1"].Value = "UserState";
+            workSheet.Cells["F1"].Value = "Password";
+            workSheet.Cells["G1"].Value = "DateOfBirth";
+            workSheet.Cells["H1"].Value = "ReceiveNewsLetter";
+
+            int row = 2;
+
+            foreach(UserResponse userResponse in allUsers)
+            {
+                workSheet.Cells[$"A{row}"].Value = userResponse.UserId.ToString();
+                workSheet.Cells[$"B{row}"].Value = userResponse.Name;
+                workSheet.Cells[$"C{row}"].Value = userResponse.Email;
+                workSheet.Cells[$"D{row}"].Value = userResponse.Role.ToString();
+                workSheet.Cells[$"E{row}"].Value = userResponse.UserState.ToString();
+                workSheet.Cells[$"F{row}"].Value = userResponse.Password;
+                workSheet.Cells[$"G{row}"].Value = userResponse.DateOfBirth.ToString("dd MMM yyyy");
+                workSheet.Cells[$"H{row}"].Value = userResponse.ReceiveNewsLetter.ToString();
+                row++;
+            }
+
+            workSheet.Cells[$"A1:H{row}"].AutoFitColumns();
+
+
+            await excelPackage.SaveAsync();
+
+        }
+
+        memoryStream.Position = 0;
+        return memoryStream;
+
+    }
+
+           
 }

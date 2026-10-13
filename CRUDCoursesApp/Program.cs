@@ -28,6 +28,7 @@ namespace CRUDCoursesApp
             // Adding the services related to repositories accessing the data store
             builder.Services.AddScoped<IUsersRepository, UsersRepository>();
             builder.Services.AddScoped<IComunitiesRepository, ComunitiesRepository>();
+            builder.Services.AddScoped<IPostsRepository, PostsRepository>();
 
 
             // Add rotativa exe file

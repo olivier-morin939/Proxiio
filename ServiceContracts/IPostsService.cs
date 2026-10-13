@@ -73,7 +73,22 @@ namespace ServiceContracts
         /// Get the counts of all posts contained inside the PostsService
         /// </summary>
         /// <returns>An integer representing the number of posts in the system</returns>
-        public Task<int> GetAllPostsCount();
+        Task<int> GetAllPostsCount();
+
+        /// <summary>
+        /// Get all the post in a CSV file format.
+        /// </summary>
+        /// <returns>Returns an list of posts in a memory stream</returns>
+        Task<MemoryStream> GetPostsCSV();
+
+        /// <summary>
+        /// Get all the post in a EXCEL file format.
+        /// </summary>
+        /// <returns>Returns an list of posts in a memory stream</returns>
+        Task<MemoryStream> GetPostsEXCEL();
+
+
+
 
 
     }
