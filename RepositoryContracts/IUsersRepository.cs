@@ -10,7 +10,7 @@ namespace RepositoryContracts
        /// </summary>
        /// <param name="user">The new user to insert</param>
        /// <returns>Returns the newly created user</returns>
-        Task<User> AddUser(User user);
+        Task<User?> AddUser(User user);
 
       
         /// <summary>

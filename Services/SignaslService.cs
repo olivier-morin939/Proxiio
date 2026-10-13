@@ -1,6 +1,7 @@
 using Entities;
 using Entities.Contexts;
 using Microsoft.EntityFrameworkCore;
+using RepositoryContracts;
 using ServiceContracts;
 using ServiceContracts.DTO.Signals;
 
@@ -8,75 +9,68 @@ namespace Services;
 
 public class SignaslService : ISignalsService
 {
-    private readonly ApplicationDbContext _db;
-    public SignaslService(ApplicationDbContext db) => _db = db;
-
-    // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
-    public SignaslService() : this(new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options)) { }
+    private readonly ISignalsRepository _repository;
+    public SignaslService(ISignalsRepository repository) => _repository = repository;
 
     public async Task<SignalResponse> AddSignal(AddSignalRequest request)
     {
-        // Check if the DTO object is null
+
         ArgumentNullException.ThrowIfNull(request);
 
-        // Model validation for the DTO object
         Helpers.HelpersValidation.ModelValidation(request);
 
-        // Converting the request into a entity class
-        Signal signal = request.ToSignal();
+        Signal signalToAdd = request.ToSignal();
 
-        // Add the object to the db
-        _db.Signals.Add(signal);
-        await _db.SaveChangesAsync();
+        Signal? addedSignal = await _repository.AddSignal(signalToAdd);
 
-        // Return the DTO response
-        return SignalResponse.From(signal);
+        if (addedSignal == null)
+            throw new InvalidOperationException("The signal could not be added.");
+
+        return SignalResponse.From(addedSignal);
     }
 
-    public async Task<List<SignalResponse>> GetAllSignals() => (await _db.Signals.AsNoTracking().OrderByDescending(s => s.Id).ToListAsync()).Select(SignalResponse.From).ToList();
+    public async Task<List<SignalResponse>> GetAllSignals() => (await _repository.GetAllSignals()).Select(s => s.ToSignalResponse()).ToList();
 
     public async Task<SignalResponse> GetSignalById(Guid id)
     {
         // Find the corresponding signal and convert it in the DTO response
-        Signal signal = await _db.Signals.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id) ?? throw new KeyNotFoundException($"Signal {id} was not found.");
+        Signal signal = await _repository.GetSignalById(id) ?? throw new KeyNotFoundException($"Signal {id} was not found.");
         return SignalResponse.From(signal);
     }
 
     public async Task<SignalResponse> UpdateSignal(UpdateSignalRequest request)
     {
-        // Check if the DTO object is null
+
         ArgumentNullException.ThrowIfNull(request);
 
-        // Model validation for the DTO object
+
         Helpers.HelpersValidation.ModelValidation(request);
 
-        // Searching for the corresponding signal
-        Signal signal = await _db.Signals.FirstOrDefaultAsync(s => s.Id == request.Id) ?? throw new KeyNotFoundException($"Signal {request.Id} was not found.");
-        
-        // Fields updation
-        signal.ProblemName = request.ProblemName;
-        signal.ProblemDescription = request.ProblemDescription;
-        signal.Level = request.Level;
-        signal.Status = request.Status;
-        signal.IsConfirmed = request.IsConfirmed;
-        await _db.SaveChangesAsync();
+        Signal matchingSignal = await _repository.GetSignalById(request.Id) ?? throw new KeyNotFoundException($"Signal {request.Id} was not found.");
+        Signal signalToUpdate = request.ToSignal();
+        Signal? updatedSignal = await _repository.UpdateSignal(signalToUpdate);
 
-        // Return the DTO response
-        return SignalResponse.From(signal);
+        if (updatedSignal == null)
+            throw new InvalidOperationException("The signal could not be updated.");
+
+
+        return updatedSignal.ToSignalResponse();
     }
 
     public async Task<bool> DeleteSignal(Guid id)
     {
-        // Searche the corresponding signal
-        Signal? signal = await _db.Signals.FirstOrDefaultAsync(s => s.Id == id);
 
-        // If it is not found
-        if (signal is null)
+        Signal? signalToDelete = await _repository.GetSignalById(id);
+
+
+        if (signalToDelete is null)
             return false;
 
-        // Remove it from db
-        _db.Signals.Remove(signal);
-        await _db.SaveChangesAsync();
+        bool isDeleted = await _repository.DeleteSignal(signalToDelete.Id);
+
+        if (!isDeleted)
+            throw new InvalidOperationException("This signal could not be deleted.");
+
         return true;
     }
 }

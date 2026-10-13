@@ -20,12 +20,15 @@ namespace Repository
             _db = db;
         }
 
-        public async Task<User> AddUser(User user)
+        public async Task<User?> AddUser(User user)
         {
-            if(user == null)
-                throw new ArgumentNullException(nameof(user));
-            _db.Add(user);
-            await _db.SaveChangesAsync();
+
+            await _db.AddAsync(user);
+            int rowsAdded = await _db.SaveChangesAsync();
+
+            if (rowsAdded <= 0)
+                return null;
+
             return user;
 
 
@@ -79,6 +82,9 @@ namespace Repository
             matchingUser.DateOfBirth = user.DateOfBirth;
             matchingUser.ReceiveNewsLetter = user.ReceiveNewsLetter;
             int rowsUpdated = await _db.SaveChangesAsync();
+
+            if (rowsUpdated <= 0)
+                return null;
 
             return matchingUser;
 

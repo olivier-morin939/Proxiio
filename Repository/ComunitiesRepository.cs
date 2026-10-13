@@ -17,11 +17,15 @@ namespace Repository
             _db = db;
         }
 
-        public async Task<Comunity> AddComunity(Comunity comunity, Guid creatorId)
+        public async Task<Comunity?> AddComunity(Comunity comunity, Guid creatorId)
         {
             await _db.Comunities.AddAsync(comunity);
             await _db.ComunityMembers.AddAsync(new ComunityMember { ComunityId = comunity.Id, UserId = creatorId, Role = ComunityRole.Teacher });
-            await _db.SaveChangesAsync();
+            int rowsAdded = await _db.SaveChangesAsync();
+
+            if (rowsAdded <= 0)
+                return null;
+
             return comunity;
         }
 
@@ -30,7 +34,7 @@ namespace Repository
             return await _db.Comunities.CountAsync();
         }
 
-        public async Task<Comunity> GetComunityById(Guid comunityId)
+        public async Task<Comunity?> GetComunityById(Guid comunityId)
         {
             return await _db.Comunities.FindAsync(comunityId);
         
@@ -55,7 +59,7 @@ namespace Repository
            return await _db.Posts.CountAsync(p => p.CommunityId == comId);
         }
 
-        public async Task<Comunity> UpdateComunity(Comunity comunity)
+        public async Task<Comunity?> UpdateComunity(Comunity comunity)
         {
             Comunity? matchingCom = await _db.Comunities.FirstOrDefaultAsync(c => c.Id == comunity.Id);
 
@@ -66,6 +70,9 @@ namespace Repository
             matchingCom.Description = comunity.Description;
             // Update other properties as needed
             int rowsUpdated = await _db.SaveChangesAsync();
+
+            if (rowsUpdated <= 0)
+                return null;
 
             return matchingCom;
         }

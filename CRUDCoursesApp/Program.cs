@@ -29,6 +29,8 @@ namespace CRUDCoursesApp
             builder.Services.AddScoped<IUsersRepository, UsersRepository>();
             builder.Services.AddScoped<IComunitiesRepository, ComunitiesRepository>();
             builder.Services.AddScoped<IPostsRepository, PostsRepository>();
+            builder.Services.AddScoped<ISignalsRepository, SignalsRepository>();
+            builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
 
 
             // Add rotativa exe file

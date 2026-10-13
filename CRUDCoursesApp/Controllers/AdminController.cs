@@ -741,7 +741,7 @@ namespace CRUDCoursesApp.Controllers
                 return View("Signal/UpdateSignal", request);
 
             request.Id = id;
-            await _signalsService.UpdateSignal(request);
+            SignalResponse updatedSignalResponse = await _signalsService.UpdateSignal(request);
 
             TempData["SuccessMessage"] = "Le signal technique a été mis à jour.";
             return RedirectToAction(nameof(DisplaySignals));

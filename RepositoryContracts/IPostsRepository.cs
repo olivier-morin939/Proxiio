@@ -29,7 +29,7 @@ namespace RepositoryContracts
         /// </summary>
         /// <param name="NewPost">The post to add.</param>
         /// <returns>The added post.</returns>
-        Task<Post> AddPost(Post NewPost);
+        Task<Post?> AddPost(Post NewPost);
 
         /// <summary>
         /// Deletes a post by its id.
@@ -43,7 +43,7 @@ namespace RepositoryContracts
         /// </summary>
         /// <param name="PostToUpdate">The post carrying the new values.</param>
         /// <returns>The updated post.</returns>
-        Task<Post> UpdatePost(Post PostToUpdate);
+        Task<Post?> UpdatePost(Post PostToUpdate);
 
         /// <summary>
         /// Gets the feed, newest first, with the author and community information.

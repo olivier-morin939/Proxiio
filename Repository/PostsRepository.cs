@@ -31,13 +31,13 @@ namespace Repository
         public Task<Post?> GetPostByPostId(Guid PostId) =>
             _db.Posts.AsNoTracking().FirstOrDefaultAsync(p => p.Id == PostId);
 
-        public async Task<Post> AddPost(Post NewPost)
+        public async Task<Post?> AddPost(Post NewPost)
         {
             _db.Posts.Add(NewPost);
             int RowsAffected = await _db.SaveChangesAsync();
 
             if (RowsAffected <= 0)
-                throw new InvalidOperationException("This post could not be added.");
+                return null;
 
             return NewPost;
         }
@@ -46,7 +46,7 @@ namespace Repository
         public Task<int> DeletePostByPostId(Guid PostId) =>
             _db.Posts.Where(p => p.Id == PostId).ExecuteDeleteAsync();
 
-        public async Task<Post> UpdatePost(Post PostToUpdate)
+        public async Task<Post?> UpdatePost(Post PostToUpdate)
         {
             // Attach then flag only the editable fields: no SELECT and the UPDATE only touches these columns.
             EntityEntry<Post> Entry = _db.Posts.Attach(PostToUpdate);
@@ -59,7 +59,7 @@ namespace Repository
             int RowsAffected = await _db.SaveChangesAsync();
 
             if (RowsAffected <= 0)
-                throw new InvalidOperationException("This post could not be updated.");
+                return null;
 
             return PostToUpdate;
         }

@@ -16,11 +16,11 @@ namespace RepositoryContracts
         Task<int> GetAllComunitiesCount();
         Task<int> GetAllComunityPostsCount(Guid comId);
 
-        Task<Comunity> GetComunityById(Guid comunityId);
+        Task<Comunity?> GetComunityById(Guid comunityId);
 
-        Task<Comunity> AddComunity(Comunity comunity, Guid creatorId);
+        Task<Comunity?> AddComunity(Comunity comunity, Guid creatorId);
 
-        Task<Comunity> UpdateComunity(Comunity comunity);
+        Task<Comunity?> UpdateComunity(Comunity comunity);
 
         Task<bool> DeleteComunity(Guid comunityId);
     }
