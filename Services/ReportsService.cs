@@ -1,9 +1,14 @@
+using CsvHelper;
 using Entities;
 using Entities.Contexts;
+using Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using RepositoryContracts;
 using ServiceContracts;
 using ServiceContracts.DTO.Reports;
+using ServiceContracts.DTO.Users;
+using System.Globalization;
 
 namespace Services;
 
@@ -80,4 +85,79 @@ public class ReportsService : IReportsService
 
         return true;
     }
+
+    public async Task<MemoryStream> GetReportsCSV()
+    {
+
+        List<ReportResponse> reports = (await _repository.GetAllReports()).Select(report => report.ToReportResponse()).ToList();
+
+
+        MemoryStream memoryStream = new MemoryStream();
+
+
+        StreamWriter streamWriter = new StreamWriter(memoryStream);
+
+
+        CsvWriter csvWriter = new CsvWriter(streamWriter, culture: CultureInfo.InvariantCulture, leaveOpen: true);
+
+
+        csvWriter.WriteHeader<ReportResponse>();
+
+        csvWriter.NextRecord();
+
+
+        await csvWriter.WriteRecordsAsync(reports);
+
+
+        await streamWriter.FlushAsync();
+
+        memoryStream.Position = 0;
+
+        return memoryStream;
+
+    }
+
+    public async Task<MemoryStream> GetReportsEXCEL()
+    {
+        List<ReportResponse> allReports = (await _repository.GetAllReports()).Select(report => report.ToReportResponse()).ToList();
+
+        MemoryStream memoryStream = new MemoryStream();
+
+        using (ExcelPackage excelPackage = new ExcelPackage(memoryStream))
+        {
+
+            ExcelWorksheet workSheet = excelPackage.Workbook.Worksheets.Add("ReportsSheet");
+
+
+            workSheet.Cells["A1"].Value = "Report Id";
+            workSheet.Cells["B1"].Value = "Post Id";
+            workSheet.Cells["C1"].Value = "Type of Report";
+            workSheet.Cells["D1"].Value = "Message of Report";
+            workSheet.Cells["E1"].Value = "Status of Report";
+
+            int row = 2;
+
+            foreach (ReportResponse reportResponse in allReports)
+            {
+                workSheet.Cells[$"A{row}"].Value = reportResponse.Id.ToString();
+                workSheet.Cells[$"B{row}"].Value = reportResponse.PostId.ToString();
+                workSheet.Cells[$"C{row}"].Value = reportResponse.TypeOfReport.ToString();
+                workSheet.Cells[$"D{row}"].Value = reportResponse.MessageOfReport;
+                workSheet.Cells[$"E{row}"].Value = reportResponse.StatusOfReport.ToString();
+
+                row++;
+            }
+
+            workSheet.Cells[$"A1:E{row}"].AutoFitColumns();
+
+
+            await excelPackage.SaveAsync();
+
+        }
+
+        memoryStream.Position = 0;
+        return memoryStream;
+    }
+
+
 }

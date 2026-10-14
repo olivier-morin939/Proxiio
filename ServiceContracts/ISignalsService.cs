@@ -1,4 +1,6 @@
 using ServiceContracts.DTO.Signals;
+using System.Formats.Asn1;
+using System.Globalization;
 
 namespace ServiceContracts
 {
@@ -40,5 +42,19 @@ namespace ServiceContracts
         /// <param name="id">The unique identifier (Guid) of the signal to delete.</param>
         /// <returns>True if the deletion was successful, otherwise false.</returns>
         Task<bool> DeleteSignal(Guid id);
+
+        /// <summary>
+        /// Returns all the signals in an CSV file format.
+        /// </summary>
+        /// <returns>Returns all the signals object inside a memory stream.</returns>
+        Task<MemoryStream> GetSignalsCSV();
+
+        /// <summary>
+        /// Returns all the signals in an EXCEL file format.
+        /// </summary>
+        /// <returns>Returns all the signals object inside a memory stream.</returns>
+        Task<MemoryStream> GetSignalsEXCEL();
+
+
     }
 }

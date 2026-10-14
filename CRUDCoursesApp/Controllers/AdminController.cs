@@ -702,7 +702,19 @@ namespace CRUDCoursesApp.Controllers
 
         #region SignalActionsMethod
         [HttpGet("/admin/signals")]
-        public async Task<IActionResult> DisplaySignals() => View("Signal/DisplaySignals", await _signalsService.GetAllSignals());
+        public async Task<IActionResult> DisplaySignals()
+        {
+            ViewBag.ExportingOptions = new List<string>()
+            {
+                    "ExportToPDF",
+                    "ExportToCSV",
+                    "ExportToEXCEL",
+            };
+
+            List<SignalResponse> allSignals = await _signalsService.GetAllSignals();
+
+            return View("Signal/DisplaySignals", allSignals);
+        }
 
         [HttpGet("/admin/signals/add")]
         public async Task<IActionResult> AddSignal() => View("Signal/AddSignal", new AddSignalRequest());
@@ -762,6 +774,13 @@ namespace CRUDCoursesApp.Controllers
             List<ReportResponse> reports = await _reportsService.GetAllReports();
             if (postId.HasValue) 
                 reports = reports.Where(r => r.PostId == postId.Value).ToList();
+
+            ViewBag.ExportingOptions = new List<string>()
+            {
+                    "ExportToPDF",
+                    "ExportToCSV",
+                    "ExportToEXCEL",
+            };
 
             ViewBag.PostId = postId;
             ViewBag.PostTitles = (await _postsService.GetAllPosts()).ToDictionary(p => p.Id, p => p.Title ?? "Publication");
@@ -906,6 +925,8 @@ namespace CRUDCoursesApp.Controllers
                 "UserResponse" => "Users.csv",
                 "ComunityResponse" => "Communities.csv",
                 "PostResponse" => "Posts.csv",
+                "SignalResponse" => "Signals.csv",
+                "ReportResponse" => "Reports.csv",
                 _ => null
             };
 
@@ -917,6 +938,8 @@ namespace CRUDCoursesApp.Controllers
                 "UserResponse" => await _usersService.GetUsersCSV(),
                 "ComunityResponse" => await _comunitiesService.GetComCSV(),
                 "PostResponse" => await _postsService.GetPostsCSV(),
+                "SignalResponse" => await _signalsService.GetSignalsCSV(),
+                "ReportResponse" => await _reportsService.GetReportsCSV(),
                 _ => null
             };
 
@@ -939,6 +962,8 @@ namespace CRUDCoursesApp.Controllers
                 "UserResponse" => "users.xlsx",
                 "ComunityResponse" => "communities.xlsx",
                 "PostResponse" => "posts.xlsx",
+                "SignalResponse" => "signals.xlsx",
+                "ReportResponse" => "reports.xlsx",
                 _ => null
             };
 
@@ -950,6 +975,8 @@ namespace CRUDCoursesApp.Controllers
                 "UserResponse" => await _usersService.GetUsersEXCEL(),
                 "ComunityResponse" => await _comunitiesService.GetComEXCEL(),
                 "PostResponse" => await _postsService.GetPostsEXCEL(),
+                "SignalResponse" => await _signalsService.GetSignalsEXCEL(),
+                "ReportResponse" => await _reportsService.GetReportsEXCEL(),
                 _ => null
             };
 

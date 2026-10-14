@@ -1,5 +1,7 @@
-﻿using System;
-using ServiceContracts.DTO.Reports;
+﻿using ServiceContracts.DTO.Reports;
+using System;
+using System.Formats.Asn1;
+using System.Globalization;
 
 namespace ServiceContracts
 {
@@ -41,7 +43,21 @@ namespace ServiceContracts
         /// </summary>
         /// <param name="ReportId">The unique identifier (Guid) of the report to delete.</param>
         /// <returns>True if the deletion was successful, otherwise false.</returns>
-        public Task<bool> DeleteReportByReportId(Guid ReportId);
+        Task<bool> DeleteReportByReportId(Guid ReportId);
+
+
+        /// <summary>
+        /// Get all the reports in a CSV file format.
+        /// </summary>
+        /// <returns>Returns all the object inside an memory stream.</returns>
+        Task<MemoryStream> GetReportsCSV();
+
+
+        /// <summary>
+        /// Get all the reports in a EXCEL file format.
+        /// </summary>
+        /// <returns>Returns all the object inside an memory stream.</returns>
+        Task<MemoryStream> GetReportsEXCEL();
 
     }
 }

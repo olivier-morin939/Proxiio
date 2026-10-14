@@ -1,9 +1,14 @@
+using CsvHelper;
 using Entities;
 using Entities.Contexts;
+using Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using RepositoryContracts;
 using ServiceContracts;
+using ServiceContracts.DTO.Reports;
 using ServiceContracts.DTO.Signals;
+using System.Globalization;
 
 namespace Services;
 
@@ -73,4 +78,80 @@ public class SignaslService : ISignalsService
 
         return true;
     }
+
+    public async Task<MemoryStream> GetSignalsCSV()
+    {
+
+        List<SignalResponse> signals = (await _repository.GetAllSignals()).Select(report => report.ToSignalResponse()).ToList();
+
+
+        MemoryStream memoryStream = new MemoryStream();
+
+
+        StreamWriter streamWriter = new StreamWriter(memoryStream);
+
+
+        CsvWriter csvWriter = new CsvWriter(streamWriter, culture: CultureInfo.InvariantCulture, leaveOpen: true);
+
+
+        csvWriter.WriteHeader<SignalResponse>();
+
+        csvWriter.NextRecord();
+
+
+        await csvWriter.WriteRecordsAsync(signals);
+
+
+        await streamWriter.FlushAsync();
+
+        memoryStream.Position = 0;
+
+        return memoryStream;
+
+    }
+
+    public async Task<MemoryStream> GetSignalsEXCEL()
+    {
+        List<SignalResponse> allSignals = (await _repository.GetAllSignals()).Select(report => report.ToSignalResponse()).ToList();
+
+        MemoryStream memoryStream = new MemoryStream();
+
+        using (ExcelPackage excelPackage = new ExcelPackage(memoryStream))
+        {
+
+            ExcelWorksheet workSheet = excelPackage.Workbook.Worksheets.Add("ReportsSheet");
+
+            workSheet.Cells["A1"].Value = "Signal Id";
+            workSheet.Cells["B1"].Value = "Problem Name";
+            workSheet.Cells["C1"].Value = "Problem Description";
+            workSheet.Cells["D1"].Value = "Level of signal";
+            workSheet.Cells["E1"].Value = "Status of signal";
+            workSheet.Cells["F1"].Value = "Problem is confirmed";
+
+            int row = 2;
+
+            foreach (SignalResponse signalResponse in allSignals)
+            {
+                workSheet.Cells[$"A{row}"].Value = signalResponse.Id.ToString();
+                workSheet.Cells[$"B{row}"].Value = signalResponse.ProblemName;
+                workSheet.Cells[$"C{row}"].Value = signalResponse.ProblemDescription;
+                workSheet.Cells[$"D{row}"].Value = signalResponse.Level.ToString();
+                workSheet.Cells[$"E{row}"].Value = signalResponse.Status.ToString();
+                workSheet.Cells[$"F{row}"].Value = signalResponse.IsConfirmed.ToString();
+
+                row++;
+            }
+
+            workSheet.Cells[$"A1:F{row}"].AutoFitColumns();
+
+
+            await excelPackage.SaveAsync();
+
+        }
+
+        memoryStream.Position = 0;
+        return memoryStream;
+    }
+
+
 }

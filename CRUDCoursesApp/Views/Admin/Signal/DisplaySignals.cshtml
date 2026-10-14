@@ -15,9 +15,34 @@
             <a asp-action="AddSignal" class="app-tab-btn app-tab-btn-primary">
                 <i class="fa-solid fa-plus"></i> Nouveau signal
             </a>
-            <a asp-controller="Admin" asp-action="ExportToPDF" asp-route-ModelToExport="SignalResponse" class="app-tab-btn app-tab-btn-secondary">
-                <i class="fa-solid fa-file-pdf"></i> Export signals in PDF
-            </a>
+            <!-- Formulaire de selection d'exportation de donnee-->
+            <form action="/admin/export/" method="GET">
+                <select name="TypeOfExport">
+                    <option value="">Select an export format...</option>
+                    @foreach (string ExportOption in ViewBag.ExportingOptions)
+                    {
+                        <option value="@ExportOption">
+
+                            @if (ExportOption == "ExportToPDF")
+                            {
+                                <span>Export to PDF <i class="fa-solid fa-file-pdf"></i></span>
+                            }
+                            @if (ExportOption == "ExportToCSV")
+                            {
+                                <span>Export to CSV <i class="fa-solid fa-file-csv"></i></span>
+                            }
+                            @if (ExportOption == "ExportToEXCEL")
+                            {
+                                <span>Export to EXCEL <i class="fa-solid fa-file-excel"></i></span>
+                            }
+                        </option>
+                    }
+                </select>
+                <input name="ModelToExport" value="@nameof(SignalResponse)" hidden="hidden" />
+                <button>
+                    Export
+                </button>
+            </form>
         </div>
     </div>
 
