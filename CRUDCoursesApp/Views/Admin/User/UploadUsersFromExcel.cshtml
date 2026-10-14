@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Admin - Upload Users from Excel";
+}
+
+@section HeadContent
+{
+    <link rel="stylesheet" href="~/css/Forms.css" />
+}
+
+<div class="app-form-container">
+    <!-- Header -->
+    <div class="app-form-header">
+        <div>
+            <h1 class="app-form-title">Upload Users from Excel</h1>
+            <p class="app-form-subtitle">Importer plusieurs utilisateurs via un fichier Excel (.xlsx).</p>
+        </div>
+        <a asp-controller="Admin" asp-action="DisplayUsers" class="app-btn app-btn-secondary">
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            Back to List
+        </a>
+    </div>
+
+    <!-- Flash Messages -->
+    <div class="app-form-flash-messages">
+        @await Html.PartialAsync("_FlashMessagesComponent")
+    </div>
+
+    <!-- Upload Card (vertical layout) -->
+    <div class="app-form-card">
+        <form asp-controller="Admin" asp-action="UploadUsersFromExcel" method="post" enctype="multipart/form-data" class="app-form-body">
+
+            <!-- Instruction -->
+            <div class="app-form-group" style="width:100%">
+                <label class="app-form-label">Fichier Excel (.xlsx)</label>
+                <p class="app-form-subtitle">Le fichier doit contenir les colonnes requises: Name, Email, Password, Role, UserState, DateOfBirth.</p>
+            </div>
+
+            <!-- File input -->
+            <div class="app-form-group" style="width:100%">
+                <div class="app-form-input-wrapper">
+                    <div class="app-form-icon"><i class="fa-solid fa-file-excel text-sm"></i></div>
+                    <input type="file" name="excelFile" accept=".xlsx,.xls" class="app-form-input" />
+                </div>
+            </div>
+
+            <!-- Options (vertical) -->
+            <div class="app-form-group" style="width:100%">
+                <label class="app-form-label">Options d'import</label>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <label class="app-form-checkbox-label"><input type="checkbox" name="sendWelcomeEmail" class="app-form-checkbox" /> Envoyer un email de bienvenue aux nouveaux utilisateurs</label>
+                    <label class="app-form-checkbox-label"><input type="checkbox" name="skipDuplicates" class="app-form-checkbox" /> Ignorer les utilisateurs déjà existants (par email)</label>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="app-form-group" style="width:100%">
+                <button type="submit" class="app-btn app-btn-primary">
+                    <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+                    Upload
+                </button>
+                <a asp-controller="Admin" asp-action="DisplayUsers" class="app-btn app-btn-secondary" style="margin-left:12px;">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>

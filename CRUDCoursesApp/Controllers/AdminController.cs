@@ -166,6 +166,51 @@ namespace CRUDCoursesApp.Controllers
 
 
         [HttpGet]
+        [Route("admin/users/add/upload")]
+        public async Task<IActionResult> UploadUsersFromExcel()
+        {
+            return View("User/UploadUsersFromExcel");
+        }
+
+
+        [HttpPost]
+        [Route("admin/users/add/upload")]
+        public async Task<IActionResult> UploadUsersFromExcel([FromForm] IFormFile excelFile)
+        {
+
+            if(excelFile == null || string.IsNullOrEmpty(excelFile.FileName))
+            {
+                TempData["ErrorMessage"] = "You have to upload an EXCEL file. Format extension is (.xlsx)";
+                return View("User/UploadUsersFromExcel");
+            }
+
+            if(!Path.GetExtension(excelFile.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "The only format extension accepted is of type (.xlsx)";
+                return View("User/UploadUsersFromExcel");
+            }
+            try
+            {
+                int rowsInserted = await _usersService.UploadUsersFromExcel(excelFile);
+                if(rowsInserted <= 0)
+                {
+                    TempData["ErrorMessage"] = "The upload has failed.";
+                    return View("User/UploadUsersFromExcel");
+                }
+
+                TempData["SuccessMessage"] = $"{rowsInserted} users has been inserted.";
+                return View("User/UploadUsersFromExcel");
+
+            } catch(Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View("User/UploadUsersFromExcel");
+            }
+        }
+
+
+
+        [HttpGet]
         [Route("admin/users/update/{UserId:guid}")]
         public async Task<IActionResult> UpdateSpecificUser([FromRoute] Guid UserId)
         {
@@ -987,6 +1032,8 @@ namespace CRUDCoursesApp.Controllers
         }
 
         #endregion
+
+        
 
     }
 }

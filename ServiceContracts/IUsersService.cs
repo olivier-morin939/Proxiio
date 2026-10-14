@@ -2,6 +2,7 @@
 using Entities;
 using Entities.Enums;
 using ServiceContracts.DTO.Users;
+using Microsoft.AspNetCore.Http;
 
 namespace ServiceContracts
 {
@@ -18,6 +19,15 @@ namespace ServiceContracts
         /// <param name="addUserRequest">A DTO object of type AddUserRequest which contains the adding informations of the User object</param>
         /// <returns>Returns an DTO object of type UserResponse that contains all the informations of the user</returns>
         Task<UserResponse> AddUser(AddUserRequest? addUserRequest);
+
+
+        /// <summary>
+        /// Let the administrator upload an EXCEL file to add alots of users at once in the system
+        /// </summary>
+        /// <param name="file">This is the EXCEL file to upload</param>
+        /// <returns>The numbers of inserted users</returns>
+        Task<int> UploadUsersFromExcel(IFormFile file);
+
 
         /// <summary>
         /// Get all the users contained inside the UsersService

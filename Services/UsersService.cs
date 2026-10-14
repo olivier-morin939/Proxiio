@@ -2,6 +2,7 @@ using CsvHelper;
 using Entities;
 using Entities.Contexts;
 using Entities.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using RepositoryContracts;
@@ -11,6 +12,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Globalization;
 using System.IO;
+using Microsoft.AspNetCore.Http;
 namespace Services;
 
 public class UsersService : IUsersService
@@ -254,5 +256,108 @@ public class UsersService : IUsersService
 
     }
 
-           
+    public async Task<int> UploadUsersFromExcel(IFormFile file)
+    {
+        using MemoryStream memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+
+
+        memoryStream.Position = 0;
+
+        int usersInsertedCount = 0;
+        using (ExcelPackage excelPackage = new ExcelPackage(memoryStream))
+        {
+            ExcelWorksheet workSheet = excelPackage.Workbook.Worksheets.FirstOrDefault();
+            if (workSheet?.Dimension == null)
+                return 0;
+
+            var headerMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            for (int col = workSheet.Dimension.Start.Column; col <= workSheet.Dimension.End.Column; col++)
+            {
+                string? header = Convert.ToString(workSheet.Cells[1, col].Value)?.Trim();
+                if (!string.IsNullOrEmpty(header) && !headerMap.ContainsKey(header))
+                    headerMap[header] = col;
+            }
+
+            string GetByHeader(int row, string headerName)
+            {
+                if (headerMap.TryGetValue(headerName, out int colIndex))
+                    return Convert.ToString(workSheet.Cells[row, colIndex].Value) ?? string.Empty;
+                return string.Empty;
+            }
+
+            var rng = new Random();
+            // Load existing emails once to avoid querying DB inside the loop
+            var existingEmails = (await _repository.GetAllUsers()).Where(u => !string.IsNullOrWhiteSpace(u.Email)).Select(u => u.Email!.ToLowerInvariant()).ToHashSet();
+            DateTime GenerateRandomDate(Random r, int minAge = 18, int maxAge = 65)
+            {
+                var start = DateTime.Today.AddYears(-maxAge);
+                var end = DateTime.Today.AddYears(-minAge);
+                int rangeDays = (end - start).Days;
+                return start.AddDays(r.Next(rangeDays + 1));
+            }
+
+            int startRow = 2;
+            for (int row = startRow; row <= workSheet.Dimension.End.Row; row++)
+            {
+                string name = GetByHeader(row, "Name");
+                string email = GetByHeader(row, "Email");
+                string password = GetByHeader(row, "Password");
+
+
+                if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+                    continue;
+
+                // Skip if email already exists in database
+                if (existingEmails.Contains(email.ToLowerInvariant()))
+                    continue;
+
+                string userIdStr = GetByHeader(row, "UserId");
+                Guid userId = Guid.NewGuid();
+                if (!string.IsNullOrWhiteSpace(userIdStr) && Guid.TryParse(userIdStr, out Guid parsedId) && parsedId != Guid.Empty)
+                    userId = parsedId;
+
+                string roleStr = GetByHeader(row, "Role");
+                if (!Enum.TryParse<Role>(roleStr, true, out Role userRole))
+                    continue;
+
+                string stateStr = GetByHeader(row, "UserState");
+                if (!Enum.TryParse<UserState>(stateStr, true, out UserState accountState))
+                    continue;
+
+                DateTime dateOfBirth = GenerateRandomDate(rng, 18, 65);
+
+                string receiveStr = GetByHeader(row, "ReceiveNewsLetter");
+                bool receiveNewsLetter = false;
+                if (!string.IsNullOrWhiteSpace(receiveStr))
+                    bool.TryParse(receiveStr, out receiveNewsLetter);
+
+                string encryptedPassword = await _encryptionsService.EncryptData(password);
+
+                
+
+                User newUser = new User()
+                {
+                    UserId = userId,
+                    Name = name,
+                    Email = email,
+                    Role = userRole,
+                    UserState = accountState,
+                    Password = encryptedPassword,
+                    DateOfBirth = dateOfBirth,
+                    ReceiveNewsLetter = receiveNewsLetter
+                };
+
+                User addedUser = await _repository.AddUser(newUser);
+                if (addedUser != null)
+                {
+                    usersInsertedCount++;
+                    // add to existingEmails to prevent duplicate insertions within same upload
+                    existingEmails.Add(email.ToLowerInvariant());
+                }
+            }
+        }
+
+        return usersInsertedCount;
+    }
 }
