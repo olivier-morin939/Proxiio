@@ -19,3 +19,12 @@ The solution targets `net10.0`, has no Central Package Management file, and the 
 4. Confirm targeted Pkcs/Xml NU1902/NU1903 advisories are gone from these projects.
 
 **Done when**: The specified projects resolve each applicable package to 10.0.13, build, and tests pass without targeted vulnerability warnings.
+
+## Scope Inventory
+
+- `ProxiioApp/ProxiioApp.csproj` resolves Pkcs 10.0.10 through its SQL Server dependency graph; add Pkcs 10.0.13 only.
+- `ProxiioTest/ProxiioTest.csproj` resolves Pkcs and Xml 10.0.12 transitively through referenced projects and test dependencies; add both explicit references.
+- `ServiceContracts/ServiceContracts.csproj` directly references `Microsoft.AspNetCore.DataProtection` 10.0.12, which brings in vulnerable Xml/Pkcs; add both explicit references.
+- `Services/Services.csproj` directly references EPPlus 8.7.1 and DataProtection 10.0.12, which bring in vulnerable Xml/Pkcs; add both explicit references.
+- `get_project_dependencies` confirms versions are project-local, there is no CPM, and no requested crypto package is currently direct. Target versions are stable 10.0.13. No source APIs in the application consume the changed crypto APIs directly.
+- Validate with restored builds for all four projects, a vulnerability audit for the four projects, and the full `ProxiioTest` test suite.
