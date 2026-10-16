@@ -46,14 +46,14 @@ namespace ServiceContracts
         /// </summary>
         /// <param name="ComId">The desired Comunity Id to get from the ComunitiesService</param>
         /// <returns>Returns an DTO object of type ComunityResponse that contains all the informations of the comunity</returns>
-        Task<ComunityResponse> GetComunityByComId(Guid ComId);
+        Task<ComunityResponse?> GetComunityByComId(Guid ComId);
 
         /// <summary>
         /// Update the desired comunity from the ComunitiesService
         /// </summary>
         /// <param name="updateComunityRequest">A DTO object of type UpdateComunityRequest which contains the updating informations of the Comunity object</param>
         /// <returns>Returns an DTO object of type ComunityResponse that contains all the informations of the comunity</returns>
-        Task<ComunityResponse> UpdateComunity(UpdateComunityRequest updateComunityRequest);
+        Task<ComunityResponse> UpdateComunity(UpdateComunityRequest? updateComunityRequest);
 
         /// <summary>
         /// Delete the desired comunity from the ComunitiesService

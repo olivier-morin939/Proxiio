@@ -3,6 +3,7 @@ using Entities;
 using Entities.Contexts;
 using Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using RepositoryContracts;
 using ServiceContracts;
@@ -15,10 +16,18 @@ namespace Services;
 public class SignaslService : ISignalsService
 {
     private readonly ISignalsRepository _repository;
-    public SignaslService(ISignalsRepository repository) => _repository = repository;
+    private readonly ILogger<SignaslService>? _logger;
+    public SignaslService(ISignalsRepository repository, ILogger<SignaslService>? logger = null) { _repository = repository; _logger = logger; }
+
+    private void LogOperation(string method, string operation, string arguments)
+    {
+        _logger?.LogInformation("[+][{Method}] {Operation} reached.", method, operation);
+        _logger?.LogInformation("[+][{Method}] {Operation} received arguments: {Arguments}.", method, operation, arguments);
+    }
 
     public async Task<SignalResponse> AddSignal(AddSignalRequest request)
     {
+        LogOperation("POST", nameof(AddSignal), $"Request:{request?.GetType().Name}");
 
         ArgumentNullException.ThrowIfNull(request);
 
@@ -34,10 +43,15 @@ public class SignaslService : ISignalsService
         return SignalResponse.From(addedSignal);
     }
 
-    public async Task<List<SignalResponse>> GetAllSignals() => (await _repository.GetAllSignals()).Select(s => s.ToSignalResponse()).ToList();
+    public async Task<List<SignalResponse>> GetAllSignals()
+    {
+        LogOperation("GET", nameof(GetAllSignals), "(aucun)");
+        return (await _repository.GetAllSignals()).Select(s => s.ToSignalResponse()).ToList();
+    }
 
     public async Task<SignalResponse> GetSignalById(Guid id)
     {
+        LogOperation("GET", nameof(GetSignalById), $"SignalId:{id}");
         // Find the corresponding signal and convert it in the DTO response
         Signal signal = await _repository.GetSignalById(id) ?? throw new KeyNotFoundException($"Signal {id} was not found.");
         return SignalResponse.From(signal);
@@ -45,6 +59,7 @@ public class SignaslService : ISignalsService
 
     public async Task<SignalResponse> UpdateSignal(UpdateSignalRequest request)
     {
+        LogOperation("POST", nameof(UpdateSignal), $"Request:{request?.GetType().Name}, SignalId:{request?.Id}");
 
         ArgumentNullException.ThrowIfNull(request);
 
@@ -64,6 +79,7 @@ public class SignaslService : ISignalsService
 
     public async Task<bool> DeleteSignal(Guid id)
     {
+        LogOperation("POST", nameof(DeleteSignal), $"SignalId:{id}");
 
         Signal? signalToDelete = await _repository.GetSignalById(id);
 
@@ -81,6 +97,7 @@ public class SignaslService : ISignalsService
 
     public async Task<MemoryStream> GetSignalsCSV()
     {
+        LogOperation("GET", nameof(GetSignalsCSV), "(aucun)");
 
         List<SignalResponse> signals = (await _repository.GetAllSignals()).Select(report => report.ToSignalResponse()).ToList();
 
@@ -112,6 +129,7 @@ public class SignaslService : ISignalsService
 
     public async Task<MemoryStream> GetSignalsEXCEL()
     {
+        LogOperation("GET", nameof(GetSignalsEXCEL), "(aucun)");
         List<SignalResponse> allSignals = (await _repository.GetAllSignals()).Select(report => report.ToSignalResponse()).ToList();
 
         MemoryStream memoryStream = new MemoryStream();

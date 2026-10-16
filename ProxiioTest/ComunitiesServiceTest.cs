@@ -863,7 +863,7 @@ namespace CRUDCoursesAppTest
             _outputHelper.WriteLine("InvalidGuid should return null");
 
             // Act
-            ComunityResponse actual_com_response = await _comunitiesService.GetComunityByComId(Guid.NewGuid());
+            ComunityResponse? actual_com_response = await _comunitiesService.GetComunityByComId(Guid.NewGuid());
 
             // Assert
             actual_com_response.Should().BeNull();
@@ -902,10 +902,11 @@ namespace CRUDCoursesAppTest
             _outputHelper.WriteLine($"{expected_com_response.ToString()}");
 
             // Act
-            ComunityResponse actual_com_response = await _comunitiesService.GetComunityByComId(comId);
+            ComunityResponse? actual_com_response = await _comunitiesService.GetComunityByComId(comId);
+            actual_com_response.Should().NotBeNull();
 
             _outputHelper.WriteLine("Expected:");
-            _outputHelper.WriteLine($"{actual_com_response.ToString()}");
+            _outputHelper.WriteLine($"{actual_com_response!.ToString()}");
 
             // Assert
             actual_com_response.Id.Should().Be(existing_com.Id);
@@ -1942,7 +1943,7 @@ namespace CRUDCoursesAppTest
             _outputHelper.WriteLine("InvalidGuid should return null");
 
             // Act
-            ComunityResponse actual_com_response = await _comunitiesService.GetComunityByComId(Guid.NewGuid());
+            ComunityResponse? actual_com_response = await _comunitiesService.GetComunityByComId(Guid.NewGuid());
 
             // Assert
             actual_com_response.Should().BeNull();

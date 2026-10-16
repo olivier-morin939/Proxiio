@@ -40,7 +40,9 @@ namespace CRUDCoursesApp.Controllers
         {
             try
             {
-                ComunityResponse community = await _communitiesService.GetComunityByComId(id);
+                ComunityResponse? community = await _communitiesService.GetComunityByComId(id);
+                if (community is null)
+                    return NotFound();
                 UserResponse currentUser = (await _usersService.GetAllUsers()).OrderBy(u => u.Name).First();
                 ViewBag.MemberCount = await _comunityMembersService.GetComunityMembersCount(id);
                 ViewBag.IsMember = await _comunityMembersService.IsComunityMember(id, currentUser.UserId);

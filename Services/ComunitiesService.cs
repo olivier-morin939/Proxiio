@@ -3,6 +3,7 @@ using Entities;
 using Entities.Contexts;
 using Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using RepositoryContracts;
 using ServiceContracts;
@@ -17,10 +18,18 @@ namespace Services;
 public class ComunitiesService : IComunitiesService
 {
     private readonly IComunitiesRepository _repository;
-    public ComunitiesService(IComunitiesRepository repository) => _repository = repository;
+    private readonly ILogger<ComunitiesService>? _logger;
+    public ComunitiesService(IComunitiesRepository repository, ILogger<ComunitiesService>? logger = null) { _repository = repository; _logger = logger; }
+
+    private void LogOperation(string method, string operation, string arguments)
+    {
+        _logger?.LogInformation("[+][{Method}] {Operation} reached.", method, operation);
+        _logger?.LogInformation("[+][{Method}] {Operation} received arguments: {Arguments}.", method, operation, arguments);
+    }
 
     public async Task<ComunityResponse> AddComunity(AddComunityRequest? request)
     {
+        LogOperation("POST", nameof(AddComunity), $"Request:{request?.GetType().Name}, TeacherId:{request?.TeacherId}");
         // Check if the request is null
         if(request == null) 
             throw new ArgumentNullException(nameof(request));
@@ -43,13 +52,15 @@ public class ComunitiesService : IComunitiesService
         Comunity community = new Comunity { Id = Guid.NewGuid(), TeacherId = request.TeacherId, Name = request.Name.Trim(), Description = request.Description?.Trim() };
         
         // Add the new community to the db
-        Comunity addedCommunity = await _repository.AddComunity(community, request.TeacherId);
+        Comunity addedCommunity = await _repository.AddComunity(community, request.TeacherId)
+            ?? throw new InvalidOperationException("The community could not be added.");
 
         return addedCommunity.ToComunityResponse();
     }
 
     public async Task<List<ComunityResponse>> GetAllComunities()
     {
+        LogOperation("GET", nameof(GetAllComunities), "(aucun)");
         var raw = await _repository.GetAllComunities();
         // Garantir que raw n'est jamais null
         var communities = raw ?? new List<Comunity>();
@@ -89,11 +100,21 @@ public class ComunitiesService : IComunitiesService
             .ToList();
     }
 
-    public async Task<int> GetAllComunitiesCount() => await _repository.GetAllComunitiesCount();
-    public async Task<int> GetComunityPostsCount(Guid comunityId) => await _repository.GetAllComunityPostsCount(comunityId);
-
-    public async Task<ComunityResponse> GetComunityByComId(Guid ComId)
+    public async Task<int> GetAllComunitiesCount()
     {
+        LogOperation("GET", nameof(GetAllComunitiesCount), "(aucun)");
+        return await _repository.GetAllComunitiesCount();
+    }
+
+    public async Task<int> GetComunityPostsCount(Guid comunityId)
+    {
+        LogOperation("GET", nameof(GetComunityPostsCount), $"CommunityId:{comunityId}");
+        return await _repository.GetAllComunityPostsCount(comunityId);
+    }
+
+    public async Task<ComunityResponse?> GetComunityByComId(Guid ComId)
+    {
+        LogOperation("GET", nameof(GetComunityByComId), $"CommunityId:{ComId}");
 
         Comunity? community = await _repository.GetComunityById(ComId);
 
@@ -135,8 +156,9 @@ public class ComunitiesService : IComunitiesService
 
     }
 
-    public async Task<ComunityResponse> UpdateComunity(UpdateComunityRequest request)
+    public async Task<ComunityResponse> UpdateComunity(UpdateComunityRequest? request)
     {
+        LogOperation("POST", nameof(UpdateComunity), $"Request:{request?.GetType().Name}, CommunityId:{request?.Id}, TeacherId:{request?.TeacherId}");
         // Checking if the request is null
         ArgumentNullException.ThrowIfNull(request);
 
@@ -159,13 +181,15 @@ public class ComunitiesService : IComunitiesService
             throw new DuplicateNameException("A community with the same name already exists.");
 
         // Updating the informations
-        Comunity updatedCom = await _repository.UpdateComunity(community);
+        Comunity updatedCom = await _repository.UpdateComunity(community)
+            ?? throw new InvalidOperationException("The community could not be updated.");
 
         return updatedCom.ToComunityResponse();
     }
 
     public async Task<bool> DeleteComunityByComId(Guid ComId)
     {
+        LogOperation("POST", nameof(DeleteComunityByComId), $"CommunityId:{ComId}");
         // Search the community
         Comunity? community = await _repository.GetComunityById(ComId);
 
@@ -179,6 +203,7 @@ public class ComunitiesService : IComunitiesService
 
     public async Task<List<ComunityResponse>> GetFilteredComunities(string searchBy, string searchString)
     {
+        LogOperation("GET", nameof(GetFilteredComunities), $"SearchBy:{searchBy}, SearchString:{searchString}");
         // Get all communities first
         List<Comunity> communities = await _repository.GetAllComunities();
 
@@ -192,8 +217,8 @@ public class ComunitiesService : IComunitiesService
             nameof(ComunityResponse.Name) => await _repository.GetFilteredComunities(temp => (!string.IsNullOrEmpty(temp.Name) ? temp.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) : true)),
             nameof(ComunityResponse.Description) => await _repository.GetFilteredComunities(temp => (!string.IsNullOrEmpty(temp.Description) ? temp.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase) : true)),
             nameof(ComunityResponse.TeacherId) => await _repository.GetFilteredComunities(temp => temp.TeacherId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)),
-            nameof(ComunityResponse.UsersCount) => await _repository.GetFilteredComunities(temp => temp.Users.Count().ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)),
-            nameof(ComunityResponse.PostsCount) => await _repository.GetFilteredComunities(temp => temp.PostsList.Count().ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)),
+            nameof(ComunityResponse.UsersCount) => await _repository.GetFilteredComunities(temp => (temp.Users == null ? 0 : temp.Users.Count()).ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)),
+            nameof(ComunityResponse.PostsCount) => await _repository.GetFilteredComunities(temp => (temp.PostsList == null ? 0 : temp.PostsList.Count()).ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase)),
             _ => communities
         };
 
@@ -202,6 +227,8 @@ public class ComunitiesService : IComunitiesService
 
     public Task<List<ComunityResponse>> GetSortedComunities(List<ComunityResponse> communities, string sortBy, SortOption sortOrder)
     {
+        LogOperation("GET", nameof(GetSortedComunities), $"CommunitiesCount:{communities?.Count}, SortBy:{sortBy}, SortOrder:{sortOrder}");
+        communities ??= new List<ComunityResponse>();
         // Check if the sort by is set
         if (string.IsNullOrEmpty(sortBy)) 
             return Task.FromResult(communities);
@@ -224,6 +251,7 @@ public class ComunitiesService : IComunitiesService
 
     public async Task<MemoryStream> GetComCSV()
     {
+        LogOperation("GET", nameof(GetComCSV), "(aucun)");
         // Get all the users
         List<ComunityResponse> coms = (await _repository.GetAllComunities()).Select(temp => temp.ToComunityResponse()).ToList();
 
@@ -255,6 +283,7 @@ public class ComunitiesService : IComunitiesService
 
     public async Task<MemoryStream> GetComEXCEL()
     {
+        LogOperation("GET", nameof(GetComEXCEL), "(aucun)");
         List<ComunityResponse> allComs = (await _repository.GetAllComunities()).Select(user => user.ToComunityResponse()).ToList();
 
         MemoryStream memoryStream = new MemoryStream();

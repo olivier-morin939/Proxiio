@@ -3,6 +3,7 @@ using Entities;
 using Entities.Contexts;
 using Entities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using RepositoryContracts;
 using ServiceContracts;
@@ -15,11 +16,19 @@ namespace Services;
 public class ReportsService : IReportsService
 {
     private readonly IReportsRepository _repository;
-    public ReportsService(IReportsRepository repository) => _repository = repository;
+    private readonly ILogger<ReportsService>? _logger;
+    public ReportsService(IReportsRepository repository, ILogger<ReportsService>? logger = null) { _repository = repository; _logger = logger; }
+
+    private void LogOperation(string method, string operation, string arguments)
+    {
+        _logger?.LogInformation("[+][{Method}] {Operation} reached.", method, operation);
+        _logger?.LogInformation("[+][{Method}] {Operation} received arguments: {Arguments}.", method, operation, arguments);
+    }
 
 
     public async Task<ReportResponse> AddReport(AddReportRequest? request)
     {
+        LogOperation("POST", nameof(AddReport), $"Request:{request?.GetType().Name}, PostId:{request?.PostId}");
 
         ArgumentNullException.ThrowIfNull(request);
 
@@ -41,10 +50,15 @@ public class ReportsService : IReportsService
         return addedReport.ToReportResponse();
     }
 
-    public async Task<List<ReportResponse>> GetAllReports() => (await _repository.GetAllReports()).Select(r => r.ToReportResponse()).ToList();
+    public async Task<List<ReportResponse>> GetAllReports()
+    {
+        LogOperation("GET", nameof(GetAllReports), "(aucun)");
+        return (await _repository.GetAllReports()).Select(r => r.ToReportResponse()).ToList();
+    }
 
     public async Task<ReportResponse> GetReportByReportId(Guid ReportId)
     {
+        LogOperation("GET", nameof(GetReportByReportId), $"ReportId:{ReportId}");
 
         Report report = await _repository.GetReportByReportId(ReportId) ?? throw new KeyNotFoundException($"Report {ReportId} was not found.");
         return report.ToReportResponse();
@@ -52,6 +66,7 @@ public class ReportsService : IReportsService
 
     public async Task<ReportResponse> UpdateReport(UpdateReportRequest? request)
     {
+        LogOperation("POST", nameof(UpdateReport), $"Request:{request?.GetType().Name}, ReportId:{request?.Id}, PostId:{request?.PostId}");
 
         ArgumentNullException.ThrowIfNull(request);
 
@@ -70,6 +85,7 @@ public class ReportsService : IReportsService
 
     public async Task<bool> DeleteReportByReportId(Guid ReportId)
     {
+        LogOperation("POST", nameof(DeleteReportByReportId), $"ReportId:{ReportId}");
 
         Report? report = await _repository.GetReportByReportId(ReportId);
 
@@ -88,6 +104,7 @@ public class ReportsService : IReportsService
 
     public async Task<MemoryStream> GetReportsCSV()
     {
+        LogOperation("GET", nameof(GetReportsCSV), "(aucun)");
 
         List<ReportResponse> reports = (await _repository.GetAllReports()).Select(report => report.ToReportResponse()).ToList();
 
@@ -119,6 +136,7 @@ public class ReportsService : IReportsService
 
     public async Task<MemoryStream> GetReportsEXCEL()
     {
+        LogOperation("GET", nameof(GetReportsEXCEL), "(aucun)");
         List<ReportResponse> allReports = (await _repository.GetAllReports()).Select(report => report.ToReportResponse()).ToList();
 
         MemoryStream memoryStream = new MemoryStream();

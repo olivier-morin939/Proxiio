@@ -19,6 +19,6 @@ namespace ServiceContracts.DTO.Signals
         public BugSignalLevel Level { get; set; }
         public BugSignalStatus Status { get; set; }
         public bool IsConfirmed { get; set; }
-        public new Signal ToSignal() => new() { Id = Id, ProblemName = ProblemName, ProblemDescription = ProblemDescription, Level = Level, Status = Status, IsConfirmed = IsConfirmed };
+        public Signal ToSignal() => new() { Id = Id, ProblemName = ProblemName, ProblemDescription = ProblemDescription, Level = Level, Status = Status, IsConfirmed = IsConfirmed };
     }
 }

@@ -15,12 +15,12 @@ namespace ServiceContracts.DTO.Posts
 
         [Required(ErrorMessage = "Le titre ne peut pas être vide")]
         [StringLength(120, MinimumLength = 1)]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
 
         [Required(ErrorMessage = "Le coprs ne peut pas être vide")]
         [StringLength(250, MinimumLength = 1)]
-        public string Body { get; set; }
+        public string Body { get; set; } = string.Empty;
 
         public List<string> ImagesPath { get; set; } = new List<string>();
 

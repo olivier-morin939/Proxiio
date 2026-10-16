@@ -20,11 +20,11 @@ namespace Entities
 
         [Required]
         [StringLength(120)]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [Required]
         [StringLength(250)]
-        public string Body { get; set; } 
+        public string Body { get; set; } = string.Empty;
 
         public List<string> ImagesPath { get; set; } = new List<string>();
         public List<string> AdditionalsPath { get; set; } = new List<string>();

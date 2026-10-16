@@ -31,20 +31,29 @@ namespace CRUDCoursesApp
             builder.Services.AddScoped<IPostsRepository, PostsRepository>();
             builder.Services.AddScoped<ISignalsRepository, SignalsRepository>();
             builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
+ 
+            if (builder.Environment.IsDevelopment())
+            {
+                // Add rotativa exe file
+                Rotativa.AspNetCore.RotativaConfiguration.Setup("wwwroot", wkhtmltopdfRelativePath: "Rotativa");
 
-
-            // Add rotativa exe file
-            Rotativa.AspNetCore.RotativaConfiguration.Setup("wwwroot", wkhtmltopdfRelativePath: "Rotativa");
-
-
-            // Add the context to use EF Core
-            builder.Services.AddDbContext<ApplicationDbContext>(
-                options => options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("DefaultConnection"),
-                    sqlServerOptions => sqlServerOptions.EnableRetryOnFailure())
-            );
+                // Add the context to use EF Core
+                builder.Services.AddDbContext<ApplicationDbContext>(
+                    options => options.UseSqlServer(
+                        builder.Configuration.GetConnectionString("DefaultConnection"),
+                        sqlServerOptions => sqlServerOptions.EnableRetryOnFailure())
+                );
+            }
+            
 
             var app = builder.Build();
+
+            if(builder.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+                
+
             app.UseRouting();
             app.UseStaticFiles();
             app.MapControllers();

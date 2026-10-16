@@ -46,9 +46,6 @@ namespace CRUDCoursesAppTest
             // Arrange
             AddUserRequest? new_user_add_null_request = null;
             User? invalid_user = null;
-            UserResponse? expected_invalid_user_response = null;
-
-
             _usersRepositoryMock.Setup(temp => temp.AddUser(It.IsAny<User>()))
             .ReturnsAsync(invalid_user);
 

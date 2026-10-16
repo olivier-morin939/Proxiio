@@ -15,11 +15,11 @@ namespace Entities
 
         [Required]
         [StringLength(120)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Required]
         [StringLength(254)]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         public Role Role { get; set; }
 
@@ -27,7 +27,7 @@ namespace Entities
 
         [Required]
         [StringLength(255)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         public DateTime DateOfBirth { get; set; }
 

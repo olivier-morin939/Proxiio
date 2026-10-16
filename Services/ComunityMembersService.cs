@@ -1,6 +1,7 @@
 using Entities;
 using Entities.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ServiceContracts;
 using ServiceContracts.DTO.Comunities;
 using System.Data;
@@ -10,13 +11,21 @@ namespace Services;
 public class ComunityMembersService : IComunityMembersService
 {
     private readonly ApplicationDbContext _db;
-    public ComunityMembersService(ApplicationDbContext db) => _db = db;
+    private readonly ILogger<ComunityMembersService>? _logger;
+    public ComunityMembersService(ApplicationDbContext db, ILogger<ComunityMembersService>? logger = null) { _db = db; _logger = logger; }
 
     // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
     public ComunityMembersService() : this(new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options)) { }
 
+    private void LogOperation(string method, string operation, string arguments)
+    {
+        _logger?.LogInformation("[+][{Method}] {Operation} reached.", method, operation);
+        _logger?.LogInformation("[+][{Method}] {Operation} received arguments: {Arguments}.", method, operation, arguments);
+    }
+
     public async Task<ComunityMemberResponse> AddComunityMember(AddComunityMemberRequest? request)
     {
+        LogOperation("POST", nameof(AddComunityMember), $"Request:{request?.GetType().Name}, CommunityId:{request?.ComunityId}, UserId:{request?.UserId}");
         // Check if the DTO object is null
         ArgumentNullException.ThrowIfNull(request);
 
@@ -46,14 +55,27 @@ public class ComunityMembersService : IComunityMembersService
         return member.ToComunityMemberResponse();
     }
 
-    public async Task<List<ComunityMemberResponse>> GetComunityMembers(Guid comunityId) => (await _db.ComunityMembers.AsNoTracking().Where(m => m.ComunityId == comunityId).OrderBy(m => m.JoinedAt).ToListAsync()).Select(m => m.ToComunityMemberResponse()).ToList();
+    public async Task<List<ComunityMemberResponse>> GetComunityMembers(Guid comunityId)
+    {
+        LogOperation("GET", nameof(GetComunityMembers), $"CommunityId:{comunityId}");
+        return (await _db.ComunityMembers.AsNoTracking().Where(m => m.ComunityId == comunityId).OrderBy(m => m.JoinedAt).ToListAsync()).Select(m => m.ToComunityMemberResponse()).ToList();
+    }
 
-    public async Task<bool> IsComunityMember(Guid comunityId, Guid userId) => await _db.ComunityMembers.AnyAsync(m => m.ComunityId == comunityId && m.UserId == userId);
+    public async Task<bool> IsComunityMember(Guid comunityId, Guid userId)
+    {
+        LogOperation("GET", nameof(IsComunityMember), $"CommunityId:{comunityId}, UserId:{userId}");
+        return await _db.ComunityMembers.AnyAsync(m => m.ComunityId == comunityId && m.UserId == userId);
+    }
 
-    public async Task<int> GetComunityMembersCount(Guid comunityId) => await _db.ComunityMembers.CountAsync(m => m.ComunityId == comunityId);
+    public async Task<int> GetComunityMembersCount(Guid comunityId)
+    {
+        LogOperation("GET", nameof(GetComunityMembersCount), $"CommunityId:{comunityId}");
+        return await _db.ComunityMembers.CountAsync(m => m.ComunityId == comunityId);
+    }
 
     public async Task<bool> RemoveComunityMember(Guid comunityId, Guid userId)
     {
+        LogOperation("POST", nameof(RemoveComunityMember), $"CommunityId:{comunityId}, UserId:{userId}");
         // Search for the member
         ComunityMember? member = await _db.ComunityMembers.FirstOrDefaultAsync(m => m.ComunityId == comunityId && m.UserId == userId);
         
@@ -69,6 +91,7 @@ public class ComunityMembersService : IComunityMembersService
 
     public async Task<ComunityMemberResponse> UpdateComunityMember(UpdateComunityMemberRequest request)
     {
+        LogOperation("POST", nameof(UpdateComunityMember), $"Request:{request?.GetType().Name}, CommunityId:{request?.ComunityId}, UserId:{request?.UserId}");
         // Check if the DTO object is null
         ArgumentNullException.ThrowIfNull(request);
 

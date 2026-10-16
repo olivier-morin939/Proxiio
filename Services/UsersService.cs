@@ -4,6 +4,7 @@ using Entities.Contexts;
 using Entities.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using RepositoryContracts;
 using ServiceContracts;
@@ -12,21 +13,29 @@ using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Globalization;
 using System.IO;
-using Microsoft.AspNetCore.Http;
+
 namespace Services;
 
 public class UsersService : IUsersService
 {
     private readonly IEncryptionsService _encryptionsService;
     private readonly IUsersRepository _repository;
+    private readonly ILogger<UsersService>? _logger;
 
-    public UsersService(IUsersRepository repository, IEncryptionsService encryptionsService) { _repository = repository; _encryptionsService = encryptionsService; }
+    public UsersService(IUsersRepository repository, IEncryptionsService encryptionsService, ILogger<UsersService>? logger = null) { _repository = repository; _encryptionsService = encryptionsService; _logger = logger; }
+
+    private void LogOperation(string method, string operation, string arguments)
+    {
+        _logger?.LogInformation("[+][{Method}] {Operation} reached.", method, operation);
+        _logger?.LogInformation("[+][{Method}] {Operation} received arguments: {Arguments}.", method, operation, arguments);
+    }
 
     // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
     //public UsersService() : this(new UsersDbContext(new DbContextOptionsBuilder<UsersDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options), new IEncryptionsService()) { }
 
     public async Task<UserResponse> AddUser(AddUserRequest? request)
     {
+        LogOperation("POST", nameof(AddUser), $"Request:{request?.GetType().Name}, Password/ConfirmPassword:[redacted]");
         // Check if the DTO object is null
         if(request == null)
             throw new ArgumentNullException(nameof(request));
@@ -49,19 +58,29 @@ public class UsersService : IUsersService
         // Create the users in the db
         User user = request.ToUser();
         user.Password = await _encryptionsService.EncryptData(user.Password!);
-        User createdUser = await _repository.AddUser(user);
+        User createdUser = await _repository.AddUser(user)
+            ?? throw new InvalidOperationException("The user could not be added.");
 
 
         // Return the DTO response
         return createdUser.ToUserResponse();
     }
 
-    public async Task<List<UserResponse>> GetAllUsers() => (await _repository.GetAllUsers()).Select(u => u.ToUserResponse()).ToList();
+    public async Task<List<UserResponse>> GetAllUsers()
+    {
+        LogOperation("GET", nameof(GetAllUsers), "(aucun)");
+        return (await _repository.GetAllUsers()).Select(u => u.ToUserResponse()).ToList();
+    }
 
-    public async Task<int> GetAllUsersCount() => await _repository.GetAllUsersCount();
+    public async Task<int> GetAllUsersCount()
+    {
+        LogOperation("GET", nameof(GetAllUsersCount), "(aucun)");
+        return await _repository.GetAllUsersCount();
+    }
 
     public async Task<UserResponse?> GetUserById(Guid userId)
     {
+        LogOperation("GET", nameof(GetUserById), $"UserId:{userId}");
         // Check if the id is valid
         if (userId == Guid.Empty) 
             throw new ArgumentNullException(nameof(userId));
@@ -78,6 +97,7 @@ public class UsersService : IUsersService
 
     public async Task<UserResponse?> UpdateUser(UpdateUserRequest? request)
     {
+        LogOperation("POST", nameof(UpdateUser), $"Request:{request?.GetType().Name}, UserId:{request?.UserId}, Password/ConfirmPassword:[redacted]");
         // Check if the request is null
         ArgumentNullException.ThrowIfNull(request);
 
@@ -109,6 +129,7 @@ public class UsersService : IUsersService
 
     public async Task<bool> DeleteUser(Guid userId)
     {
+        LogOperation("POST", nameof(DeleteUser), $"UserId:{userId}");
         // Search the targeted user
         User? user = await _repository.GetUserById(userId);
 
@@ -122,6 +143,7 @@ public class UsersService : IUsersService
 
     public async Task<List<UserResponse>> GetFilteredUsers(string searchBy, string searchString)
     {
+        LogOperation("GET", nameof(GetFilteredUsers), $"SearchBy:{searchBy}, SearchString:{searchString}");
         // Get all users first
         List<User> users = await _repository.GetAllUsers();
 
@@ -157,6 +179,8 @@ public class UsersService : IUsersService
 
     public Task<List<UserResponse>> GetSortedUsers(List<UserResponse> users, string sortBy, SortOption sortOrder)
     {
+        LogOperation("GET", nameof(GetSortedUsers), $"UsersCount:{users?.Count}, SortBy:{sortBy}, SortOrder:{sortOrder}");
+        users ??= new List<UserResponse>();
         // Checking if the sortBy field and empty or null
         if (string.IsNullOrEmpty(sortBy)) 
             return Task.FromResult(users);
@@ -179,6 +203,7 @@ public class UsersService : IUsersService
 
     public async Task<MemoryStream> GetUsersCSV()
     {
+        LogOperation("GET", nameof(GetUsersCSV), "(aucun)");
 
         List<UserResponse> users = (await _repository.GetAllUsers()).Select(temp => temp.ToUserResponse()).ToList();
 
@@ -210,6 +235,7 @@ public class UsersService : IUsersService
 
     public async Task<MemoryStream> GetUsersEXCEL()
     {
+        LogOperation("GET", nameof(GetUsersEXCEL), "(aucun)");
         List<UserResponse> allUsers = (await _repository.GetAllUsers()).Select(user => user.ToUserResponse()).ToList();
 
         MemoryStream memoryStream = new MemoryStream();
@@ -258,6 +284,8 @@ public class UsersService : IUsersService
 
     public async Task<int> UploadUsersFromExcel(IFormFile file)
     {
+        LogOperation("POST", nameof(UploadUsersFromExcel), $"FileLength:{file?.Length}, FileExtension:{(file == null ? null : Path.GetExtension(file.FileName))}");
+        ArgumentNullException.ThrowIfNull(file);
         using MemoryStream memoryStream = new MemoryStream();
         await file.CopyToAsync(memoryStream);
 
@@ -267,7 +295,7 @@ public class UsersService : IUsersService
         int usersInsertedCount = 0;
         using (ExcelPackage excelPackage = new ExcelPackage(memoryStream))
         {
-            ExcelWorksheet workSheet = excelPackage.Workbook.Worksheets.FirstOrDefault();
+            ExcelWorksheet? workSheet = excelPackage.Workbook.Worksheets.FirstOrDefault();
             if (workSheet?.Dimension == null)
                 return 0;
 
@@ -348,7 +376,7 @@ public class UsersService : IUsersService
                     ReceiveNewsLetter = receiveNewsLetter
                 };
 
-                User addedUser = await _repository.AddUser(newUser);
+                User? addedUser = await _repository.AddUser(newUser);
                 if (addedUser != null)
                 {
                     usersInsertedCount++;

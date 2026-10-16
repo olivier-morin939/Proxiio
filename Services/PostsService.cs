@@ -1,6 +1,7 @@
 using CsvHelper;
 using Entities;
 using Entities.Enums;
+using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using RepositoryContracts;
 using ServiceContracts;
@@ -20,14 +21,30 @@ public class PostsService : IPostsService
     private const int EstimatedBytesPerCsvRow = 256;
 
     private readonly IPostsRepository _repository;
-    public PostsService(IPostsRepository Repository) => _repository = Repository;
+    private readonly ILogger<PostsService>? _logger;
+    public PostsService(IPostsRepository Repository, ILogger<PostsService>? logger = null) { _repository = Repository; _logger = logger; }
 
-    public async Task<List<PostResponse>> GetAllPosts() => await AddReportCounts(await _repository.GetAllPosts());
+    private void LogOperation(string method, string operation, string arguments)
+    {
+        _logger?.LogInformation("[+][{Method}] {Operation} reached.", method, operation);
+        _logger?.LogInformation("[+][{Method}] {Operation} received arguments: {Arguments}.", method, operation, arguments);
+    }
 
-    public Task<int> GetAllPostsCount() => _repository.GetPostCount();
+    public async Task<List<PostResponse>> GetAllPosts()
+    {
+        LogOperation("GET", nameof(GetAllPosts), "(aucun)");
+        return await AddReportCounts(await _repository.GetAllPosts());
+    }
+
+    public Task<int> GetAllPostsCount()
+    {
+        LogOperation("GET", nameof(GetAllPostsCount), "(aucun)");
+        return _repository.GetPostCount();
+    }
 
     public async Task<List<FeedPostResponse>> GetCommunityFeed(Guid? CommunityId = null)
     {
+        LogOperation("GET", nameof(GetCommunityFeed), $"CommunityId:{CommunityId}");
         // Get the feed items (post + author + community) from the repository
         List<PostFeedItem> Items = await _repository.GetCommunityFeed(CommunityId);
 
@@ -50,6 +67,7 @@ public class PostsService : IPostsService
 
     public async Task<PostResponse> AddPost(AddPostRequest? Request)
     {
+        LogOperation("POST", nameof(AddPost), $"Request:{Request?.GetType().Name}, CommunityId:{Request?.ComunityId}, UserId:{Request?.UserId}");
 
         ArgumentNullException.ThrowIfNull(Request);
         Helpers.HelpersValidation.ModelValidation(Request);
@@ -64,13 +82,15 @@ public class PostsService : IPostsService
             throw new ArgumentException("User not found.", nameof(Request.UserId));
 
         Post NewPost = Request.ToPost();
-        Post AddedPost = await _repository.AddPost(NewPost);
+        Post AddedPost = await _repository.AddPost(NewPost)
+            ?? throw new InvalidOperationException("The post could not be added.");
 
         return AddedPost.ToPostResponse();
     }
 
     public async Task<PostResponse> GetPostByPostId(Guid PostId)
     {
+        LogOperation("GET", nameof(GetPostByPostId), $"PostId:{PostId}");
         Post? FoundPost = await _repository.GetPostByPostId(PostId);
 
         if (FoundPost is null)
@@ -81,6 +101,7 @@ public class PostsService : IPostsService
 
     public async Task<PostResponse> UpdatePost(UpdatePostRequest Request)
     {
+        LogOperation("POST", nameof(UpdatePost), $"Request:{Request?.GetType().Name}, PostId:{Request?.Id}, CommunityId:{Request?.ComunityId}, UserId:{Request?.UserId}");
         
         ArgumentNullException.ThrowIfNull(Request);
         Helpers.HelpersValidation.ModelValidation(Request);
@@ -103,18 +124,21 @@ public class PostsService : IPostsService
         PostToUpdate.AdditionalsPath = actualRequest.AdditionalsPath ?? new();
         PostToUpdate.ModifiedAt = actualRequest.ModifiedAt;
 
-        Post UpdatedPost = await _repository.UpdatePost(PostToUpdate);
+        Post UpdatedPost = await _repository.UpdatePost(PostToUpdate)
+            ?? throw new InvalidOperationException("The post could not be updated.");
         return UpdatedPost.ToPostResponse();
     }
 
     public async Task<bool> DeletePostByPostId(Guid PostId)
     {
+        LogOperation("POST", nameof(DeletePostByPostId), $"PostId:{PostId}");
         int RowsDeleted = await _repository.DeletePostByPostId(PostId);
         return RowsDeleted > 0;
     }
 
     public async Task<List<PostResponse>> GetAllPostsByComunity(Guid ComId)
     {
+        LogOperation("GET", nameof(GetAllPostsByComunity), $"CommunityId:{ComId}");
         // Checking if the community id is valid
         EnsureCommunityIdIsValid(ComId);
 
@@ -124,6 +148,7 @@ public class PostsService : IPostsService
 
     public async Task<List<PostResponse>> GetAllFilteredPostsByComunitiy(Guid ComId, string SearchBy, string SearchString)
     {
+        LogOperation("GET", nameof(GetAllFilteredPostsByComunitiy), $"CommunityId:{ComId}, SearchBy:{SearchBy}, SearchString:{SearchString}");
         // Checking if the community id is valid
         EnsureCommunityIdIsValid(ComId);
 
@@ -149,6 +174,8 @@ public class PostsService : IPostsService
 
     public Task<List<PostResponse>> GetAllSortedPostsByComunity(Guid ComId, List<PostResponse> Posts, string SortBy, SortOption SortOrder)
     {
+        LogOperation("GET", nameof(GetAllSortedPostsByComunity), $"CommunityId:{ComId}, PostsCount:{Posts?.Count}, SortBy:{SortBy}, SortOrder:{SortOrder}");
+        Posts ??= new List<PostResponse>();
 
         // Checking if the sortBy is null or empty
         if (string.IsNullOrEmpty(SortBy))
@@ -171,6 +198,7 @@ public class PostsService : IPostsService
 
     public async Task<MemoryStream> GetPostsCSV()
     {
+        LogOperation("GET", nameof(GetPostsCSV), "(aucun)");
 
         List<PostResponse> Posts = await GetAllPosts();
 
@@ -193,6 +221,7 @@ public class PostsService : IPostsService
 
     public async Task<MemoryStream> GetPostsEXCEL()
     {
+        LogOperation("GET", nameof(GetPostsEXCEL), "(aucun)");
         List<PostResponse> allPosts = (await _repository.GetAllPosts()).Select(post => post.ToPostResponse()).ToList();
 
         MemoryStream memoryStream = new MemoryStream();

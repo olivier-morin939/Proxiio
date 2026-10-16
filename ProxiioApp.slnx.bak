@@ -1,0 +1,10 @@
+<Solution>
+	<Project Path="ProxiioApp\\ProxiioApp.csproj" \\>
+  <Project Path="ProxiioTest\\ProxiioTest.csproj" \\>
+  <Project Path="Entities\\Entities.csproj" \\>
+  <Project Path="Repository\\Repository.csproj" \\>
+  <Project Path="RepositoryContracts\\RepositoryContracts.csproj" \\>
+  <Project Path="ServiceContracts\\ServiceContracts.csproj" \\>
+  <Project Path="Services\\Services.csproj" \\>
+<\\Solution>
+

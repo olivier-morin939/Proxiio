@@ -1,13 +1,16 @@
-﻿using Entities.Enums;
+﻿using Entities;
+using Entities.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Rotativa.AspNetCore;
 using ServiceContracts;
 using ServiceContracts.DTO.Comunities;
-using ServiceContracts.DTO.Users;
 using ServiceContracts.DTO.Posts;
 using ServiceContracts.DTO.Reports;
 using ServiceContracts.DTO.Signals;
+using ServiceContracts.DTO.Users;
 using System.Data;
-using Rotativa.AspNetCore;
+using System.Globalization;
+using System.Net;
 
 namespace CRUDCoursesApp.Controllers
 {
@@ -23,14 +26,18 @@ namespace CRUDCoursesApp.Controllers
         private readonly IReportsService _reportsService;
         private readonly ISignalsService _signalsService;
 
+        private readonly ILogger<AdminController> _logger;
+
         public AdminController(
             IUsersService usersService,
             IComunitiesService comunitiesService,
             IComunityMembersService communityMembersService,
             IPostsService postsService,
             IReportsService reportsService,
-            ISignalsService signalsService
-            
+            ISignalsService signalsService,
+            ILogger<AdminController> logger
+
+
             )
         {
             _usersService = usersService;
@@ -39,6 +46,7 @@ namespace CRUDCoursesApp.Controllers
             _comunityMembersService = communityMembersService;
             _reportsService = reportsService;
             _signalsService = signalsService;
+            _logger = logger;
 
         }
 
@@ -56,6 +64,9 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin")]
         public async Task<IActionResult> Index()
         {
+            _logger.LogInformation("[+][GET] Admin dashboard page reached.");
+            _logger.LogInformation("[+][GET] Admin dashboard received queries: (aucun).");
+
             // Fill the quick stats informations
             ViewBag.TotalUserCounts = await _usersService.GetAllUsersCount();
             ViewBag.TotalComunitiesCounts = await _comunitiesService.GetAllComunitiesCount();
@@ -65,14 +76,14 @@ namespace CRUDCoursesApp.Controllers
             return View();
         }
 
-
         #region UserActionsMethod
 
         [HttpGet]
         [Route("admin/users/view")]
         public async Task<IActionResult> DisplayUsers([FromQuery] string searchBy, [FromQuery] string searchString, [FromQuery] string sortBy = nameof(UserResponse.Name), [FromQuery] SortOption sortOption = SortOption.ASC)
         {
-
+            _logger.LogInformation("[+][GET] Admin display users page reached.");
+            _logger.LogInformation($"[+][GET] Admin display users received queries : SearchBy:{searchBy}, SearchString:{searchString}, SortBy:{sortBy}, SortOption:{sortOption.ToString()}");
             ViewBag.SearchFields = new Dictionary<string, string>()
             {
                 {nameof(UserResponse.Name), "User Name"},
@@ -110,13 +121,18 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/users/view/{UserId:guid}")]
         public async Task<IActionResult> DisplaySpecificUser([FromRoute] Guid UserId)
         {
+            _logger.LogInformation("[+][GET] Admin display specific user page reached.");
+            _logger.LogInformation($"[+][GET] Admin display specific user received queries : UserId:{UserId}");
+
             try
             {
-                UserResponse matchingUserResponse = await _usersService.GetUserById(UserId);
+                UserResponse? matchingUserResponse = await _usersService.GetUserById(UserId);
+                if (matchingUserResponse is null)
+                    return NotFound();
                 return View("User/DisplaySpecificUser", matchingUserResponse);
             }
-            catch (ArgumentNullException ex) { 
-                
+            catch (ArgumentNullException ex) {
+                _logger.LogError("[-] {Error}", ex.Message);
                 ViewBag.ErrorMessage = ex.Message;
             }
 
@@ -128,7 +144,7 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/users/add")]
         public async Task<IActionResult> AddUser()
         {
-
+            _logger.LogInformation("[+][GET] Admin add user page reached.");
             return View("User/AddUser");
         }
 
@@ -138,6 +154,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddUser([Bind][FromForm] AddUserRequest newUserAddRequest)
         {
+            _logger.LogInformation("[+][POST] Admin add user page reached.");
+            _logger.LogInformation("[+][POST] Admin add user received arguments: Email:{Email}, Role:{Role}, Password:[redacted].", newUserAddRequest?.Email, newUserAddRequest?.Role);
             try
             {
                 if (!ModelState.IsValid)
@@ -154,10 +172,12 @@ namespace CRUDCoursesApp.Controllers
             }
             catch (DuplicateNameException dne)
             {
+                _logger.LogError("[-] {Error}", dne.Message);
                 TempData["DuplicateErrorMessage"] = dne.Message;
             }
             catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 TempData["InvalidErrorMessage"] = ex.Message;
             }
 
@@ -169,6 +189,7 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/users/add/upload")]
         public async Task<IActionResult> UploadUsersFromExcel()
         {
+            _logger.LogInformation("[+][GET] Admin upload users from excel page reached.");
             return View("User/UploadUsersFromExcel");
         }
 
@@ -177,8 +198,10 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/users/add/upload")]
         public async Task<IActionResult> UploadUsersFromExcel([FromForm] IFormFile excelFile)
         {
+            _logger.LogInformation("[+][POST] Admin upload users from excel page reached.");
+            _logger.LogInformation("[+][POST] Admin upload users from excel received arguments: FileName:{FileName}, FileLength:{FileLength}.", excelFile?.FileName, excelFile?.Length);
 
-            if(excelFile == null || string.IsNullOrEmpty(excelFile.FileName))
+            if (excelFile == null || string.IsNullOrEmpty(excelFile.FileName))
             {
                 TempData["ErrorMessage"] = "You have to upload an EXCEL file. Format extension is (.xlsx)";
                 return View("User/UploadUsersFromExcel");
@@ -203,6 +226,7 @@ namespace CRUDCoursesApp.Controllers
 
             } catch(Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 TempData["ErrorMessage"] = ex.Message;
                 return View("User/UploadUsersFromExcel");
             }
@@ -214,14 +238,19 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/users/update/{UserId:guid}")]
         public async Task<IActionResult> UpdateSpecificUser([FromRoute] Guid UserId)
         {
+            _logger.LogInformation("[+][GET] Admin update specific user page reached.");
+            _logger.LogInformation($"[+][GET] Admin update specific user received queries : UserId:{UserId}");
             try
             {
-                UserResponse userResponse = await _usersService.GetUserById(UserId);
+                UserResponse? userResponse = await _usersService.GetUserById(UserId);
+                if (userResponse is null)
+                    return NotFound();
                 UpdateUserRequest updateRequest = userResponse.ToUpdateUserRequest();
                 return View("User/UpdateSpecificUser", updateRequest);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 return LocalRedirect("/not-found");
             }
         }
@@ -232,7 +261,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateSpecificUser([Bind][FromForm] UpdateUserRequest updateUserRequest,[FromRoute] Guid UserId)
         {
-
+            _logger.LogInformation("[+][POST] Admin update specific user page reached.");
+            _logger.LogInformation("[+][POST] Admin update specific user received arguments: UserId:{UserId}, Password:[redacted].", UserId);
             try
             {
                 if (!ModelState.IsValid)
@@ -244,16 +274,20 @@ namespace CRUDCoursesApp.Controllers
                 }
 
                 updateUserRequest.UserId = UserId;
-                UserResponse updatedUser = await _usersService.UpdateUser(updateUserRequest);
+                UserResponse? updatedUser = await _usersService.UpdateUser(updateUserRequest);
+                if (updatedUser is null)
+                    return NotFound();
                 TempData["SuccessMessage"] = "User updated with success !";
                 return RedirectToAction("DisplayUsers");
             }
             catch (DuplicateNameException dne)
             {
+                _logger.LogError("[-] {Error}", dne.Message);
                 TempData["DuplicateErrorMessage"] = dne.Message;
             }
             catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 TempData["InvalidErrorMessage"] = ex.Message;
             }
             return RedirectToAction(nameof(UpdateSpecificUser), new { UserId });
@@ -264,13 +298,18 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/users/delete/{UserId:guid}")]
         public async Task<IActionResult> DeleteSpecificUser([FromRoute] Guid UserId)
         {
+            _logger.LogInformation("[+][GET] Admin delete specific user page reached.");
+            _logger.LogInformation($"[+][GET] Admin delete specific user page received queries: UserId:{UserId}.");
             try
             {
-                UserResponse userResponse = await _usersService.GetUserById(UserId);
+                UserResponse? userResponse = await _usersService.GetUserById(UserId);
+                if (userResponse is null)
+                    return NotFound();
                 return View("User/DeleteSpecificUser", userResponse);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 return LocalRedirect("/not-found");
             }
             
@@ -282,6 +321,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSpecificUserConfirm([FromRoute] Guid UserId)
         {
+            _logger.LogInformation("[+][POST] Admin delete specific user page reached.");
+            _logger.LogInformation($"[+][POST] Admin delete specific user page received queries: UserId:{UserId}.");
             try
             {
                 bool isDeleted = await _usersService.DeleteUser(UserId);
@@ -296,8 +337,9 @@ namespace CRUDCoursesApp.Controllers
                     return RedirectToAction(nameof(DeleteSpecificUser), new { UserId });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 TempData["InvalidErrorMessage"] = "User deletion failed !";
             }
             return RedirectToAction(nameof(DeleteSpecificUser), new { UserId });
@@ -310,6 +352,8 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/view")]
         public async Task<IActionResult> DisplayComunities([FromQuery] string searchBy, [FromQuery] string searchString, [FromQuery] string sortBy = nameof(ComunityResponse.Name), [FromQuery] SortOption sortOption = SortOption.ASC)
         {
+            _logger.LogInformation("[+][GET] Admin display communities page reached.");
+            _logger.LogInformation($"[+][GET] Admin display communities received queries: SearchBy:{searchBy}, SearchString:{searchString}, SortBy:{sortBy}, SortOption:{sortOption}.");
             ViewBag.SearchFields = new Dictionary<string, string>()
             {
                 {nameof(ComunityResponse.Name), "Comunity Name"},
@@ -345,9 +389,13 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/view/{ComId:guid}")]
         public async Task<IActionResult> DisplaySpecificComunity([FromRoute] Guid ComId, [FromQuery] int postsPage = 1, [FromQuery] int postsPageSize = 8, [FromQuery] int membersPage = 1, [FromQuery] int membersPageSize = 8)
         {
+            _logger.LogInformation("[+][GET] Admin display specific community page reached.");
+            _logger.LogInformation($"[+][GET] Admin display specific community received queries: ComId:{ComId}, PostsPage:{postsPage}, PostsPageSize:{postsPageSize}, MembersPage:{membersPage}, MembersPageSize:{membersPageSize}.");
             try
             {
-                ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
+                ComunityResponse? comResponse = await _comunitiesService.GetComunityByComId(ComId);
+                if (comResponse is null)
+                    return NotFound();
 
                 // prepare paged posts
                 var allPosts = await _postsService.GetAllFilteredPostsByComunitiy(ComId, string.Empty, string.Empty);
@@ -378,8 +426,9 @@ namespace CRUDCoursesApp.Controllers
 
                 return View("Comunity/DisplaySpecificComunity", vm);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 return LocalRedirect("/not-found");
             }
         }
@@ -388,6 +437,8 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/add")]
         public async Task<IActionResult> AddComunity()
         {
+            _logger.LogInformation("[+][GET] Admin add community page reached.");
+            _logger.LogInformation("[+][GET] Admin add community received queries: (aucun).");
             return View("Comunity/AddComunity");
         }
 
@@ -396,6 +447,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddComunity([Bind][FromForm] AddComunityRequest addComunityRequest)
         {
+            _logger.LogInformation("[+][POST] Admin add community page reached.");
+            _logger.LogInformation($"[+][POST] Admin add community received queries: AddComunityRequest:{addComunityRequest}.");
             try
             {
                 if (!ModelState.IsValid)
@@ -412,10 +465,12 @@ namespace CRUDCoursesApp.Controllers
             }
             catch (DuplicateNameException dne)
             {
+                _logger.LogError("[-] {Error}", dne.Message);
                 TempData["DuplicateErrorMessage"] = dne.Message;
             }
             catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 TempData["InvalidErrorMessage"] = ex.Message;
             }
 
@@ -427,13 +482,18 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/update/{ComId:guid}")]
         public async Task<IActionResult> UpdateComunity([FromRoute]Guid ComId)
         {
+            _logger.LogInformation("[+][GET] Admin update community page reached.");
+            _logger.LogInformation($"[+][GET] Admin update community received queries: ComId:{ComId}.");
             try
             {
-                ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
+                ComunityResponse? comResponse = await _comunitiesService.GetComunityByComId(ComId);
+                if (comResponse is null)
+                    return NotFound();
                 return View("Comunity/UpdateComunity", comResponse);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 return LocalRedirect("/not-found");
             }
         }
@@ -444,6 +504,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateSpecificComunity([Bind][FromForm] UpdateComunityRequest updateComunityRequest, [FromRoute] Guid ComId)
         {
+            _logger.LogInformation("[+][POST] Admin update community page reached.");
+            _logger.LogInformation($"[+][POST] Admin update community received queries: UpdateComunityRequest:{updateComunityRequest}, ComId:{ComId}.");
             try
             {
                 if (!ModelState.IsValid)
@@ -457,7 +519,9 @@ namespace CRUDCoursesApp.Controllers
                 updateComunityRequest.Id = ComId;
                 if (updateComunityRequest.TeacherId == Guid.Empty)
                 {
-                    ComunityResponse existing = await _comunitiesService.GetComunityByComId(ComId);
+                    ComunityResponse? existing = await _comunitiesService.GetComunityByComId(ComId);
+                    if (existing is null)
+                        return NotFound();
                     updateComunityRequest.TeacherId = existing.TeacherId;
                 }
 
@@ -467,10 +531,12 @@ namespace CRUDCoursesApp.Controllers
             }
             catch (DuplicateNameException dne)
             {
+                _logger.LogError("[-] {Error}", dne.Message);
                 SafeSetTempData("DuplicateErrorMessage", dne.Message);
             }
             catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 SafeSetTempData("InvalidErrorMessage", ex.Message);
             }
 
@@ -481,13 +547,18 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/delete/{ComId:guid}")]
         public async Task<IActionResult> DeleteSpecificComunity([FromRoute] Guid ComId)
         {
+            _logger.LogInformation("[+][GET] Admin delete community page reached.");
+            _logger.LogInformation($"[+][GET] Admin delete community received queries: ComId:{ComId}.");
             try
             {
-                ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
+                ComunityResponse? comResponse = await _comunitiesService.GetComunityByComId(ComId);
+                if (comResponse is null)
+                    return NotFound();
                 return View("Comunity/DeleteSpecificComunity", comResponse);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 return LocalRedirect("/not-found");
             }
         }
@@ -498,6 +569,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSpecificComunityConfirm([FromRoute] Guid ComId)
         {
+            _logger.LogInformation("[+][POST] Admin delete community page reached.");
+            _logger.LogInformation($"[+][POST] Admin delete community received queries: ComId:{ComId}.");
             try
             {
                 bool deleted = await _comunitiesService.DeleteComunityByComId(ComId);
@@ -514,6 +587,7 @@ namespace CRUDCoursesApp.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 SafeSetTempData("InvalidErrorMessage", ex.Message);
                 return RedirectToAction("DisplaySpecificComunity", new { ComId });
             }
@@ -524,13 +598,18 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/view/{ComId:guid}/users/view")]
         public async Task<IActionResult> DisplayUserByComunity([FromRoute] Guid ComId)
         {
+            _logger.LogInformation("[+][GET] Admin display community members page reached.");
+            _logger.LogInformation($"[+][GET] Admin display community members received queries: ComId:{ComId}.");
             try
             {
-                ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
+                ComunityResponse? comResponse = await _comunitiesService.GetComunityByComId(ComId);
+                if (comResponse is null)
+                    return NotFound();
                 ViewBag.ComId = ComId;
                 return View("Comunity/DisplayUserByComunity", comResponse.Users ?? new List<UserResponse>());
             }
-            catch (ArgumentNullException) { 
+            catch (ArgumentNullException ex) { 
+                _logger.LogError("[-] {Error}", ex.Message);
                 return NotFound();
             }
         }
@@ -540,6 +619,8 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/view/{ComId:guid}/users/add")] 
         public async Task<IActionResult> AddUserByComunity([FromRoute] Guid ComId)
         {
+            _logger.LogInformation("[+][GET] Admin add community member page reached.");
+            _logger.LogInformation($"[+][GET] Admin add community member received queries: ComId:{ComId}.");
             if (!(await _comunitiesService.GetAllComunities()).Any(c => c.Id == ComId))
                 return NotFound();
 
@@ -552,6 +633,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddUserByComunity([FromRoute] Guid ComId, [Bind][FromForm] AddUserRequest addUserRequest)
         {
+            _logger.LogInformation("[+][POST] Admin add community member page reached.");
+            _logger.LogInformation($"[+][POST] Admin add community member received queries: ComId:{ComId}, AddUserRequest:{addUserRequest}.");
             if (!ModelState.IsValid) 
             { 
                 TempData["ErrorMessage"] = "Vérifie les renseignements du compte."; 
@@ -564,8 +647,9 @@ namespace CRUDCoursesApp.Controllers
                 TempData["SuccessMessage"] = "Le membre a été ajouté à la communauté.";
                 return RedirectToAction(nameof(DisplayUserByComunity), new { ComId });
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             { 
+                _logger.LogError("[-] {Error}", ex.Message);
                 TempData["ErrorMessage"] = ex.Message;
                 return RedirectToAction(nameof(AddUserByComunity), new { ComId });
             }
@@ -576,11 +660,14 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/view/{ComId:guid}/users/delete/{UserId:guid}")]
         public async Task<IActionResult> ConfirmDeleteUserByComunity([FromRoute] Guid ComId, [FromRoute] Guid UserId)
         {
+            _logger.LogInformation("[+][GET] Admin confirm community member deletion page reached.");
+            _logger.LogInformation($"[+][GET] Admin confirm community member deletion received queries: ComId:{ComId}, UserId:{UserId}.");
             try { 
                 ViewBag.ComId = ComId;
                 return View("Comunity/DeleteUserByComunity", await _usersService.GetUserById(UserId));
             }
-            catch (ArgumentNullException) { 
+            catch (ArgumentNullException ex) { 
+                _logger.LogError("[-] {Error}", ex.Message);
                 return NotFound();
             }
         }
@@ -591,6 +678,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUserByComunity([FromRoute] Guid ComId, [FromRoute] Guid UserId)
         {
+            _logger.LogInformation("[+][POST] Admin delete community member page reached.");
+            _logger.LogInformation($"[+][POST] Admin delete community member received queries: ComId:{ComId}, UserId:{UserId}.");
             if (!await _comunityMembersService.RemoveComunityMember(ComId, UserId)) 
                 TempData["ErrorMessage"] = "Ce membre n'a pas été trouvé dans cette communauté.";
             else 
@@ -605,6 +694,8 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/view/{ComId:guid}/posts/view")]
         public async Task<IActionResult> DisplayPostsByComunity([FromRoute] Guid ComId, [FromQuery] string searchBy, [FromQuery] string searchString, [FromQuery] string sortBy = nameof(PostResponse.Title), [FromQuery] SortOption sortOrder = SortOption.ASC)
         {
+            _logger.LogInformation("[+][GET] Admin display community posts page reached.");
+            _logger.LogInformation($"[+][GET] Admin display community posts received queries: ComId:{ComId}, SearchBy:{searchBy}, SearchString:{searchString}, SortBy:{sortBy}, SortOrder:{sortOrder}.");
             ViewBag.SearchFields = new Dictionary<string, string>()
             {
                 {nameof(PostResponse.UserId), "Owner Id"},
@@ -621,7 +712,9 @@ namespace CRUDCoursesApp.Controllers
             };
             try
             {
-                ComunityResponse comResponse = await _comunitiesService.GetComunityByComId(ComId);
+                ComunityResponse? comResponse = await _comunitiesService.GetComunityByComId(ComId);
+                if (comResponse is null)
+                    return NotFound();
 
                 // Filter the posts
                 List<PostResponse> comunityFilteredPosts = await _postsService.GetAllFilteredPostsByComunitiy(ComId, searchBy, searchString);
@@ -637,8 +730,9 @@ namespace CRUDCoursesApp.Controllers
 
                 return View("Post/DisplayPostsByComunity", comunitySortedPosts);
             }
-            catch (ArgumentNullException)
+            catch (ArgumentNullException ex)
             {
+                _logger.LogError("[-] {Error}", ex.Message);
                 return LocalRedirect("/not-found");
             }
         }
@@ -648,10 +742,15 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/view/{ComId:guid}/posts/add")]
         public async Task<IActionResult> AddPostByComunity([FromRoute] Guid ComId)
         {
-            try { await _comunitiesService.GetComunityByComId(ComId); }
-            catch (ArgumentNullException) { return NotFound(); }
+            _logger.LogInformation("[+][GET] Admin add community post page reached.");
+            _logger.LogInformation($"[+][GET] Admin add community post received queries: ComId:{ComId}.");
+            ComunityResponse? community;
+            try { community = await _comunitiesService.GetComunityByComId(ComId); }
+            catch (ArgumentNullException ex) { _logger.LogError("[-] {Error}", ex.Message); return NotFound(); }
+            if (community is null)
+                return NotFound();
             ViewBag.ComId = ComId;
-            ViewBag.Users = (await _comunitiesService.GetComunityByComId(ComId)).Users ?? new List<UserResponse>();
+            ViewBag.Users = community.Users ?? new List<UserResponse>();
             return View("Post/AddPostByComunity");
         }
 
@@ -660,6 +759,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPostByComunity([FromRoute] Guid ComId, [Bind][FromForm] AddPostRequest addPostRequest)
         {
+            _logger.LogInformation("[+][POST] Admin add community post page reached.");
+            _logger.LogInformation($"[+][POST] Admin add community post received queries: ComId:{ComId}, AddPostRequest:{addPostRequest}.");
             if (!ModelState.IsValid) 
             { 
                 TempData["ErrorMessage"] = "Vérifie le titre, le message et l'auteur.";
@@ -673,6 +774,7 @@ namespace CRUDCoursesApp.Controllers
                 return RedirectToAction(nameof(DisplayPostsByComunity), new { ComId });
             }
             catch (Exception ex) { 
+                _logger.LogError("[-] {Error}", ex.Message);
                 TempData["ErrorMessage"] = ex.Message;
                 return RedirectToAction(nameof(AddPostByComunity), new { ComId });
             }
@@ -684,6 +786,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeletePostsByComunity([FromRoute] Guid ComId, [FromRoute] Guid UserId)
         {
+            _logger.LogInformation("[+][POST] Admin delete community post page reached.");
+            _logger.LogInformation($"[+][POST] Admin delete community post received queries: ComId:{ComId}, UserId:{UserId}.");
             if (!await _postsService.DeletePostByPostId(UserId)) 
                 TempData["ErrorMessage"] = "La publication est introuvable.";
             else 
@@ -696,13 +800,16 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/comunities/view/{ComId:guid}/posts/update/{UserId:guid}")]
         public async Task<IActionResult> UpdatePostByComunity([FromRoute]Guid ComId, [FromRoute]Guid UserId)
         {
+            _logger.LogInformation("[+][GET] Admin update community post page reached.");
+            _logger.LogInformation($"[+][GET] Admin update community post received queries: ComId:{ComId}, UserId:{UserId}.");
             try
             {
                 PostResponse post = await _postsService.GetPostByPostId(UserId);
                 ViewBag.ComId = ComId;
                 return View("Post/UpdatePostByComunity", new UpdatePostRequest { Id = post.Id, ComunityId = ComId, UserId = post.UserId, Title = post.Title ?? "", Body = post.Body ?? "", ImagesPath = post.ImagesPath ?? new(), AdditionalsPath = post.AdditionalsPath ?? new() });
             }
-            catch (KeyNotFoundException) { 
+            catch (KeyNotFoundException ex) { 
+                _logger.LogError("[-] {Error}", ex.Message);
                 return NotFound();
             }
         }
@@ -712,6 +819,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdatePostByComunity([FromRoute]Guid ComId, [FromRoute]Guid UserId, [Bind][FromForm] UpdatePostRequest request)
         {
+            _logger.LogInformation("[+][POST] Admin update community post page reached.");
+            _logger.LogInformation($"[+][POST] Admin update community post received queries: ComId:{ComId}, UserId:{UserId}, UpdatePostRequest:{request}.");
             if (!ModelState.IsValid) 
                 return RedirectToAction(nameof(UpdatePostByComunity), new { ComId, UserId });
             try
@@ -722,6 +831,7 @@ namespace CRUDCoursesApp.Controllers
                 TempData["SuccessMessage"] = "La publication a été mise à jour.";
             }
             catch (Exception ex) { 
+                _logger.LogError("[-] {Error}", ex.Message);
                 TempData["ErrorMessage"] = ex.Message;
             }
             return RedirectToAction(nameof(DisplayPostsByComunity), new { ComId });
@@ -731,6 +841,8 @@ namespace CRUDCoursesApp.Controllers
         [HttpGet("/admin/posts")]
         public async Task<IActionResult> DisplayPosts()
         {
+            _logger.LogInformation("[+][GET] Admin display all posts page reached.");
+            _logger.LogInformation("[+][GET] Admin display all posts received queries: (aucun).");
             ViewBag.PageTitle = "Toutes les publications";
             ViewBag.ComId = Guid.Empty;
 
@@ -749,6 +861,8 @@ namespace CRUDCoursesApp.Controllers
         [HttpGet("/admin/signals")]
         public async Task<IActionResult> DisplaySignals()
         {
+            _logger.LogInformation("[+][GET] Admin display signals page reached.");
+            _logger.LogInformation("[+][GET] Admin display signals received queries: (aucun).");
             ViewBag.ExportingOptions = new List<string>()
             {
                     "ExportToPDF",
@@ -762,12 +876,19 @@ namespace CRUDCoursesApp.Controllers
         }
 
         [HttpGet("/admin/signals/add")]
-        public async Task<IActionResult> AddSignal() => View("Signal/AddSignal", new AddSignalRequest());
+        public async Task<IActionResult> AddSignal()
+        {
+            _logger.LogInformation("[+][GET] Admin add signal page reached.");
+            _logger.LogInformation("[+][GET] Admin add signal received queries: (aucun).");
+            return View("Signal/AddSignal", new AddSignalRequest());
+        }
 
         [HttpPost("/admin/signals/add")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddSignal([Bind][FromForm]AddSignalRequest request)
         {
+            _logger.LogInformation("[+][POST] Admin add signal page reached.");
+            _logger.LogInformation($"[+][POST] Admin add signal received queries: AddSignalRequest:{request}.");
             if (!ModelState.IsValid) 
                 return View("Signal/AddSignal", request);
 
@@ -780,12 +901,15 @@ namespace CRUDCoursesApp.Controllers
         [HttpGet("/admin/signals/update/{id:guid}")]
         public async Task<IActionResult> UpdateSignal([FromRoute]Guid id)
         {
+            _logger.LogInformation("[+][GET] Admin update signal page reached.");
+            _logger.LogInformation($"[+][GET] Admin update signal received queries: Id:{id}.");
             try
             {
                 var signal = await _signalsService.GetSignalById(id);
                 return View("Signal/UpdateSignal", new UpdateSignalRequest { Id = signal.Id, ProblemName = signal.ProblemName, ProblemDescription = signal.ProblemDescription, Level = signal.Level, Status = signal.Status, IsConfirmed = signal.IsConfirmed });
             }
-            catch (KeyNotFoundException) { 
+            catch (KeyNotFoundException ex) { 
+                _logger.LogError("[-] {Error}", ex.Message);
                 return NotFound();
             }
         }
@@ -794,6 +918,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateSignal([FromRoute]Guid id, [Bind][FromForm] UpdateSignalRequest request)
         {
+            _logger.LogInformation("[+][POST] Admin update signal page reached.");
+            _logger.LogInformation($"[+][POST] Admin update signal received queries: Id:{id}, UpdateSignalRequest:{request}.");
             if (!ModelState.IsValid)
                 return View("Signal/UpdateSignal", request);
 
@@ -808,6 +934,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSignal([FromRoute] Guid id)
         {
+            _logger.LogInformation("[+][POST] Admin delete signal page reached.");
+            _logger.LogInformation($"[+][POST] Admin delete signal received queries: Id:{id}.");
             bool deleted = await _signalsService.DeleteSignal(id);
             TempData[deleted ? "SuccessMessage" : "ErrorMessage"] = deleted ? "Le signal technique a été supprimé." : "Ce signal technique est introuvable.";
             return RedirectToAction(nameof(DisplaySignals));
@@ -816,6 +944,8 @@ namespace CRUDCoursesApp.Controllers
         [HttpGet("/admin/reports")]
         public async Task<IActionResult> DisplayReports([FromRoute] Guid? postId = null)
         {
+            _logger.LogInformation("[+][GET] Admin display reports page reached.");
+            _logger.LogInformation($"[+][GET] Admin display reports received queries: PostId:{postId}.");
             List<ReportResponse> reports = await _reportsService.GetAllReports();
             if (postId.HasValue) 
                 reports = reports.Where(r => r.PostId == postId.Value).ToList();
@@ -835,6 +965,8 @@ namespace CRUDCoursesApp.Controllers
         [HttpGet("/admin/reports/add")]
         public async Task<IActionResult> AddReport()
         {
+            _logger.LogInformation("[+][GET] Admin add report page reached.");
+            _logger.LogInformation("[+][GET] Admin add report received queries: (aucun).");
             ViewBag.Posts = await _postsService.GetAllPosts();
             return View("Report/AddReport", new AddReportRequest());
         }
@@ -843,6 +975,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddReport([Bind][FromForm] AddReportRequest request)
         {
+            _logger.LogInformation("[+][POST] Admin add report page reached.");
+            _logger.LogInformation($"[+][POST] Admin add report received queries: AddReportRequest:{request}.");
             if (!ModelState.IsValid) 
             { 
                 ViewBag.Posts = await _postsService.GetAllPosts();
@@ -856,6 +990,7 @@ namespace CRUDCoursesApp.Controllers
                 return RedirectToAction(nameof(DisplayReports));
             }
             catch (Exception ex) { 
+                _logger.LogError("[-] {Error}", ex.Message);
                 ModelState.AddModelError(string.Empty, ex.Message);
                 ViewBag.Posts = await _postsService.GetAllPosts();
                 return View("Report/AddReport", request);
@@ -866,6 +1001,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateReportStatus([FromRoute]Guid id, [Bind][FromForm]ReportStatus status)
         {
+            _logger.LogInformation("[+][POST] Admin update report status page reached.");
+            _logger.LogInformation($"[+][POST] Admin update report status received queries: Id:{id}, Status:{status}.");
             try
             {
                 ReportResponse report = await _reportsService.GetReportByReportId(id);
@@ -873,6 +1010,7 @@ namespace CRUDCoursesApp.Controllers
                 TempData["SuccessMessage"] = "Le statut du signalement a été mis à jour.";
             }
             catch (Exception ex) { 
+                _logger.LogError("[-] {Error}", ex.Message);
                 TempData["ErrorMessage"] = ex.Message;
             }
             return RedirectToAction(nameof(DisplayReports));
@@ -882,6 +1020,8 @@ namespace CRUDCoursesApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteReport([FromRoute]Guid id)
         {
+            _logger.LogInformation("[+][POST] Admin delete report page reached.");
+            _logger.LogInformation($"[+][POST] Admin delete report received queries: Id:{id}.");
             bool deleted = await _reportsService.DeleteReportByReportId(id);
             TempData[deleted ? "SuccessMessage" : "ErrorMessage"] = deleted ? "Le signalement a été supprimé." : "Ce signalement est introuvable.";
             return RedirectToAction(nameof(DisplayReports));
@@ -894,6 +1034,8 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/export/")]
         public async Task<IActionResult> HandleExports([FromQuery] string ModelToExport, [FromQuery] string TypeOfExport)
         {
+            _logger.LogInformation("[+][GET] Admin handle exports page reached.");
+            _logger.LogInformation($"[+][GET] Admin handle exports received queries: ModelToExport:{ModelToExport}, TypeOfExport:{TypeOfExport}.");
             if (string.IsNullOrEmpty(TypeOfExport))
                 return BadRequest("TypeOfExport parameter is required.");
 
@@ -922,6 +1064,8 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/export/pdf")]
         public async Task<IActionResult> ExportToPDF([FromQuery] string ModelToExport)
         {
+            _logger.LogInformation("[+][GET] Admin export to PDF page reached.");
+            _logger.LogInformation($"[+][GET] Admin export to PDF received queries: ModelToExport:{ModelToExport}.");
             if(string.IsNullOrWhiteSpace(ModelToExport))
                 return BadRequest("ModelToExport query parameter is required.");
 
@@ -961,6 +1105,8 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/export/csv")]
         public async Task<IActionResult> ExportToCSV([FromQuery] string ModelToExport)
         {
+            _logger.LogInformation("[+][GET] Admin export to CSV page reached.");
+            _logger.LogInformation($"[+][GET] Admin export to CSV received queries: ModelToExport:{ModelToExport}.");
 
             if (string.IsNullOrWhiteSpace(ModelToExport))
                 return BadRequest("ModelToExport query parameter is required.");
@@ -999,6 +1145,8 @@ namespace CRUDCoursesApp.Controllers
         [Route("admin/export/excel")]
         public async Task<IActionResult> ExportToEXCEL([FromQuery] string ModelToExport)
         {
+            _logger.LogInformation("[+][GET] Admin export to Excel page reached.");
+            _logger.LogInformation($"[+][GET] Admin export to Excel received queries: ModelToExport:{ModelToExport}.");
             if (string.IsNullOrWhiteSpace(ModelToExport))
                 return BadRequest("ModelToExport query parameter is required.");
 
