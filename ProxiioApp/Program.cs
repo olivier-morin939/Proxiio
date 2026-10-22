@@ -4,6 +4,7 @@ using ServiceContracts;
 using Microsoft.EntityFrameworkCore;
 using RepositoryContracts;
 using Repository;
+using Serilog;
 
 namespace CRUDCoursesApp
 {
@@ -12,6 +13,13 @@ namespace CRUDCoursesApp
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Setup Serilog
+            builder.Host.UseSerilog((HostBuilderContext context, IServiceProvider services, LoggerConfiguration loggerConfiguration) =>
+            {
+                loggerConfiguration.ReadFrom.Configuration(context.Configuration).ReadFrom.Services(services);
+            });
+
             builder.Services.AddControllersWithViews();
 
             // Adding others logic related services

@@ -8,11 +8,15 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
+    <Folder Include="logs\" />
     <Folder Include="Views\Admin\CSV\" />
     <Folder Include="wwwroot\Rotativa\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Serilog" Version="4.4.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="10.0.0" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
       <PrivateAssets>all</PrivateAssets>
