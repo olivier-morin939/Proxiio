@@ -25,6 +25,8 @@ namespace ProxiioTest
             Level = BugSignalLevel.high, Status = BugSignalStatus.Received, IsConfirmed = true
         };
 
+        #region AddSignal
+
         [Fact]
         public async Task AddSignal_ValidRequest_AddsAndMapsSignal()
         {
@@ -52,6 +54,9 @@ namespace ProxiioTest
             await FluentActions.Invoking(() => _service.AddSignal(new AddSignalRequest { ProblemName = "Incident" })).Should().ThrowAsync<InvalidOperationException>();
         }
 
+        #endregion
+
+        #region GetAllSignals
         [Fact]
         public async Task GetAllSignals_MapsRepositoryResults()
         {
@@ -63,6 +68,9 @@ namespace ProxiioTest
             _repository.Verify(r => r.GetAllSignals(), Times.Once);
         }
 
+        #endregion
+
+        #region GetSignalById
         [Fact]
         public async Task GetSignalById_Found_ReturnsResponse()
         {
@@ -79,7 +87,9 @@ namespace ProxiioTest
             _repository.Setup(r => r.GetSignalById(It.IsAny<Guid>())).ReturnsAsync((Signal?)null);
             await FluentActions.Invoking(() => _service.GetSignalById(Guid.NewGuid())).Should().ThrowAsync<KeyNotFoundException>();
         }
+        #endregion
 
+        #region UpdateSignal
         [Fact]
         public async Task UpdateSignal_ValidRequest_UpdatesAndReturnsResponse()
         {
@@ -107,7 +117,9 @@ namespace ProxiioTest
             _repository.Setup(r => r.UpdateSignal(It.IsAny<Signal>())).ReturnsAsync((Signal?)null);
             await FluentActions.Invoking(() => _service.UpdateSignal(request)).Should().ThrowAsync<InvalidOperationException>();
         }
+        #endregion
 
+        #region DeleteSignal
         [Fact]
         public async Task DeleteSignal_MissingSignal_ReturnsFalseWithoutDeleting()
         {
@@ -134,7 +146,9 @@ namespace ProxiioTest
             _repository.Setup(r => r.DeleteSignal(signal.Id)).ReturnsAsync(false);
             await FluentActions.Invoking(() => _service.DeleteSignal(signal.Id)).Should().ThrowAsync<InvalidOperationException>();
         }
+        #endregion
 
+        #region ExportsData
         [Fact]
         public async Task GetSignalsCSV_ReturnsCsvContent()
         {
@@ -153,5 +167,7 @@ namespace ProxiioTest
             stream.Position.Should().Be(0);
             stream.Length.Should().BeGreaterThan(0);
         }
+
+        #endregion
     }
 }

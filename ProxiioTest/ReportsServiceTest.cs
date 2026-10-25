@@ -25,6 +25,7 @@ namespace ProxiioTest
             MessageOfReport = "Contenu indésirable", StatusOfReport = ReportStatus.Received
         };
 
+        #region AddReport
         [Fact]
         public async Task AddReport_ValidRequest_AddsAndMapsReport()
         {
@@ -59,6 +60,9 @@ namespace ProxiioTest
             await FluentActions.Invoking(() => _service.AddReport(request)).Should().ThrowAsync<InvalidOperationException>();
         }
 
+        #endregion
+
+        #region GetAllReports
         [Fact]
         public async Task GetAllReports_MapsRepositoryResults()
         {
@@ -70,6 +74,9 @@ namespace ProxiioTest
             _repository.Verify(r => r.GetAllReports(), Times.Once);
         }
 
+        #endregion
+
+        #region GetReportById
         [Fact]
         public async Task GetReportById_Found_ReturnsResponse()
         {
@@ -87,6 +94,9 @@ namespace ProxiioTest
             await FluentActions.Invoking(() => _service.GetReportByReportId(Guid.NewGuid())).Should().ThrowAsync<KeyNotFoundException>();
         }
 
+        #endregion
+
+        #region UpdateReport
         [Fact]
         public async Task UpdateReport_ValidRequest_UpdatesAndReturnsResponse()
         {
@@ -117,6 +127,9 @@ namespace ProxiioTest
             await FluentActions.Invoking(() => _service.UpdateReport(request)).Should().ThrowAsync<InvalidOperationException>();
         }
 
+        #endregion
+
+        #region DeleteReport
         [Fact]
         public async Task DeleteReport_Missing_ReturnsFalseWithoutDeleting()
         {
@@ -143,7 +156,9 @@ namespace ProxiioTest
             _repository.Setup(r => r.DeleteReportByReportId(report.Id)).ReturnsAsync(false);
             await FluentActions.Invoking(() => _service.DeleteReportByReportId(report.Id)).Should().ThrowAsync<InvalidOperationException>();
         }
+        #endregion
 
+        #region ExportsData
         [Fact]
         public async Task GetReportsCSV_ReturnsCsvContent()
         {
@@ -162,5 +177,7 @@ namespace ProxiioTest
             stream.Position.Should().Be(0);
             stream.Length.Should().BeGreaterThan(0);
         }
+
+        #endregion
     }
 }

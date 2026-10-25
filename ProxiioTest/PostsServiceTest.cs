@@ -35,6 +35,7 @@ namespace ProxiioTest
                 ImagesPath = new() { "image.png" }, AdditionalsPath = new() { "document.pdf" }
             };
 
+        #region GetAllPosts
         [Fact]
         public async Task GetAllPosts_ReturnsPostsWithReportCounts()
         {
@@ -55,13 +56,18 @@ namespace ProxiioTest
             _postsRepositoryMock.Verify(r => r.GetReportCountsByPostIds(It.IsAny<List<Guid>>()), Times.Never);
         }
 
+        #endregion
+
+        #region GetAllPostsCount
         [Fact]
         public async Task GetAllPostsCount_ReturnsRepositoryCount()
         {
             _postsRepositoryMock.Setup(r => r.GetPostCount()).ReturnsAsync(7);
             (await _postsService.GetAllPostsCount()).Should().Be(7);
         }
+        #endregion
 
+        #region GetCommunityFeed
         [Fact]
         public async Task GetCommunityFeed_MapsFeedItemsAndUsesFallbackNames()
         {
@@ -78,7 +84,9 @@ namespace ProxiioTest
             result[0].CommunityDescription.Should().Be("Info");
             _postsRepositoryMock.Verify(r => r.GetCommunityFeed(post.CommunityId), Times.Once);
         }
+        #endregion
 
+        #region AddPost
         [Fact]
         public async Task AddPost_ValidRequest_CallsRepositoryAndReturnsResponse()
         {
@@ -121,7 +129,9 @@ namespace ProxiioTest
             _postsRepositoryMock.Setup(r => r.AddPost(It.IsAny<Post>())).ReturnsAsync((Post?)null);
             await FluentActions.Invoking(() => _postsService.AddPost(request)).Should().ThrowAsync<InvalidOperationException>();
         }
+        #endregion
 
+        #region GetPostByPostId
         [Fact]
         public async Task GetPostByPostId_ExistingPost_ReturnsResponse()
         {
@@ -138,6 +148,9 @@ namespace ProxiioTest
             await FluentActions.Invoking(() => _postsService.GetPostByPostId(Guid.NewGuid())).Should().ThrowAsync<KeyNotFoundException>();
         }
 
+        #endregion
+
+        #region UpdatePost
         [Fact]
         public async Task UpdatePost_ValidRequest_UpdatesPostAndReturnsResponse()
         {
@@ -165,6 +178,9 @@ namespace ProxiioTest
             await FluentActions.Invoking(() => _postsService.UpdatePost(request)).Should().ThrowAsync<InvalidOperationException>();
         }
 
+        #endregion
+
+        #region DeletePostById
         [Theory]
         [InlineData(1, true)]
         [InlineData(0, false)]
@@ -174,6 +190,10 @@ namespace ProxiioTest
             (await _postsService.DeletePostByPostId(Guid.NewGuid())).Should().Be(expected);
         }
 
+
+        #endregion
+
+        #region GetAllPostsByCommunity
         [Fact]
         public async Task GetAllPostsByCommunity_ValidId_ReturnsPostsAndReportCounts()
         {
@@ -192,7 +212,9 @@ namespace ProxiioTest
             await FluentActions.Invoking(() => _postsService.GetAllPostsByComunity(Guid.Empty)).Should().ThrowAsync<ArgumentException>();
             _postsRepositoryMock.Verify(r => r.GetAllPostsByComunity(It.IsAny<Guid>()), Times.Never);
         }
+        #endregion
 
+        #region GetAllFilteredPosts
         [Fact]
         public async Task GetAllFilteredPosts_EmptySearch_UsesCommunityPosts()
         {
@@ -235,7 +257,9 @@ namespace ProxiioTest
         {
             await FluentActions.Invoking(() => _postsService.GetAllFilteredPostsByComunitiy(Guid.Empty, "Title", "abc")).Should().ThrowAsync<ArgumentException>();
         }
+        #endregion
 
+        #region GetAllSortedPosts
         [Fact]
         public async Task GetAllSortedPosts_SortsSupportedFieldsInBothDirections()
         {
@@ -250,7 +274,9 @@ namespace ProxiioTest
             (await _postsService.GetAllSortedPostsByComunity(Guid.NewGuid(), posts, "", SortOption.ASC)).Should().BeSameAs(posts);
             (await _postsService.GetAllSortedPostsByComunity(Guid.NewGuid(), null!, nameof(PostResponse.Title), SortOption.ASC)).Should().BeEmpty();
         }
+        #endregion
 
+        #region ExportsData
         [Fact]
         public async Task GetPostsCSV_ReturnsCsvContent()
         {
@@ -272,5 +298,6 @@ namespace ProxiioTest
             stream.Length.Should().BeGreaterThan(0);
             _postsRepositoryMock.Verify(r => r.GetAllPosts(), Times.Once);
         }
+        #endregion
     }
 }
