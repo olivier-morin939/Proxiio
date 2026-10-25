@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using RepositoryContracts;
+using Serilog;
 using ServiceContracts;
 using ServiceContracts.DTO.Users;
 using System.ComponentModel.DataAnnotations;
@@ -21,13 +22,16 @@ public class UsersService : IUsersService
     private readonly IEncryptionsService _encryptionsService;
     private readonly IUsersRepository _repository;
     private readonly ILogger<UsersService>? _logger;
+    private readonly IDiagnosticContext _diagnosticContext;
 
-    public UsersService(IUsersRepository repository, IEncryptionsService encryptionsService, ILogger<UsersService>? logger = null) { _repository = repository; _encryptionsService = encryptionsService; _logger = logger; }
+    public UsersService(IUsersRepository repository, IEncryptionsService encryptionsService, IDiagnosticContext diagnosticContext, ILogger<UsersService>? logger = null) { _repository = repository; _encryptionsService = encryptionsService; _logger = logger; _diagnosticContext = diagnosticContext; }
 
-    private void LogOperation(string method, string operation, string arguments)
+    private void LogOperation(string method, string operation, string arguments, object? setDiagnosticValue = null, string? setDiagnosticKey = null)
     {
         _logger?.LogInformation("[+][{Method}] {Operation} reached.", method, operation);
         _logger?.LogInformation("[+][{Method}] {Operation} received arguments: {Arguments}.", method, operation, arguments);
+        if (setDiagnosticValue != null && setDiagnosticKey != null)
+            _diagnosticContext.Set(nameof(setDiagnosticKey), setDiagnosticValue);
     }
 
     // Keeps the service easy to instantiate in isolated unit tests; application DI supplies SQL Server.
@@ -68,12 +72,14 @@ public class UsersService : IUsersService
 
     public async Task<List<UserResponse>> GetAllUsers()
     {
-        LogOperation("GET", nameof(GetAllUsers), "(aucun)");
-        return (await _repository.GetAllUsers()).Select(u => u.ToUserResponse()).ToList();
+        List<UserResponse> allUsers = (await _repository.GetAllUsers()).Select(u => u.ToUserResponse()).ToList();
+        LogOperation("GET", nameof(GetAllUsers), "(aucun)", allUsers, "Users");
+        return allUsers;
     }
 
     public async Task<int> GetAllUsersCount()
     {
+
         LogOperation("GET", nameof(GetAllUsersCount), "(aucun)");
         return await _repository.GetAllUsersCount();
     }

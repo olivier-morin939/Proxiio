@@ -7,11 +7,12 @@ using RepositoryContracts;
 using ServiceContracts;
 using ServiceContracts.DTO.Users;
 using Services;
+using Serilog;
 using System.Data;
 using System.Linq.Expressions;
 using Xunit.Abstractions;
 
-namespace CRUDCoursesAppTest
+namespace ProxiioTest
 {
     /// <summary>
     ///  All the unit tests for our UsersService
@@ -20,6 +21,7 @@ namespace CRUDCoursesAppTest
     {
         private readonly IUsersService _usersService;
         private readonly Mock<IEncryptionsService> _encryptionsServiceMock;
+        private readonly Mock<IDiagnosticContext> _diagnosticContextMock;
         private readonly IEncryptionsService _encryptionsService;
         private readonly Mock<IUsersRepository> _usersRepositoryMock;
         private readonly IUsersRepository _usersRepository;
@@ -33,10 +35,11 @@ namespace CRUDCoursesAppTest
 
             _encryptionsServiceMock = new Mock<IEncryptionsService>();
             _encryptionsService = _encryptionsServiceMock.Object;
+            _diagnosticContextMock = new Mock<IDiagnosticContext>();
 
             _usersRepositoryMock = new Mock<IUsersRepository>();
             _usersRepository = _usersRepositoryMock.Object;
-            _usersService = new UsersService(_usersRepository, _encryptionsService);
+            _usersService = new UsersService(_usersRepository, _encryptionsService, _diagnosticContextMock.Object);
         }
 
         #region AddUser

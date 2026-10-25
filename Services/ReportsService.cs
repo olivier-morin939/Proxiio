@@ -75,6 +75,10 @@ public class ReportsService : IReportsService
 
 
         Report matchingReportToUpdate = await _repository.GetReportByReportId(request.Id) ?? throw new KeyNotFoundException($"Report {request.Id} was not found.");
+        matchingReportToUpdate.PostId = request.PostId;
+        matchingReportToUpdate.TypeOfReport = request.TypeOfReport;
+        matchingReportToUpdate.MessageOfReport = request.MessageOfReport;
+        matchingReportToUpdate.StatusOfReport = request.StatusOfReport;
         Report? updatedReport = await _repository.UpdateReport(matchingReportToUpdate);
 
         if (updatedReport == null)

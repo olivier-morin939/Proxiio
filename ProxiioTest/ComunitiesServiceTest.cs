@@ -12,7 +12,7 @@ using System.Data;
 using System.Linq.Expressions;
 using Xunit.Abstractions;
 
-namespace CRUDCoursesAppTest
+namespace ProxiioTest
 {
     /// <summary>
     ///  All the unit tests for our ComunitiesService
@@ -1989,6 +1989,82 @@ namespace CRUDCoursesAppTest
 
             // Assert
             isDeleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task GetAllComunitiesCount_ReturnsRepositoryCount()
+        {
+            _comunitiesRepositoryMock.Setup(r => r.GetAllComunitiesCount()).ReturnsAsync(8);
+            (await _comunitiesService.GetAllComunitiesCount()).Should().Be(8);
+            _comunitiesRepositoryMock.Verify(r => r.GetAllComunitiesCount(), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetComunityPostsCount_PassesCommunityIdToRepository()
+        {
+            var communityId = Guid.NewGuid();
+            _comunitiesRepositoryMock.Setup(r => r.GetAllComunityPostsCount(communityId)).ReturnsAsync(5);
+            (await _comunitiesService.GetComunityPostsCount(communityId)).Should().Be(5);
+            _comunitiesRepositoryMock.Verify(r => r.GetAllComunityPostsCount(communityId), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteComunityByComId_ReturnsFalseWhenMissingAndDelegatesWhenFound()
+        {
+            var communityId = Guid.NewGuid();
+            _comunitiesRepositoryMock.Setup(r => r.GetComunityById(communityId)).ReturnsAsync((Comunity?)null);
+            (await _comunitiesService.DeleteComunityByComId(communityId)).Should().BeFalse();
+            _comunitiesRepositoryMock.Verify(r => r.DeleteComunity(It.IsAny<Guid>()), Times.Never);
+
+            var community = new Comunity { Id = communityId, Name = "Test" };
+            _comunitiesRepositoryMock.Setup(r => r.GetComunityById(communityId)).ReturnsAsync(community);
+            _comunitiesRepositoryMock.Setup(r => r.DeleteComunity(communityId)).ReturnsAsync(false);
+            (await _comunitiesService.DeleteComunityByComId(communityId)).Should().BeFalse();
+            _comunitiesRepositoryMock.Verify(r => r.DeleteComunity(communityId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetSortedComunities_SortsFieldsAndHandlesEmptyOrUnknownSort()
+        {
+            var alpha = new ComunityResponse { Name = "Alpha", Description = "Z", UsersCount = 1, PostsCount = 4, TeacherId = Guid.Parse("00000000-0000-0000-0000-000000000001") };
+            var beta = new ComunityResponse { Name = "Beta", Description = "A", UsersCount = 3, PostsCount = 2, TeacherId = Guid.Parse("00000000-0000-0000-0000-000000000002") };
+            var communities = new List<ComunityResponse> { beta, alpha };
+
+            (await _comunitiesService.GetSortedComunities(communities, nameof(ComunityResponse.Name), SortOption.ASC)).Select(c => c.Name).Should().Equal("Alpha", "Beta");
+            (await _comunitiesService.GetSortedComunities(communities, nameof(ComunityResponse.Description), SortOption.DESC)).First().Should().BeSameAs(alpha);
+            (await _comunitiesService.GetSortedComunities(communities, nameof(ComunityResponse.TeacherId), SortOption.ASC)).First().Should().BeSameAs(alpha);
+            (await _comunitiesService.GetSortedComunities(communities, nameof(ComunityResponse.UsersCount), SortOption.DESC)).First().Should().BeSameAs(beta);
+            (await _comunitiesService.GetSortedComunities(communities, nameof(ComunityResponse.PostsCount), SortOption.ASC)).First().Should().BeSameAs(beta);
+            (await _comunitiesService.GetSortedComunities(communities, "Unknown", SortOption.ASC)).Should().BeSameAs(communities);
+            (await _comunitiesService.GetSortedComunities(communities, "", SortOption.ASC)).Should().BeSameAs(communities);
+            (await _comunitiesService.GetSortedComunities(null!, nameof(ComunityResponse.Name), SortOption.ASC)).Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task GetComCSV_ReturnsCsvContainingCommunityData()
+        {
+            _comunitiesRepositoryMock.Setup(r => r.GetAllComunities()).ReturnsAsync(new List<Comunity>
+            {
+                new() { Id = Guid.NewGuid(), TeacherId = Guid.NewGuid(), Name = "CSV Community", Description = "Description" }
+            });
+            using var stream = await _comunitiesService.GetComCSV();
+            stream.Position.Should().Be(0);
+            using var reader = new StreamReader(stream, leaveOpen: true);
+            (await reader.ReadToEndAsync()).Should().Contain("CSV Community");
+            _comunitiesRepositoryMock.Verify(r => r.GetAllComunities(), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetComEXCEL_ReturnsNonEmptyWorkbook()
+        {
+            _comunitiesRepositoryMock.Setup(r => r.GetAllComunities()).ReturnsAsync(new List<Comunity>
+            {
+                new() { Id = Guid.NewGuid(), TeacherId = Guid.NewGuid(), Name = "Excel Community", Description = "Description" }
+            });
+            using var stream = await _comunitiesService.GetComEXCEL();
+            stream.Position.Should().Be(0);
+            stream.Length.Should().BeGreaterThan(0);
+            _comunitiesRepositoryMock.Verify(r => r.GetAllComunities(), Times.Once);
         }
 
         #endregion

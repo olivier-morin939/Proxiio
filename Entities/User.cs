@@ -32,5 +32,13 @@ namespace Entities
         public DateTime DateOfBirth { get; set; }
 
         public bool ReceiveNewsLetter { get; set; }
+
+
+        public override string ToString()
+        {
+            return $"{this.Email}";
+        }
+
+
     }
 }
